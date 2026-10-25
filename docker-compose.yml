@@ -78,6 +78,7 @@ services:
       INBOX_BACKEND: postgres
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
 

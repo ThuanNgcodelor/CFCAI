@@ -1255,3 +1255,40 @@ Các phase chỉ được đánh dấu `[x]` khi test path tương ứng tồn t
 - [ ] Ops kill switch đã thử trên từng Page.
 - [ ] Handoff task có người nhận và notification thật.
 - [ ] Shadow/canary được business ký duyệt.
+
+## 33. Implementation status — 25/10/2026
+
+Đây là trạng thái triển khai thực tế, cập nhật theo code/test/runtime; các mục
+chưa đạt không được hiểu là đã bật auto-reply production.
+
+| Area | Current evidence | Status |
+|---|---|---|
+| Foundation | Docker Compose, contracts, fixtures; full suite pass | Done for local/staging |
+| Meta ingress | Cloudflare Tunnel → `/webhooks/meta` → Postgres; Meta POST đã trả 200; page-specific HMAC/dedup | Phase 1 staging complete |
+| Worker/outbox | `cfc_zeo_worker`, Postgres lease, outbox schema, Meta sender adapter | Partial: dispatcher/final transaction chưa hoàn tất |
+| Aggregation/handoff | Domain debounce/state/final guard tests | Partial: Redis scheduling/takeover live chưa hoàn chỉnh |
+| Ollama | `qwen2.5:7b` installed; strict intent adapter; price handoff guard | Partial: live worker integration/eval chưa hoàn tất |
+| Knowledge | Approved-only page-scoped keyword retrieval; Postgres store + migration | Partial: semantic vector retrieval/source citation chưa có |
+| Ops | Redis-shared per-page pause/resume API and worker control | Partial: auth/RBAC/audit/takeover/task queue chưa có |
+| Go-live | 34 automated tests pass; API/worker/Postgres/Redis healthy | Not ready: T01–T12 eval, backup/restore, security and live outbound gates còn thiếu |
+
+### 33.1 Runtime endpoints currently available
+
+```text
+GET  /health
+GET  /webhook              (Meta verification)
+POST /webhook              (alias: /webhooks/meta)
+GET  /admin/ops/status
+POST /admin/ops/{CFC|ZEO}/pause
+POST /admin/ops/{CFC|ZEO}/resume
+```
+
+Các `/admin/ops/*` endpoint hiện là internal staging controls; trước production
+phải thêm authentication/RBAC, audit append-only và idempotency.
+
+### 33.2 Current phase decision
+
+Phase 0 và Phase 1 được xem là đạt gate staging. Phase 2, 3, 4, 5, 6, 7 chỉ ở
+mức partial cho tới khi test path/evaluation tương ứng và các tiêu chí vận hành
+được hoàn tất. Phase 8 vẫn giữ `ai_enabled=false`/không bật auto-reply
+production cho đến khi toàn bộ regression và go-live checklist pass.

@@ -8,27 +8,29 @@
 ## Tổng quan tiến độ
 
 - [x] **Phase 0: Foundation, Architecture Contracts & Test Fixtures (COMPLETED)**
-- [ ] **Phase 1: Meta Webhook Ingestion & Durable Inbox (PARTIAL — Postgres adapter + integration gate có; worker/production migration gate còn thiếu)**
+- [x] **Phase 1: Meta Webhook Ingestion & Durable Inbox (COMPLETED — staging/live tunnel verified)**
 - [ ] **Phase 2: Message Aggregation (Debounce) & Handoff State Guard**
 - [ ] **Phase 3: Excel Catalog & FAQ Staging Pipeline (PARTIAL — unit-only; chưa có integration gate/publish DB)**
 - [ ] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction)**
 - [ ] **Phase 5: Business Workflows & Final Send Outbox Guard**
-- [ ] **Phase 6: Approved Knowledge Retrieval & FAQ RAG**
-- [ ] **Phase 7: Operations Console & Emergency Controls (Kill Switch)**
+- [ ] **Phase 6: Approved Knowledge Retrieval & FAQ RAG (PARTIAL — approved Postgres/keyword retrieval có; semantic RAG/citation chưa có)**
+- [ ] **Phase 7: Operations Console & Emergency Controls (Kill Switch) (PARTIAL — Redis shared pause/resume có; auth/RBAC/audit chưa có)**
 - [ ] **Phase 8: Security Hardening, Regression Verification & Production Go-Live**
 - [ ] **Integration: MISA AMIS CRM Python Warmer (PARTIAL — code/unit test có, chưa kiểm chứng endpoint thật)**
 
-### Evidence audit — 25/10/2026
+### Evidence audit — 25/10/2026 (updated)
 
 Đây là trạng thái dựa trên artefact và lệnh kiểm tra thực tế trong workspace, không dựa trên giả định triển khai:
 
 | Hạng mục | Bằng chứng hiện có | Kết luận |
 |---|---|---|
 | Phase 0 | `pytest tests/unit/test_contracts.py` — 5 passed | Đạt phần test gate hiện có |
-| Phase 1 | `tests/integration/test_webhook_inbox.py` pass; `PostgresInboxStore` + migration tồn tại; chưa có worker/lease và production secret gate end-to-end | Chưa đạt DoD |
-| Phase 2 | Domain debounce/state/final-send guard đã có test integration cơ bản; chưa có worker/Redis/Postgres adapter | Đang triển khai |
+| Phase 1 | Meta tunnel POST `/webhooks/meta` trả 200; `PostgresInboxStore`, lease worker, migration và page-specific HMAC/dedup có; Phase 1 integration gate pass | Đạt DoD staging; chưa phải production sign-off |
+| Phase 2 | Domain debounce/state/final-send guard, inbox worker và outbox có; Redis schedule/takeover live/suppress transaction chưa hoàn chỉnh | Đang triển khai |
 | Phase 3 | Excel reader/importer unit test có; chưa có integration test theo gate và chưa có publish/rollback read model | Chưa đạt DoD đầy đủ |
-| Phase 8 | Docker Compose API/Postgres/Redis healthy; `/health` trả 200; Ollama `qwen2.5:7b` đã có; regression suite `tests/eval/test_regression_full.py` vẫn chưa tồn tại | Chưa đạt DoD |
+| Phase 6 | ApprovedKnowledgeStore + PostgresKnowledgeStore, page/status filter; `tests/integration/test_knowledge_retrieval.py` pass; chưa có vector/RAG citation | Partial |
+| Phase 7 | `/admin/ops/status`, pause/resume; Redis state dùng chung API/worker; `tests/integration/test_ops_controls.py` pass; chưa có auth/RBAC/audit/task queue | Partial |
+| Phase 8 | Docker Compose API/worker/Postgres/Redis healthy; `/health` 200; Ollama `qwen2.5:7b` có; `tests/eval/test_regression_full.py` chưa tồn tại | Chưa đạt DoD |
 | MISA | Client/warmer và unit test có; chưa có contract test/endpoint thật/secret runtime | Chưa được xác minh production |
 
 Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn tại. Mỗi phase cần lệnh gate, regression của phase trước và bằng chứng môi trường tương ứng.
@@ -57,7 +59,8 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 - [x] Chống trùng lặp (Deduplication) dựa trên `event_id` / `mid` (Case T09).
 - [x] Lưu bền vững vào bảng `inbox_events` (Durable Inbox) trước khi trả về `200 OK` cho Meta (< 500ms).
 - [x] Phân tách dữ liệu tuyệt đối theo `page_id` (`CFC` hoặc `ZEO`).
-- **Lệnh nghiệm thu:** `pytest tests/unit/test_meta_webhook.py` (ĐÃ PASS 3/3 TEST)
+- [x] Worker durable inbox claim/lease chạy trong service `cfc_zeo_worker`.
+- **Lệnh nghiệm thu:** `pytest tests/integration/test_webhook_inbox.py` (PASS) + Meta tunnel POST 200
 
 ---
 
@@ -104,18 +107,18 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ---
 
 ### Phase 6: Approved Knowledge Retrieval & FAQ RAG
-- [ ] Cơ chế tìm kiếm FAQ theo ngữ nghĩa hoặc từ khóa trong phạm vi `page_id`.
-- [ ] Cách ly tuyệt đối: Khách hỏi Page CFC không bao giờ nhận được tài liệu riêng của Page ZEO (Case T10).
+- [x] Cơ chế tìm kiếm từ khóa trong phạm vi `page_id`, chỉ đọc `APPROVED`.
+- [x] Cách ly tuyệt đối ở approved in-memory/Postgres store: CFC không nhận tài liệu ZEO (Case T10).
 - [ ] Trả lời trực tiếp, ngắn gọn (1–3 câu), có nguồn kiểm chứng, không bịa thông tin kỹ thuật hoặc khuyến cáo sai rủi ro.
 - **Lệnh nghiệm thu:** `pytest tests/integration/test_knowledge_retrieval.py`
 
 ---
 
 ### Phase 7: Operations Console & Emergency Controls
-- [ ] Cung cấp API / CLI quản trị khẩn cấp:
+- [x] Cung cấp API quản trị khẩn cấp:
   - Pause / Resume auto-reply theo từng Page (`kill_switch_cfc`, `kill_switch_zeo`).
-  - Takeover thủ công theo từng hội thoại.
-  - Xem danh sách tác vụ Handoff đang chờ nhân viên xử lý.
+  - [ ] Takeover thủ công theo từng hội thoại.
+  - [ ] Xem danh sách tác vụ Handoff đang chờ nhân viên xử lý.
 - [ ] Hệ thống Audit Log: Ghi lại ai thay đổi trạng thái, ai duyệt dữ liệu, lịch sử chuyển quyền.
 - **Lệnh nghiệm thu:** `pytest tests/integration/test_ops_controls.py`
 

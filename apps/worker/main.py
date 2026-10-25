@@ -5,12 +5,13 @@ import time
 from src.chatbot.infrastructure.messaging.inbox import build_inbox_store
 from src.chatbot.infrastructure.messaging.outbox import build_outbox_store
 from src.chatbot.infrastructure.messaging.worker import InboxWorker
+from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 
 
 def run_once() -> int:
     outbox = build_outbox_store()
-    pipeline = SafeMessagePipeline(outbox)
+    pipeline = SafeMessagePipeline(outbox, build_ops_control_store())
     worker = InboxWorker(build_inbox_store(), pipeline.process)
     return worker.run_once()
 

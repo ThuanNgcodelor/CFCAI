@@ -13,11 +13,11 @@ from src.chatbot.modules.channels.meta.normalizer import (
 from src.chatbot.modules.channels.meta.signature import verify_meta_signature
 from src.chatbot.modules.integrations.excel.importer import catalog_importer
 from src.chatbot.modules.integrations.misa.warmer import amis_warmer
-from src.chatbot.modules.ops.controls import OpsControlStore
+from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.shared.enums import PageCode
 
 logger = logging.getLogger(__name__)
-ops_controls = OpsControlStore()
+ops_controls = build_ops_control_store()
 
 app = FastAPI(
     title="CFC–ZEO AI Chatbot Platform",
