@@ -1,11 +1,13 @@
 import hashlib
 import hmac
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def verify_meta_signature(payload_bytes: bytes, signature_header: Optional[str], app_secret: str) -> bool:
+
+def verify_meta_signature(
+    payload_bytes: bytes, signature_header: str | None, app_secret: str
+) -> bool:
     """
     Verifies X-Hub-Signature-256 header sent by Meta Webhook.
     Signature header format: sha256=<hex_digest>
@@ -20,9 +22,7 @@ def verify_meta_signature(payload_bytes: bytes, signature_header: Optional[str],
 
     expected_sig = signature_header[7:]  # strip 'sha256='
     computed_sig = hmac.new(
-        key=app_secret.encode("utf-8"),
-        msg=payload_bytes,
-        digestmod=hashlib.sha256
+        key=app_secret.encode("utf-8"), msg=payload_bytes, digestmod=hashlib.sha256
     ).hexdigest()
 
     return hmac.compare_digest(computed_sig, expected_sig)

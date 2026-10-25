@@ -8,7 +8,7 @@
 ## Tổng quan tiến độ
 
 - [x] **Phase 0: Foundation, Architecture Contracts & Test Fixtures (COMPLETED)**
-- [ ] **Phase 1: Meta Webhook Ingestion & Durable Inbox (PARTIAL — unit-only; Postgres inbox chưa triển khai)**
+- [ ] **Phase 1: Meta Webhook Ingestion & Durable Inbox (PARTIAL — Postgres adapter + integration gate có; worker/production migration gate còn thiếu)**
 - [ ] **Phase 2: Message Aggregation (Debounce) & Handoff State Guard**
 - [ ] **Phase 3: Excel Catalog & FAQ Staging Pipeline (PARTIAL — unit-only; chưa có integration gate/publish DB)**
 - [ ] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction)**
@@ -25,10 +25,10 @@
 | Hạng mục | Bằng chứng hiện có | Kết luận |
 |---|---|---|
 | Phase 0 | `pytest tests/unit/test_contracts.py` — 5 passed | Đạt phần test gate hiện có |
-| Phase 1 | Unit test Meta pass; `durable_inbox` hiện là `set`/`dict` trong process, chưa phải Postgres; integration test được khai báo nhưng chưa tồn tại | Chưa đạt DoD |
+| Phase 1 | `tests/integration/test_webhook_inbox.py` pass; `PostgresInboxStore` + migration tồn tại; chưa có worker/lease và production secret gate end-to-end | Chưa đạt DoD |
 | Phase 2 | Domain debounce/state/final-send guard đã có test integration cơ bản; chưa có worker/Redis/Postgres adapter | Đang triển khai |
 | Phase 3 | Excel reader/importer unit test có; chưa có integration test theo gate và chưa có publish/rollback read model | Chưa đạt DoD đầy đủ |
-| Phase 8 | `tests/eval/test_regression_full.py` chưa tồn tại; Docker daemon chưa sẵn sàng; Ollama model chưa có | Chưa được xác minh |
+| Phase 8 | Docker Compose API/Postgres/Redis healthy; `/health` trả 200; Ollama `qwen2.5:7b` đã có; regression suite `tests/eval/test_regression_full.py` vẫn chưa tồn tại | Chưa đạt DoD |
 | MISA | Client/warmer và unit test có; chưa có contract test/endpoint thật/secret runtime | Chưa được xác minh production |
 
 Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn tại. Mỗi phase cần lệnh gate, regression của phase trước và bằng chứng môi trường tương ứng.

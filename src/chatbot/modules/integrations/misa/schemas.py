@@ -1,19 +1,20 @@
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
+
 class AmisCustomer(BaseModel):
-    account_id: Optional[str] = None
-    account_name: Optional[str] = None
-    account_code: Optional[str] = None
-    account_type: Optional[Any] = None  # KH001, KH002, etc.
-    inactive: Optional[bool] = False
-    purchase_date_first: Optional[str] = None
-    billing_address: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    mobile: Optional[str] = None
-    raw_data: Dict[str, Any] = Field(default_factory=dict)
+    account_id: str | None = None
+    account_name: str | None = None
+    account_code: str | None = None
+    account_type: Any | None = None  # KH001, KH002, etc.
+    inactive: bool | None = False
+    purchase_date_first: str | None = None
+    billing_address: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    mobile: str | None = None
+    raw_data: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def is_eligible_dealer(self) -> bool:
@@ -29,8 +30,12 @@ class AmisCustomer(BaseModel):
             return False
         if not self.account_type:
             return False
-            
-        types = self.account_type if isinstance(self.account_type, list) else [self.account_type]
+
+        types = (
+            self.account_type
+            if isinstance(self.account_type, list)
+            else [self.account_type]
+        )
         for t in types:
             s = str(t)
             if s in ("KH001", "KH002") or "001" in s or "002" in s:
@@ -41,23 +46,25 @@ class AmisCustomer(BaseModel):
     def has_coordinates(self) -> bool:
         return self.latitude is not None and self.longitude is not None
 
+
 class AmisProduct(BaseModel):
-    product_id: Optional[str] = None
-    product_code: Optional[str] = None
-    product_name: Optional[str] = None
-    category: Optional[str] = None
-    unit: Optional[str] = None
-    inactive: Optional[bool] = False
-    raw_data: Dict[str, Any] = Field(default_factory=dict)
+    product_id: str | None = None
+    product_code: str | None = None
+    product_name: str | None = None
+    category: str | None = None
+    unit: str | None = None
+    inactive: bool | None = False
+    raw_data: dict[str, Any] = Field(default_factory=dict)
+
 
 class AmisSaleOrder(BaseModel):
-    order_id: Optional[str] = None
-    order_code: Optional[str] = None
-    customer_id: Optional[str] = None
-    status: Optional[str] = None
-    order_date: Optional[str] = None
-    total_amount: Optional[float] = None
-    raw_data: Dict[str, Any] = Field(default_factory=dict)
+    order_id: str | None = None
+    order_code: str | None = None
+    customer_id: str | None = None
+    status: str | None = None
+    order_date: str | None = None
+    total_amount: float | None = None
+    raw_data: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def is_eligible(self) -> bool:
@@ -68,10 +75,12 @@ class AmisSaleOrder(BaseModel):
         forbidden = ["huy", "hủy", "tu choi", "từ chối", "cancel", "reject"]
         return not any(f in s for f in forbidden)
 
+
 class AmisSyncSnapshot(BaseModel):
     snapshot_hash: str
     record_count: int
-    data: List[Dict[str, Any]] = Field(default_factory=list)
+    data: list[dict[str, Any]] = Field(default_factory=list)
+
 
 class AmisSyncResult(BaseModel):
     status: str = "ok"

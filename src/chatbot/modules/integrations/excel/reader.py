@@ -1,29 +1,39 @@
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
 
 class FastExcelReader:
     """
     Standard-library based Excel XLSX reader.
     Guarantees 100% pure Python execution without requiring binary compilation.
     """
+
     @staticmethod
-    def read_sheets(file_path: str) -> Dict[str, List[Dict[str, Any]]]:
+    def read_sheets(file_path: str) -> dict[str, list[dict[str, Any]]]:
         p = Path(file_path)
         if not p.exists():
             raise FileNotFoundError(f"Excel file not found: {file_path}")
 
-        result: Dict[str, List[Dict[str, Any]]] = {}
+        result: dict[str, list[dict[str, Any]]] = {}
 
         with zipfile.ZipFile(p, "r") as z:
             # 1. Parse shared strings table
             shared_strings = []
             if "xl/sharedStrings.xml" in z.namelist():
                 sst = ET.fromstring(z.read("xl/sharedStrings.xml"))
-                for si in sst.findall("{http://schemas.openxmlformats.org/spreadsheetml/2006/main}si"):
-                    t = si.find("{http://schemas.openxmlformats.org/spreadsheetml/2006/main}t")
-                    shared_strings.append(t.text if t is not None and t.text else "")
+                for si in sst.findall(
+                    "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}si"
+                ):
+                    text_node = si.find(
+                        "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}t"
+                    )
+                    shared_strings.append(
+                        text_node.text
+                        if text_node is not None and text_node.text
+                        else ""
+                    )
 
             # 2. Parse workbook structure to get sheet names
             wb = ET.fromstring(z.read("xl/workbook.xml"))
@@ -44,17 +54,19 @@ class FastExcelReader:
 
                 # Header row
                 header_row = rows[0]
-                headers: List[str] = []
+                headers: list[str] = []
                 for cell in header_row.findall("m:c", ns):
                     v = cell.find("m:v", ns)
-                    t = cell.attrib.get("t")
+                    cell_type = cell.attrib.get("t")
                     val = ""
                     if v is not None and v.text:
-                        val = shared_strings[int(v.text)] if t == "s" else v.text
+                        val = (
+                            shared_strings[int(v.text)] if cell_type == "s" else v.text
+                        )
                     headers.append(val.strip())
 
                 # Data rows
-                sheet_data: List[Dict[str, Any]] = []
+                sheet_data: list[dict[str, Any]] = []
                 for r in rows[1:]:
                     row_dict = {}
                     cells = r.findall("m:c", ns)
@@ -66,10 +78,14 @@ class FastExcelReader:
                             continue
 
                         v = cell.find("m:v", ns)
-                        t = cell.attrib.get("t")
+                        cell_type = cell.attrib.get("t")
                         val = ""
                         if v is not None and v.text:
-                            val = shared_strings[int(v.text)] if t == "s" else v.text
+                            val = (
+                                shared_strings[int(v.text)]
+                                if cell_type == "s"
+                                else v.text
+                            )
                         row_dict[h_name] = val
 
                     if any(row_dict.values()):

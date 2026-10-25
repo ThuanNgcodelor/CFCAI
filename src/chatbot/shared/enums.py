@@ -1,22 +1,27 @@
 from enum import Enum
 
+
 class PageCode(str, Enum):
     CFC = "CFC"
     ZEO = "ZEO"
+
 
 class Ownership(str, Enum):
     AI = "AI"
     HUMAN = "HUMAN"
     PAUSED = "PAUSED"
 
+
 class MessageDirection(str, Enum):
     INBOUND = "INBOUND"
     OUTBOUND = "OUTBOUND"
+
 
 class SenderRole(str, Enum):
     CUSTOMER = "CUSTOMER"
     BOT = "BOT"
     HUMAN_AGENT = "HUMAN_AGENT"
+
 
 class IntentType(str, Enum):
     PRICE_INQUIRY = "PRICE_INQUIRY"
@@ -29,6 +34,7 @@ class IntentType(str, Enum):
     GENERAL_FAQ = "GENERAL_FAQ"
     UNKNOWN = "UNKNOWN"
 
+
 class WorkflowType(str, Enum):
     PRICE_HANDOFF = "PRICE_HANDOFF"
     DEALER_LOOKUP = "DEALER_LOOKUP"
@@ -39,6 +45,7 @@ class WorkflowType(str, Enum):
     FAQ_ANSWER = "FAQ_ANSWER"
     FALLBACK = "FALLBACK"
 
+
 class OutboxStatus(str, Enum):
     PENDING = "PENDING"
     SENDING = "SENDING"
@@ -46,11 +53,13 @@ class OutboxStatus(str, Enum):
     SUPPRESSED = "SUPPRESSED"
     FAILED = "FAILED"
 
+
 class CatalogStatus(str, Enum):
     QUARANTINED = "QUARANTINED"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     CONFLICT = "CONFLICT"
+
 
 class HandoffStatus(str, Enum):
     PENDING = "PENDING"

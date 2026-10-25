@@ -1,9 +1,11 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from src.chatbot.modules.integrations.excel.reader import FastExcelReader
 from src.chatbot.shared.enums import CatalogStatus, PageCode
 
 logger = logging.getLogger(__name__)
+
 
 class ExcelCatalogImporter:
     """
@@ -11,16 +13,19 @@ class ExcelCatalogImporter:
     Enforces Data Staging (INV-5), Zero-Price Hallucination (INV-1),
     and Conflict Detection (Case T11).
     """
+
     def __init__(self):
         self.reader = FastExcelReader()
-        self.staged_faqs: List[Dict[str, Any]] = []
-        self.staged_products: List[Dict[str, Any]] = []
-        self.conflicts: List[Dict[str, Any]] = []
+        self.staged_faqs: list[dict[str, Any]] = []
+        self.staged_products: list[dict[str, Any]] = []
+        self.conflicts: list[dict[str, Any]] = []
 
-    def import_cfc_file(self, file_path: str = "docs/CfcCoBayN8n.xlsx") -> Dict[str, Any]:
+    def import_cfc_file(
+        self, file_path: str = "docs/CfcCoBayN8n.xlsx"
+    ) -> dict[str, Any]:
         sheets = self.reader.read_sheets(file_path)
         faq_rows = sheets.get("FAQ", [])
-        
+
         imported_faq = 0
         for idx, row in enumerate(faq_rows):
             intent = row.get("intent", "").strip()
@@ -49,9 +54,9 @@ class ExcelCatalogImporter:
             "imported_faq_count": imported_faq,
         }
 
-    def import_zeo_file(self, file_path: str = "docs/ZeoN8n.xlsx") -> Dict[str, Any]:
+    def import_zeo_file(self, file_path: str = "docs/ZeoN8n.xlsx") -> dict[str, Any]:
         sheets = self.reader.read_sheets(file_path)
-        
+
         # 1. Import FAQ
         faq_rows = sheets.get("FAQ", [])
         imported_faq = 0
@@ -60,23 +65,25 @@ class ExcelCatalogImporter:
             answer = row.get("answer", "").strip()
             if not intent or not answer:
                 continue
-            self.staged_faqs.append({
-                "page_id": PageCode.ZEO.value,
-                "source_file": "ZeoN8n.xlsx",
-                "source_sheet": "FAQ",
-                "source_row": idx + 2,
-                "intent": intent,
-                "category": row.get("category", ""),
-                "question_examples": row.get("question_examples", ""),
-                "answer": answer,
-                "status": CatalogStatus.QUARANTINED.value,
-                "approved": False,
-            })
+            self.staged_faqs.append(
+                {
+                    "page_id": PageCode.ZEO.value,
+                    "source_file": "ZeoN8n.xlsx",
+                    "source_sheet": "FAQ",
+                    "source_row": idx + 2,
+                    "intent": intent,
+                    "category": row.get("category", ""),
+                    "question_examples": row.get("question_examples", ""),
+                    "answer": answer,
+                    "status": CatalogStatus.QUARANTINED.value,
+                    "approved": False,
+                }
+            )
             imported_faq += 1
 
         # 2. Import Products from Shopee, Web, Lazada
         imported_products = 0
-        seen_skus: Dict[str, Dict[str, Any]] = {}
+        seen_skus: dict[str, dict[str, Any]] = {}
 
         for sheet_name in ["Shopee", "Web", "Lazada"]:
             rows = sheets.get(sheet_name, [])
@@ -96,10 +103,12 @@ class ExcelCatalogImporter:
                             "conflicting_name": name,
                             "sheet": sheet_name,
                             "row": idx + 2,
-                            "reason": "Conflicting product names for same SKU"
+                            "reason": "Conflicting product names for same SKU",
                         }
                         self.conflicts.append(conflict_rec)
-                        logger.warning(f"[Catalog Importer] Conflict detected for SKU {item_id}: {name} vs {existing['name']}")
+                        logger.warning(
+                            f"[Catalog Importer] Conflict detected for SKU {item_id}: {name} vs {existing['name']}"
+                        )
                         continue
 
                 prod_rec = {
@@ -127,5 +136,6 @@ class ExcelCatalogImporter:
             "imported_product_count": imported_products,
             "conflict_count": len(self.conflicts),
         }
+
 
 catalog_importer = ExcelCatalogImporter()

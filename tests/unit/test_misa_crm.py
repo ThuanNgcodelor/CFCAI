@@ -1,5 +1,6 @@
-from src.chatbot.modules.integrations.misa.schemas import AmisCustomer, AmisSaleOrder, AmisProduct
+from src.chatbot.modules.integrations.misa.schemas import AmisCustomer, AmisSaleOrder
 from src.chatbot.modules.integrations.misa.warmer import AmisCacheWarmer
+
 
 def test_amis_customer_dealer_eligibility():
     # Eligible dealer: KH001, active, has purchase date
@@ -10,7 +11,7 @@ def test_amis_customer_dealer_eligibility():
         inactive=False,
         purchase_date_first="2024-01-15",
         latitude=10.75,
-        longitude=106.67
+        longitude=106.67,
     )
     assert c1.is_eligible_dealer is True
     assert c1.has_coordinates is True
@@ -21,7 +22,7 @@ def test_amis_customer_dealer_eligibility():
         account_name="Khách lẻ B",
         account_type="KH003",
         inactive=False,
-        purchase_date_first="2024-02-10"
+        purchase_date_first="2024-02-10",
     )
     assert c2.is_eligible_dealer is False
 
@@ -31,7 +32,7 @@ def test_amis_customer_dealer_eligibility():
         account_name="Đại lý cũ C",
         account_type="KH001",
         inactive=True,
-        purchase_date_first="2023-01-01"
+        purchase_date_first="2023-01-01",
     )
     assert c3.is_eligible_dealer is False
 
@@ -41,9 +42,10 @@ def test_amis_customer_dealer_eligibility():
         account_name="Đại lý tiềm năng D",
         account_type="KH002",
         inactive=False,
-        purchase_date_first=None
+        purchase_date_first=None,
     )
     assert c4.is_eligible_dealer is False
+
 
 def test_amis_sale_order_eligibility():
     # Valid order
@@ -55,6 +57,7 @@ def test_amis_sale_order_eligibility():
     assert AmisSaleOrder(order_id="ord_3", status="Từ chối").is_eligible is False
     assert AmisSaleOrder(order_id="ord_4", status="Cancelled").is_eligible is False
     assert AmisSaleOrder(order_id="ord_5", status="Rejected").is_eligible is False
+
 
 def test_amis_warmer_hashing():
     warmer = AmisCacheWarmer()

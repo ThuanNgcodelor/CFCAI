@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from src.chatbot.modules.aggregation.service import MessageAggregator
 from src.chatbot.modules.conversations.state_machine import (
@@ -14,13 +14,13 @@ def _message(mid: str, text: str) -> NormalizedMessage:
         mid=mid,
         sender_id="psid-1",
         recipient_id="page-cfc",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         text=text,
     )
 
 
 def test_four_messages_in_six_seconds_make_one_batch() -> None:
-    now = datetime(2026, 10, 25, tzinfo=timezone.utc)
+    now = datetime(2026, 10, 25, tzinfo=UTC)
     clock_now = [now]
     store = ConversationStateStore()
     aggregator = MessageAggregator(
@@ -77,4 +77,3 @@ def test_page_scope_mismatch_is_rejected() -> None:
         assert "page scope" in str(exc)
     else:
         raise AssertionError("cross-page conversation reuse must be rejected")
-

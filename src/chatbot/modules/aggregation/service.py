@@ -1,8 +1,8 @@
 """Deterministic message debounce and batch fencing."""
 
-from datetime import datetime, timedelta, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from threading import RLock
-from typing import Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,7 +18,7 @@ class BatchSchedule(BaseModel):
     due_at: datetime
     first_at: datetime
     last_at: datetime
-    message_ids: List[str] = Field(default_factory=list)
+    message_ids: list[str] = Field(default_factory=list)
 
 
 class ReadyBatch(BaseModel):
@@ -26,7 +26,7 @@ class ReadyBatch(BaseModel):
     page_id: PageCode
     sender_id: str
     batch_version: int
-    messages: List[NormalizedMessage]
+    messages: list[NormalizedMessage]
     expected_state_version: int
 
 
@@ -45,7 +45,7 @@ class MessageAggregator:
         *,
         debounce_seconds: float = 5.0,
         max_batch_seconds: float = 20.0,
-        clock: Optional[Callable[[], datetime]] = None,
+        clock: Callable[[], datetime] | None = None,
     ) -> None:
         if debounce_seconds <= 0 or max_batch_seconds <= 0:
             raise ValueError("debounce and max batch durations must be positive")
@@ -54,10 +54,10 @@ class MessageAggregator:
         self._state_store = state_store
         self._debounce = timedelta(seconds=debounce_seconds)
         self._max_batch = timedelta(seconds=max_batch_seconds)
-        self._clock = clock or (lambda: datetime.now(timezone.utc))
-        self._pending: Dict[str, List[NormalizedMessage]] = {}
-        self._first_at: Dict[str, datetime] = {}
-        self._due_at: Dict[str, datetime] = {}
+        self._clock = clock or (lambda: datetime.now(UTC))
+        self._pending: dict[str, list[NormalizedMessage]] = {}
+        self._first_at: dict[str, datetime] = {}
+        self._due_at: dict[str, datetime] = {}
         self._lock = RLock()
 
     def ingest(
@@ -99,8 +99,8 @@ class MessageAggregator:
             )
 
     def claim_ready(
-        self, conversation_id: str, *, now: Optional[datetime] = None
-    ) -> Optional[ReadyBatch]:
+        self, conversation_id: str, *, now: datetime | None = None
+    ) -> ReadyBatch | None:
         now = now or self._clock()
         with self._lock:
             due_at = self._due_at.get(conversation_id)

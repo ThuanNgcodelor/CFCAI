@@ -1,5 +1,5 @@
-from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     # App
@@ -13,12 +13,13 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "cfc_zeo_db"
     POSTGRES_USER: str = "cfc_admin"
     POSTGRES_PASSWORD: str = "cfc_secret_password"
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: str | None = None
+    INBOX_BACKEND: str = "memory"
 
     # Redis
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
-    REDIS_URL: Optional[str] = None
+    REDIS_URL: str | None = None
 
     # Ollama LLM
     OLLAMA_BASE_URL: str = "http://localhost:11434"
@@ -27,14 +28,14 @@ class Settings(BaseSettings):
 
     # Meta Messenger - CFC
     CFC_PAGE_ID: str = ""
-    CFC_VERIFY_TOKEN: str = "default_cfc_verify"
-    CFC_APP_SECRET: str = "default_cfc_secret"
+    CFC_VERIFY_TOKEN: str = ""
+    CFC_APP_SECRET: str = ""
     CFC_PAGE_ACCESS_TOKEN: str = ""
 
     # Meta Messenger - ZEO
     ZEO_PAGE_ID: str = ""
-    ZEO_VERIFY_TOKEN: str = "default_zeo_verify"
-    ZEO_APP_SECRET: str = "default_zeo_secret"
+    ZEO_VERIFY_TOKEN: str = ""
+    ZEO_APP_SECRET: str = ""
     ZEO_PAGE_ACCESS_TOKEN: str = ""
 
     # Messaging
@@ -45,13 +46,11 @@ class Settings(BaseSettings):
     AMIS_BASE_URL: str = "https://crmconnect.misa.vn/api/v2"
     AMIS_CLIENT_ID: str = "JavisCFCChatbot"
     AMIS_CLIENT_SECRET: str = ""
-    AMIS_SYNC_INTERNAL_TOKEN: str = "internal_secret_sync_token"
-    AMIS_PILOT_APPROVE_ALL: bool = True
+    AMIS_SYNC_INTERNAL_TOKEN: str = ""
+    AMIS_PILOT_APPROVE_ALL: bool = False
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
     def get_database_url(self) -> str:
@@ -64,4 +63,29 @@ class Settings(BaseSettings):
             return self.REDIS_URL
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
+    def validate_production_secrets(self) -> None:
+        """Fail closed before production starts with placeholder secrets."""
+        if self.ENVIRONMENT.lower() not in {"production", "prod", "staging"}:
+            return
+        required = {
+            "CFC_PAGE_ID": self.CFC_PAGE_ID,
+            "CFC_VERIFY_TOKEN": self.CFC_VERIFY_TOKEN,
+            "CFC_APP_SECRET": self.CFC_APP_SECRET,
+            "CFC_PAGE_ACCESS_TOKEN": self.CFC_PAGE_ACCESS_TOKEN,
+            "ZEO_PAGE_ID": self.ZEO_PAGE_ID,
+            "ZEO_VERIFY_TOKEN": self.ZEO_VERIFY_TOKEN,
+            "ZEO_APP_SECRET": self.ZEO_APP_SECRET,
+            "ZEO_PAGE_ACCESS_TOKEN": self.ZEO_PAGE_ACCESS_TOKEN,
+            "AMIS_SYNC_INTERNAL_TOKEN": self.AMIS_SYNC_INTERNAL_TOKEN,
+        }
+        missing = [name for name, value in required.items() if not value]
+        if missing:
+            raise ValueError(
+                "Production secrets/configuration missing: " + ", ".join(missing)
+            )
+        if self.INBOX_BACKEND.lower() != "postgres":
+            raise ValueError("Production requires INBOX_BACKEND=postgres")
+
+
 settings = Settings()
+settings.validate_production_secrets()
