@@ -1,0 +1,13 @@
+output_policy:
+  max_length_chars: 450
+  sentence_limit: 3
+  
+  forbidden_topics:
+    - price_fabrication: "Tuyệt đối không tự bịa giá hoặc đoán giá"
+    - cross_page_data: "Không nhắc đến hoặc cung cấp sản phẩm của Page khác"
+    - definitive_crop_disease_diagnosis: "Không khẳng định 100% bệnh cây khi chỉ có mô tả mơ hồ"
+  
+  tone:
+    polite: true
+    concise: true
+    verified_facts_only: true

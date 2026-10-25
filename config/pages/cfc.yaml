@@ -1,0 +1,34 @@
+page:
+  code: CFC
+  display_name: "CFC / Phân bón Cò Bay"
+  brand: "CoBay"
+
+ai:
+  enabled: false # Bật sau khi hoàn thành test handoff và go-live gate
+  provider: ollama
+  model: qwen2.5:7b
+  language: vi
+  max_response_chars: 450
+  temperature: 0.1
+
+messaging:
+  debounce_seconds: 5.0
+  max_batch_seconds: 20.0
+
+knowledge:
+  namespace: cfc
+  allowed_categories:
+    - organic_fertilizer
+    - agriculture_faq
+    - crop_care
+
+workflows:
+  - PRICE_INQUIRY
+  - DEALER_LOOKUP
+  - PRODUCT_INQUIRY
+  - AGRI_ADVICE
+  - HUMAN_REQUEST
+
+pricing:
+  mode: HUMAN_HANDOFF # BẮT BUỘC: Không bao giờ tự báo giá
+  policy: "Tất cả yêu cầu báo giá chuyển cho nhân viên kinh doanh xử lý."

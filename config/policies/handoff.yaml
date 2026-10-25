@@ -1,0 +1,14 @@
+handoff_policy:
+  trigger_intents:
+    - PRICE_INQUIRY
+    - HUMAN_REQUEST
+    - HIGH_RISK_AGRICULTURE
+    - COMPLAINT
+  
+  auto_takeover_rules:
+    on_admin_message: true # Nếu nhân viên gửi tin trên Business Suite -> chuyển ngay sang HUMAN
+    suppress_pending_ai_outbox: true # Lập tức thu hồi/hủy các tin nhắn AI chưa kịp gửi
+  
+  response_templates:
+    price_handoff: "Dạ, em đã chuyển thông tin yêu cầu báo giá của mình đến chuyên viên kinh doanh. Anh/chị vui lòng đợi trong giây lát, chuyên viên sẽ phản hồi ngay ạ."
+    human_request: "Dạ, em đã kết nối anh/chị với nhân viên hỗ trợ. Nhân viên sẽ hỗ trợ mình ngay bây giờ ạ."

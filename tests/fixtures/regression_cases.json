@@ -1,0 +1,120 @@
+[
+  {
+    "id": "T01",
+    "name": "Buying bulk inquiry with incomplete SKU",
+    "page": "CFC",
+    "input_messages": ["HC vs 25kg 30% nhiều tấn"],
+    "expected_intent": "PRICE_INQUIRY",
+    "expected_action": "HUMAN_HANDOFF",
+    "forbidden_behavior": "Must not ask crop type first, must not quote price"
+  },
+  {
+    "id": "T02",
+    "name": "Crop detail in pricing context",
+    "page": "CFC",
+    "conversation_history": [
+      {"role": "user", "text": "Giá bao nhiêu một tấn?"},
+      {"role": "bot", "text": "Dạ em đã chuyển thông tin cho chuyên viên báo giá ạ."}
+    ],
+    "input_messages": ["Rải mít"],
+    "expected_intent": "PRICE_INQUIRY_DETAIL",
+    "forbidden_behavior": "Must not switch to full agricultural dosage advice unless explicitly asked"
+  },
+  {
+    "id": "T03",
+    "name": "Explicit price request with quantity",
+    "page": "CFC",
+    "input_messages": ["Mình chỉ hỏi giá Cobanic 30 giá 1 tấn bao nhiêu"],
+    "expected_intent": "PRICE_INQUIRY",
+    "extracted_slots": {
+      "product": "Cobanic 30",
+      "quantity": "1 tấn"
+    },
+    "expected_action": "HUMAN_HANDOFF",
+    "forbidden_behavior": "Must NEVER invent, calculate, or output price"
+  },
+  {
+    "id": "T04",
+    "name": "Dealer inquiry",
+    "page": "CFC",
+    "input_messages": ["Tôi muốn tìm đại lý gần nhất"],
+    "expected_intent": "DEALER_LOOKUP",
+    "expected_action": "ASK_REGION",
+    "forbidden_behavior": "Must not force customer to give phone number immediately"
+  },
+  {
+    "id": "T05",
+    "name": "Brief price inquiry with context",
+    "page": "CFC",
+    "conversation_history": [
+      {"role": "user", "text": "Bên mình có dòng vi sinh Cobanic không?"},
+      {"role": "bot", "text": "Dạ có ạ, bên em có phân bón hữu cơ vi sinh Cobanic."}
+    ],
+    "input_messages": ["xin giá"],
+    "expected_intent": "PRICE_INQUIRY",
+    "expected_action": "HUMAN_HANDOFF",
+    "forbidden_behavior": "Must not dump full catalog list"
+  },
+  {
+    "id": "T06",
+    "name": "Specific product search",
+    "page": "CFC",
+    "input_messages": ["Tôi muốn tìm mua Hữu cơ Cobanic 21"],
+    "expected_intent": "PRODUCT_INQUIRY",
+    "extracted_slots": {
+      "product": "Hữu cơ Cobanic 21"
+    },
+    "expected_action": "ASK_PURCHASE_REGION",
+    "forbidden_behavior": "Must not list unrelated product lines"
+  },
+  {
+    "id": "T07",
+    "name": "Rapid message aggregation (Debounce)",
+    "page": "CFC",
+    "input_burst": [
+      {"text": "Alo shop", "delay_ms": 0},
+      {"text": "Em cần hỏi", "delay_ms": 1000},
+      {"text": "Cobanic 25kg", "delay_ms": 2500},
+      {"text": "Có sẵn không", "delay_ms": 4000}
+    ],
+    "expected_batch_count": 1,
+    "expected_intent": "PRODUCT_INQUIRY"
+  },
+  {
+    "id": "T08",
+    "name": "Human takeover race condition guard",
+    "page": "CFC",
+    "scenario": "Admin takes over conversation on Business Suite while AI is running",
+    "expected_outbox_status": "SUPPRESSED",
+    "forbidden_behavior": "Outdated AI message must NEVER be sent to customer"
+  },
+  {
+    "id": "T09",
+    "name": "Meta webhook event retry",
+    "page": "CFC",
+    "event_id": "meta_mid_unique_12345",
+    "repeat_count": 3,
+    "expected_processed_count": 1
+  },
+  {
+    "id": "T10",
+    "name": "Cross-page isolation check",
+    "page": "CFC",
+    "input_messages": ["Bên bạn có Zeolite xử lý nước hồ tôm không?"],
+    "forbidden_behavior": "Must not return proprietary ZEO catalog data or link to ZEO channels without policy redirect"
+  },
+  {
+    "id": "T11",
+    "name": "Excel catalog conflict detection",
+    "test_data": "Two rows in staging with same SKU but conflicting specs",
+    "expected_result": "IMPORT_CONFLICT_FLAGGED",
+    "forbidden_behavior": "Must not silently choose one row"
+  },
+  {
+    "id": "T12",
+    "name": "LLM timeout resilience",
+    "scenario": "Ollama fails to respond within timeout window",
+    "expected_action": "GRACEFUL_FALLBACK_OR_HANDOFF",
+    "forbidden_behavior": "Must not throw 500 error or retry indefinitely"
+  }
+]

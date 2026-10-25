@@ -1,0 +1,59 @@
+from enum import Enum
+
+class PageCode(str, Enum):
+    CFC = "CFC"
+    ZEO = "ZEO"
+
+class Ownership(str, Enum):
+    AI = "AI"
+    HUMAN = "HUMAN"
+    PAUSED = "PAUSED"
+
+class MessageDirection(str, Enum):
+    INBOUND = "INBOUND"
+    OUTBOUND = "OUTBOUND"
+
+class SenderRole(str, Enum):
+    CUSTOMER = "CUSTOMER"
+    BOT = "BOT"
+    HUMAN_AGENT = "HUMAN_AGENT"
+
+class IntentType(str, Enum):
+    PRICE_INQUIRY = "PRICE_INQUIRY"
+    PRICE_INQUIRY_DETAIL = "PRICE_INQUIRY_DETAIL"
+    DEALER_LOOKUP = "DEALER_LOOKUP"
+    PRODUCT_INQUIRY = "PRODUCT_INQUIRY"
+    AGRI_ADVICE = "AGRI_ADVICE"
+    SALES_LEAD = "SALES_LEAD"
+    HUMAN_REQUEST = "HUMAN_REQUEST"
+    GENERAL_FAQ = "GENERAL_FAQ"
+    UNKNOWN = "UNKNOWN"
+
+class WorkflowType(str, Enum):
+    PRICE_HANDOFF = "PRICE_HANDOFF"
+    DEALER_LOOKUP = "DEALER_LOOKUP"
+    PRODUCT_INQUIRY = "PRODUCT_INQUIRY"
+    AGRICULTURE_ADVICE = "AGRICULTURE_ADVICE"
+    SALES_LEAD = "SALES_LEAD"
+    HUMAN_REQUEST = "HUMAN_REQUEST"
+    FAQ_ANSWER = "FAQ_ANSWER"
+    FALLBACK = "FALLBACK"
+
+class OutboxStatus(str, Enum):
+    PENDING = "PENDING"
+    SENDING = "SENDING"
+    SENT = "SENT"
+    SUPPRESSED = "SUPPRESSED"
+    FAILED = "FAILED"
+
+class CatalogStatus(str, Enum):
+    QUARANTINED = "QUARANTINED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    CONFLICT = "CONFLICT"
+
+class HandoffStatus(str, Enum):
+    PENDING = "PENDING"
+    CLAIMED = "CLAIMED"
+    RESOLVED = "RESOLVED"
+    EXPIRED = "EXPIRED"
