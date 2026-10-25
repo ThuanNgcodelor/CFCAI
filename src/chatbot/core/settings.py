@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     # Messaging
     DEBOUNCE_SECONDS: float = 5.0
     MAX_BATCH_SECONDS: float = 20.0
+    META_SEND_ENABLED: bool = False
+    META_TEST_RECIPIENT_ID: str = ""
 
     # MISA AMIS CRM
     AMIS_BASE_URL: str = "https://crmconnect.misa.vn/api/v2"

@@ -2,6 +2,10 @@ import logging
 from typing import Any
 
 from src.chatbot.modules.integrations.excel.reader import FastExcelReader
+from src.chatbot.modules.knowledge.retriever import (
+    KnowledgeRecord,
+    PostgresKnowledgeStore,
+)
 from src.chatbot.shared.enums import CatalogStatus, PageCode
 
 logger = logging.getLogger(__name__)
@@ -136,6 +140,22 @@ class ExcelCatalogImporter:
             "imported_product_count": imported_products,
             "conflict_count": len(self.conflicts),
         }
+
+    def persist_staging(self) -> dict[str, int]:
+        """Persist staged FAQ/product text into the quarantine read model."""
+        store = PostgresKnowledgeStore()
+        count = 0
+        for index, record in enumerate(self.staged_faqs):
+            record_id = f"faq:{record['page_id']}:{record['source_row']}"
+            questions = str(record.get("question_examples", ""))
+            store.add(KnowledgeRecord(record_id, PageCode(record["page_id"]), questions, record["answer"], record["status"]))
+            count += 1
+        for index, record in enumerate(self.staged_products):
+            record_id = f"product:{record['page_id']}:{record['sku']}"
+            content = f"{record['name']} {record.get('brand', '')} {record.get('category', '')} {record.get('specs', '')} {record.get('keywords', '')}"
+            store.add(KnowledgeRecord(record_id, PageCode(record["page_id"]), record["name"], content, record["status"]))
+            count += 1
+        return {"persisted_count": count}
 
 
 catalog_importer = ExcelCatalogImporter()

@@ -17,7 +17,13 @@ class OutboxStore(Protocol):
         self, conversation_id: str, batch_version: int
     ) -> OutboxMessageSchema | None: ...
 
+    def claim_pending(self, limit: int = 10, recipient_id: str | None = None) -> list[OutboxMessageSchema]: ...
+
     def suppress(self, outbox_id: str) -> None: ...
+
+    def mark_sent(self, outbox_id: str) -> None: ...
+
+    def mark_failed(self, outbox_id: str) -> None: ...
 
 
 class InMemoryOutboxStore:
@@ -42,10 +48,36 @@ class InMemoryOutboxStore:
                 return message.model_copy(update={"status": OutboxStatus.SENDING})
         return None
 
+    def claim_pending(self, limit: int = 10, recipient_id: str | None = None) -> list[OutboxMessageSchema]:
+        claimed: list[OutboxMessageSchema] = []
+        for key, message in self.messages.items():
+            if len(claimed) >= limit:
+                break
+            if message.status != OutboxStatus.PENDING or message.expected_ownership != Ownership.AI:
+                continue
+            if recipient_id and message.recipient_id != recipient_id:
+                continue
+            updated = message.model_copy(update={"status": OutboxStatus.SENDING})
+            self.messages[key] = updated
+            claimed.append(updated)
+        return claimed
+
     def suppress(self, outbox_id: str) -> None:
         if outbox_id in self.messages:
             self.messages[outbox_id] = self.messages[outbox_id].model_copy(
                 update={"status": OutboxStatus.SUPPRESSED}
+            )
+
+    def mark_sent(self, outbox_id: str) -> None:
+        if outbox_id in self.messages:
+            self.messages[outbox_id] = self.messages[outbox_id].model_copy(
+                update={"status": OutboxStatus.SENT}
+            )
+
+    def mark_failed(self, outbox_id: str) -> None:
+        if outbox_id in self.messages:
+            self.messages[outbox_id] = self.messages[outbox_id].model_copy(
+                update={"status": OutboxStatus.FAILED}
             )
 
 
@@ -124,17 +156,56 @@ class PostgresOutboxStore:
                       AND status='PENDING' AND expected_ownership='AI'
                     ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1
                 ) UPDATE outbox_messages o SET status='SENDING'
-                FROM item WHERE o.id=item.id RETURNING o.payload""",
+                FROM item WHERE o.id=item.id RETURNING o.outbox_id, o.payload""",
                 (conversation_id, batch_version),
             )
             row = cursor.fetchone()
-        return OutboxMessageSchema.model_validate(row[0]) if row else None
+        return (
+            OutboxMessageSchema.model_validate(row[1]).model_copy(update={"outbox_id": row[0]})
+            if row
+            else None
+        )
+
+    def claim_pending(self, limit: int = 10, recipient_id: str | None = None) -> list[OutboxMessageSchema]:
+        self._ensure_schema()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """WITH items AS (
+                    SELECT id FROM outbox_messages
+                    WHERE status='PENDING' AND expected_ownership='AI'
+                      AND (%s IS NULL OR recipient_id=%s)
+                    ORDER BY id FOR UPDATE SKIP LOCKED LIMIT %s
+                ) UPDATE outbox_messages o SET status='SENDING'
+                FROM items WHERE o.id=items.id RETURNING o.outbox_id, o.payload""",
+                (recipient_id, recipient_id, limit),
+            )
+            rows = cursor.fetchall()
+        return [
+            OutboxMessageSchema.model_validate(row[1]).model_copy(update={"outbox_id": row[0]})
+            for row in rows
+        ]
 
     def suppress(self, outbox_id: str) -> None:
         self._ensure_schema()
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 "UPDATE outbox_messages SET status='SUPPRESSED' WHERE outbox_id=%s",
+                (outbox_id,),
+            )
+
+    def mark_sent(self, outbox_id: str) -> None:
+        self._ensure_schema()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE outbox_messages SET status='SENT', sent_at=now() WHERE outbox_id=%s",
+                (outbox_id,),
+            )
+
+    def mark_failed(self, outbox_id: str) -> None:
+        self._ensure_schema()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE outbox_messages SET status='FAILED' WHERE outbox_id=%s",
                 (outbox_id,),
             )
 

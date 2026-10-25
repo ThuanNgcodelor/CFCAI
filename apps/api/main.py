@@ -13,6 +13,7 @@ from src.chatbot.modules.channels.meta.normalizer import (
 from src.chatbot.modules.channels.meta.signature import verify_meta_signature
 from src.chatbot.modules.integrations.excel.importer import catalog_importer
 from src.chatbot.modules.integrations.misa.warmer import amis_warmer
+from src.chatbot.modules.knowledge.retriever import PostgresKnowledgeStore
 from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.shared.enums import PageCode
 
@@ -165,7 +166,13 @@ async def sync_misa_cache(x_internal_token: str | None = Header(None)):
         raise HTTPException(status_code=403, detail="Invalid internal token")
 
     try:
-        result = await amis_warmer.warm_cache()
+        import redis.asyncio as redis
+
+        redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)
+        try:
+            result = await amis_warmer.warm_cache(redis_client=redis_client)
+        finally:
+            await redis_client.aclose()
         return JSONResponse(status_code=200, content=result.model_dump())
     except Exception as e:
         logger.exception("[AMIS Sync Error]")
@@ -205,6 +212,7 @@ async def import_excel_catalog():
     """
     cfc_res = catalog_importer.import_cfc_file()
     zeo_res = catalog_importer.import_zeo_file()
+    persisted = catalog_importer.persist_staging()
     return {
         "status": "ok",
         "cfc": cfc_res,
@@ -212,4 +220,17 @@ async def import_excel_catalog():
         "total_staged_faqs": len(catalog_importer.staged_faqs),
         "total_staged_products": len(catalog_importer.staged_products),
         "conflicts": catalog_importer.conflicts,
+        "persisted": persisted,
     }
+
+
+@app.post("/admin/knowledge/approve/{record_id}")
+async def approve_knowledge(record_id: str):
+    approved = PostgresKnowledgeStore().approve(record_id)
+    return {"record_id": record_id, "approved": approved}
+
+
+@app.post("/admin/knowledge/approve-page/{page_id}")
+async def approve_page_knowledge(page_id: PageCode):
+    count = PostgresKnowledgeStore().approve_page(page_id)
+    return {"page_id": page_id.value, "approved_count": count}

@@ -1265,12 +1265,13 @@ chưa đạt không được hiểu là đã bật auto-reply production.
 |---|---|---|
 | Foundation | Docker Compose, contracts, fixtures; full suite pass | Done for local/staging |
 | Meta ingress | Cloudflare Tunnel → `/webhooks/meta` → Postgres; Meta POST đã trả 200; page-specific HMAC/dedup | Phase 1 staging complete |
-| Worker/outbox | `cfc_zeo_worker`, Postgres lease, outbox schema, Meta sender adapter | Partial: dispatcher/final transaction chưa hoàn tất |
+| Worker/outbox | `cfc_zeo_worker`, Postgres lease, outbox schema, Meta sender adapter, allowlisted dispatcher, unique delivery version | Partial: aggregation/takeover/retry reconciliation vẫn thiếu |
 | Aggregation/handoff | Domain debounce/state/final guard tests | Partial: Redis scheduling/takeover live chưa hoàn chỉnh |
-| Ollama | `qwen2.5:7b` installed; strict intent adapter; price handoff guard | Partial: live worker integration/eval chưa hoàn tất |
-| Knowledge | Approved-only page-scoped keyword retrieval; Postgres store + migration | Partial: semantic vector retrieval/source citation chưa có |
+| Ollama | `qwen2.5:7b` installed; strict intent adapter; price handoff guard | Partial: deterministic FAQ/product routing đã ưu tiên trước Ollama; full eval vẫn thiếu |
+| Knowledge | Excel persisted as quarantined records, page-scoped approval/retrieval, CRM product/dealer Redis snapshots | Partial: semantic vector retrieval, citation và conversational CRM state vẫn thiếu |
 | Ops | Redis-shared per-page pause/resume API and worker control | Partial: auth/RBAC/audit/takeover/task queue chưa có |
-| Go-live | 34 automated tests pass; API/worker/Postgres/Redis healthy | Not ready: T01–T12 eval, backup/restore, security and live outbound gates còn thiếu |
+| CRM/MISA | Warm thành công: 422 locations, 942 products, 7,913 orders, 5,000 loyalty records; Redis snapshots đã ghi | Partial: 0 GPS locations; dealer/order/loyalty workflows cần tích hợp end-to-end |
+| Go-live | 37 automated tests pass; API/worker/Postgres/Redis healthy; Meta FAQ response SENT | Not ready: T01–T12 eval, backup/restore, security và production outbound gates còn thiếu |
 
 ### 33.1 Runtime endpoints currently available
 
