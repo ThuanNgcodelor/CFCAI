@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 
 from src.chatbot.core.settings import settings
 from src.chatbot.shared.enums import PageCode
@@ -15,6 +16,16 @@ class KnowledgeRecord:
     title: str
     content: str
     status: str = "QUARANTINED"
+
+
+class KnowledgeSearchStore(Protocol):
+    def search(
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+    ) -> list[KnowledgeRecord]: ...
 
 
 class ApprovedKnowledgeStore:
@@ -50,6 +61,10 @@ class PostgresKnowledgeStore:
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS idx_knowledge_page_status ON knowledge_records(page_id, status);
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS source_batch_id TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'customer';
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS source_locator TEXT;
     """
 
     def __init__(self, database_url: str | None = None) -> None:
@@ -114,7 +129,7 @@ class PostgresKnowledgeStore:
         if not tokens:
             return []
         with self._connect() as connection, connection.cursor() as cursor:
-            sql = "SELECT record_id,page_id,title,content,status FROM knowledge_records WHERE page_id=%s AND status='APPROVED'"
+            sql = "SELECT record_id,page_id,title,content,status FROM knowledge_records WHERE page_id=%s AND status='APPROVED' AND audience='customer' AND is_active=true"
             params: list[object] = [page_id.value]
             if prefix_values:
                 sql += " AND (" + " OR ".join("record_id LIKE %s" for _ in prefix_values) + ")"
@@ -221,7 +236,7 @@ class RedisCrmDealerStore:
 
 
 class CompositeKnowledgeStore:
-    def __init__(self, *stores: object) -> None:
+    def __init__(self, *stores: KnowledgeSearchStore) -> None:
         self.stores = stores
 
     def search(

@@ -39,8 +39,8 @@ def test_pipeline_does_not_create_outbox_for_price() -> None:
 
 def test_pipeline_uses_ollama_for_non_price_intent() -> None:
     class FakeIntent:
-        def analyze(self, page_id: str, text: str) -> IntentAnalysisResult:
-            assert page_id == "CFC"
+        def analyze(self, page_id: PageCode, text: str, context) -> IntentAnalysisResult:
+            assert page_id == PageCode.CFC
             return IntentAnalysisResult(
                 primary_intent=IntentType.PRICE_INQUIRY,
                 confidence=1.0,
@@ -48,5 +48,5 @@ def test_pipeline_uses_ollama_for_non_price_intent() -> None:
             )
 
     outbox = InMemoryOutboxStore()
-    pipeline = SafeMessagePipeline(outbox, intent_client=FakeIntent())
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=FakeIntent())
     assert pipeline.process(_event("Tôi muốn hỏi thông tin")) is None

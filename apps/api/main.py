@@ -3,22 +3,39 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
+from pydantic import BaseModel
 
 from src.chatbot.core.settings import settings
+from src.chatbot.infrastructure.db.migrations import apply_migrations
 from src.chatbot.infrastructure.messaging.inbox import durable_inbox
 from src.chatbot.modules.channels.meta.normalizer import (
     normalize_messenger_payload,
     resolve_page_code,
 )
 from src.chatbot.modules.channels.meta.signature import verify_meta_signature
-from src.chatbot.modules.integrations.excel.importer import catalog_importer
+from src.chatbot.modules.conversations.repository import PostgresConversationRepository
+from src.chatbot.modules.integrations.excel.importer import ExcelCatalogImporter
+from src.chatbot.modules.integrations.excel.repository import CatalogPublishRepository
 from src.chatbot.modules.integrations.misa.warmer import amis_warmer
-from src.chatbot.modules.knowledge.retriever import PostgresKnowledgeStore
 from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.shared.enums import PageCode
 
 logger = logging.getLogger(__name__)
 ops_controls = build_ops_control_store()
+
+if settings.INBOX_BACKEND.lower() == "postgres":
+    apply_migrations(settings.get_database_url())
+
+
+class TakeoverRequest(BaseModel):
+    actor: str
+    reason: str
+
+
+class RecordReviewRequest(BaseModel):
+    record_type: str
+    record_id: str
+    decision: str
 
 app = FastAPI(
     title="CFC–ZEO AI Chatbot Platform",
@@ -210,27 +227,158 @@ async def import_excel_catalog():
     """
     Triggers staging import from docs/CfcCoBayN8n.xlsx and docs/ZeoN8n.xlsx.
     """
-    cfc_res = catalog_importer.import_cfc_file()
-    zeo_res = catalog_importer.import_zeo_file()
-    persisted = catalog_importer.persist_staging()
+    repository = CatalogPublishRepository(settings.get_database_url())
+    importer = ExcelCatalogImporter(repository=repository)
+    reports = importer.import_all()
     return {
         "status": "ok",
-        "cfc": cfc_res,
-        "zeo": zeo_res,
-        "total_staged_faqs": len(catalog_importer.staged_faqs),
-        "total_staged_products": len(catalog_importer.staged_products),
-        "conflicts": catalog_importer.conflicts,
-        "persisted": persisted,
+        "batches": reports,
+        "total_staged_faqs": len(importer.staged_faqs),
+        "total_staged_products": len(importer.staged_products),
+        "conflicts": importer.conflicts,
+    }
+
+
+@app.post("/admin/catalog/import-batches/{page_id}/{batch_id}/approve")
+async def approve_import_batch(page_id: PageCode, batch_id: str):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        count = repository.approve_batch(page_id, batch_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"page_id": page_id.value, "batch_id": batch_id, "approved_count": count}
+
+
+@app.post("/admin/catalog/import-batches/{page_id}/{batch_id}/reject")
+async def reject_import_batch(page_id: PageCode, batch_id: str):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        count = repository.reject_batch(page_id, batch_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"page_id": page_id.value, "batch_id": batch_id, "rejected_count": count}
+
+
+@app.post("/admin/catalog/import-batches/{page_id}/{batch_id}/review-record")
+async def review_import_record(
+    page_id: PageCode, batch_id: str, request: RecordReviewRequest
+):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        changed = repository.review_record(
+            page_id,
+            batch_id,
+            record_type=request.record_type,
+            record_id=request.record_id,
+            decision=request.decision,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not changed:
+        raise HTTPException(status_code=404, detail="Record not found in page-scoped batch")
+    return {"page_id": page_id.value, "batch_id": batch_id, "reviewed": True}
+
+
+@app.get("/admin/catalog/import-batches/{page_id}/{batch_id}/records")
+async def list_import_records(
+    page_id: PageCode, batch_id: str, limit: int = 100, offset: int = 0
+):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        records = repository.list_records(
+            page_id, batch_id, limit=limit, offset=offset
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        "page_id": page_id.value,
+        "batch_id": batch_id,
+        "limit": limit,
+        "offset": offset,
+        "records": records,
+    }
+
+
+@app.post("/admin/catalog/import-batches/{page_id}/{batch_id}/publish")
+async def publish_import_batch(page_id: PageCode, batch_id: str):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        version = repository.publish_batch(page_id, batch_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"page_id": page_id.value, "batch_id": batch_id, "version": version}
+
+
+@app.post("/admin/catalog/publications/{page_id}/{version}/rollback")
+async def rollback_publication(page_id: PageCode, version: int):
+    repository = CatalogPublishRepository(settings.get_database_url())
+    try:
+        batch_id = repository.rollback(page_id, version)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"page_id": page_id.value, "version": version, "batch_id": batch_id}
+
+
+@app.post("/admin/conversations/{page_id}/{conversation_id:path}/takeover")
+async def takeover_conversation(
+    page_id: PageCode, conversation_id: str, request: TakeoverRequest
+):
+    repository = PostgresConversationRepository(settings.get_database_url())
+    try:
+        state = repository.takeover(
+            page_id,
+            conversation_id,
+            actor=request.actor,
+            reason=request.reason,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {
+        "page_id": state.page_id.value,
+        "conversation_id": state.conversation_id,
+        "ownership": state.ownership.value,
+        "version": state.version,
+        "batch_version": state.batch_version,
+    }
+
+
+@app.post("/admin/conversations/{page_id}/{conversation_id:path}/resume")
+async def resume_conversation(
+    page_id: PageCode, conversation_id: str, request: TakeoverRequest
+):
+    repository = PostgresConversationRepository(settings.get_database_url())
+    try:
+        state = repository.resume(
+            page_id,
+            conversation_id,
+            actor=request.actor,
+            reason=request.reason,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {
+        "page_id": state.page_id.value,
+        "conversation_id": state.conversation_id,
+        "ownership": state.ownership.value,
+        "version": state.version,
+        "batch_version": state.batch_version,
     }
 
 
 @app.post("/admin/knowledge/approve/{record_id}")
 async def approve_knowledge(record_id: str):
-    approved = PostgresKnowledgeStore().approve(record_id)
-    return {"record_id": record_id, "approved": approved}
+    raise HTTPException(
+        status_code=410,
+        detail="Direct read-model approval is disabled; approve and publish an import batch.",
+    )
 
 
 @app.post("/admin/knowledge/approve-page/{page_id}")
 async def approve_page_knowledge(page_id: PageCode):
-    count = PostgresKnowledgeStore().approve_page(page_id)
-    return {"page_id": page_id.value, "approved_count": count}
+    raise HTTPException(
+        status_code=410,
+        detail=(
+            f"Direct approval for {page_id.value} is disabled; "
+            "approve and publish an import batch."
+        ),
+    )

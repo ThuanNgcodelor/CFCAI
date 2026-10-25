@@ -35,6 +35,13 @@ class IntentType(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class IntentTransition(str, Enum):
+    START = "START"
+    CONTINUE = "CONTINUE"
+    SWITCH = "SWITCH"
+    UNCLEAR = "UNCLEAR"
+
+
 class WorkflowType(str, Enum):
     PRICE_HANDOFF = "PRICE_HANDOFF"
     DEALER_LOOKUP = "DEALER_LOOKUP"

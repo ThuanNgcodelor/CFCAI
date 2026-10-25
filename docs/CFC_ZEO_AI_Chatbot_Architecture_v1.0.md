@@ -1266,12 +1266,13 @@ chưa đạt không được hiểu là đã bật auto-reply production.
 | Foundation | Docker Compose, contracts, fixtures; full suite pass | Done for local/staging |
 | Meta ingress | Cloudflare Tunnel → `/webhooks/meta` → Postgres; Meta POST đã trả 200; page-specific HMAC/dedup | Phase 1 staging complete |
 | Worker/outbox | `cfc_zeo_worker`, Postgres lease, outbox schema, Meta sender adapter, allowlisted dispatcher, unique delivery version | Partial: aggregation/takeover/retry reconciliation vẫn thiếu |
-| Aggregation/handoff | Domain debounce/state/final guard tests | Partial: Redis scheduling/takeover live chưa hoàn chỉnh |
+| Aggregation/handoff | PostgreSQL conversation/message/batch/slot runtime, Redis deadline schedule, Ops takeover/resume, transactional outbox suppression; Phase 2 integration gate pass | Staging pass; còn xác minh live Business Suite human echo/takeover và Phase 4 follow-up analyzer |
 | Ollama | `qwen2.5:7b` installed; strict intent adapter; price handoff guard | Partial: deterministic FAQ/product routing đã ưu tiên trước Ollama; full eval vẫn thiếu |
-| Knowledge | Excel persisted as quarantined records, page-scoped approval/retrieval, CRM product/dealer Redis snapshots | Partial: semantic vector retrieval, citation và conversational CRM state vẫn thiếu |
+| Data publish | Excel mapping ngoài code; versioned import batch/provenance/checksum; record/batch review; atomic publish/rollback; customer-only read model | Phase 3 complete; hai batch nguồn thật đang QUARANTINED chờ người duyệt |
+| Knowledge | Published page-scoped/customer-only read model, CRM product/dealer Redis snapshots | Partial: semantic vector retrieval, citation và conversational CRM state vẫn thiếu |
 | Ops | Redis-shared per-page pause/resume API and worker control | Partial: auth/RBAC/audit/takeover/task queue chưa có |
 | CRM/MISA | Warm thành công: 422 locations, 942 products, 7,913 orders, 5,000 loyalty records; Redis snapshots đã ghi | Partial: 0 GPS locations; dealer/order/loyalty workflows cần tích hợp end-to-end |
-| Go-live | 37 automated tests pass; API/worker/Postgres/Redis healthy; Meta FAQ response SENT | Not ready: T01–T12 eval, backup/restore, security và production outbound gates còn thiếu |
+| Go-live | 45 automated tests pass; Ruff/mypy pass; API/worker/Postgres/Redis healthy | Not ready: T01–T12 eval, backup/restore, security và production outbound gates còn thiếu |
 
 ### 33.1 Runtime endpoints currently available
 

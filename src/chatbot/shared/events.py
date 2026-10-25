@@ -4,6 +4,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from src.chatbot.shared.enums import (
+    IntentTransition,
     IntentType,
     OutboxStatus,
     Ownership,
@@ -40,12 +41,23 @@ class MessageBatch(BaseModel):
 
 
 class IntentAnalysisResult(BaseModel):
+    schema_version: int = 1
     primary_intent: IntentType
-    confidence: float
+    intent_transition: IntentTransition = IntentTransition.START
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    product_mentions: list[str] = Field(default_factory=list)
     detected_skus: list[str] = Field(default_factory=list)
+    quantity: str | None = None
+    unit: str | None = None
+    location: str | None = None
+    crop: str | None = None
+    stage: str | None = None
+    problem: str | None = None
     extracted_slots: dict[str, Any] = Field(default_factory=dict)
+    needs_clarification: bool = False
     clarification_needed: bool = False
     requires_human_handoff: bool = False
+    evidence_message_ids: list[str] = Field(default_factory=list)
 
 
 class OutboxMessageSchema(BaseModel):
@@ -56,5 +68,6 @@ class OutboxMessageSchema(BaseModel):
     text: str
     status: OutboxStatus = OutboxStatus.PENDING
     batch_version: int
+    expected_conversation_version: int | None = None
     expected_ownership: Ownership = Ownership.AI
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

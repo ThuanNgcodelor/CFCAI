@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL_TAG: str = "qwen2.5:7b"
     OLLAMA_TIMEOUT_SECONDS: float = 15.0
+    OLLAMA_MAX_ATTEMPTS: int = 2
+    INTENT_PROMPT_PATH: str = "config/prompts/intent.md"
+    INTENT_NORMALIZATION_PATH: str = "config/normalization/vi_intent.json"
 
     # Meta Messenger - CFC
     CFC_PAGE_ID: str = ""

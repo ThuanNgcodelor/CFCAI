@@ -1,0 +1,63 @@
+{
+  "mapping_version": 1,
+  "sources": [
+    {
+      "page_id": "CFC",
+      "path": "docs/CfcCoBayN8n.xlsx",
+      "sheets": {
+        "FAQ": {
+          "record_type": "faq",
+          "required_fields": ["intent", "answer"],
+          "fields": {
+            "intent": "intent",
+            "category": "category",
+            "question_examples": "question_examples",
+            "answer": "answer",
+            "audience": "audience",
+            "response_mode": "answer_mode",
+            "risk_level": "risk_level",
+            "source_active": "active"
+          }
+        }
+      }
+    },
+    {
+      "page_id": "ZEO",
+      "path": "docs/ZeoN8n.xlsx",
+      "sheets": {
+        "FAQ": {
+          "record_type": "faq",
+          "required_fields": ["intent", "answer"],
+          "fields": {
+            "intent": "intent",
+            "category": "category",
+            "question_examples": "question_examples",
+            "answer": "answer",
+            "audience": "audience",
+            "response_mode": "answer_mode",
+            "risk_level": "risk_level",
+            "source_active": "active"
+          }
+        },
+        "Shopee": {
+          "record_type": "product",
+          "required_fields": ["sku", "name"],
+          "fields": {"sku": "item_id", "name": "name", "brand": "brand", "category": "category", "specs": "specs", "keywords": "keywords", "source_active": "active"},
+          "private_fields": ["price", "in_stock", "variants"]
+        },
+        "Web": {
+          "record_type": "product",
+          "required_fields": ["sku", "name"],
+          "fields": {"sku": "item_id", "name": "name", "brand": "brand", "category": "category", "specs": "specs", "keywords": "keywords", "source_active": "active"},
+          "private_fields": ["price", "in_stock", "variants"]
+        },
+        "Lazada": {
+          "record_type": "product",
+          "required_fields": ["sku", "name"],
+          "fields": {"sku": "item_id", "name": "name", "brand": "brand", "category": "category", "specs": "specs", "keywords": "keywords", "source_active": "active"},
+          "private_fields": ["price", "in_stock", "variants"]
+        }
+      }
+    }
+  ]
+}

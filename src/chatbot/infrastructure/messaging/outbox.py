@@ -93,10 +93,13 @@ class PostgresOutboxStore:
         status TEXT NOT NULL DEFAULT 'PENDING',
         batch_version INTEGER NOT NULL,
         expected_ownership TEXT NOT NULL DEFAULT 'AI',
+        expected_conversation_version BIGINT,
         created_at TIMESTAMPTZ NOT NULL,
         sent_at TIMESTAMPTZ
     );
     CREATE INDEX IF NOT EXISTS idx_outbox_pending ON outbox_messages(status, id);
+    ALTER TABLE outbox_messages
+        ADD COLUMN IF NOT EXISTS expected_conversation_version BIGINT;
     """
 
     def __init__(self, database_url: str) -> None:
@@ -127,8 +130,9 @@ class PostgresOutboxStore:
             cursor.execute(
                 """INSERT INTO outbox_messages
                 (outbox_id, conversation_id, page_id, recipient_id, payload,
-                 status, batch_version, expected_ownership, created_at)
-                VALUES (%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s)
+                 status, batch_version, expected_ownership,
+                 expected_conversation_version, created_at)
+                VALUES (%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s)
                 ON CONFLICT (outbox_id) DO NOTHING""",
                 (
                     outbox_id,
@@ -139,6 +143,7 @@ class PostgresOutboxStore:
                     message.status.value,
                     message.batch_version,
                     message.expected_ownership.value,
+                    message.expected_conversation_version,
                     message.created_at,
                 ),
             )
@@ -151,17 +156,24 @@ class PostgresOutboxStore:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """WITH item AS (
-                    SELECT id FROM outbox_messages
-                    WHERE conversation_id=%s AND batch_version=%s
-                      AND status='PENDING' AND expected_ownership='AI'
-                    ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1
+                    SELECT o.id FROM outbox_messages o
+                    JOIN conversations c ON c.conversation_id=o.conversation_id
+                                           AND c.page_id=o.page_id
+                    WHERE o.conversation_id=%s AND o.batch_version=%s
+                      AND o.status='PENDING' AND o.expected_ownership='AI'
+                      AND c.ownership='AI' AND c.batch_version=o.batch_version
+                      AND (o.expected_conversation_version IS NULL
+                           OR c.version=o.expected_conversation_version)
+                    ORDER BY o.id FOR UPDATE OF o SKIP LOCKED LIMIT 1
                 ) UPDATE outbox_messages o SET status='SENDING'
                 FROM item WHERE o.id=item.id RETURNING o.outbox_id, o.payload""",
                 (conversation_id, batch_version),
             )
             row = cursor.fetchone()
         return (
-            OutboxMessageSchema.model_validate(row[1]).model_copy(update={"outbox_id": row[0]})
+            OutboxMessageSchema.model_validate(row[1]).model_copy(
+                update={"outbox_id": row[0], "status": OutboxStatus.SENDING}
+            )
             if row
             else None
         )
@@ -170,18 +182,36 @@ class PostgresOutboxStore:
         self._ensure_schema()
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
+                """UPDATE outbox_messages o SET status='SUPPRESSED'
+                WHERE o.status='PENDING' AND o.expected_ownership='AI'
+                  AND EXISTS (
+                    SELECT 1 FROM conversations c
+                    WHERE c.conversation_id=o.conversation_id AND c.page_id=o.page_id
+                      AND (c.ownership<>'AI' OR c.batch_version<>o.batch_version
+                           OR (o.expected_conversation_version IS NOT NULL
+                               AND c.version<>o.expected_conversation_version))
+                  )"""
+            )
+            cursor.execute(
                 """WITH items AS (
-                    SELECT id FROM outbox_messages
-                    WHERE status='PENDING' AND expected_ownership='AI'
-                      AND (%s IS NULL OR recipient_id=%s)
-                    ORDER BY id FOR UPDATE SKIP LOCKED LIMIT %s
+                    SELECT o.id FROM outbox_messages o
+                    JOIN conversations c ON c.conversation_id=o.conversation_id
+                                           AND c.page_id=o.page_id
+                    WHERE o.status='PENDING' AND o.expected_ownership='AI'
+                      AND c.ownership='AI' AND c.batch_version=o.batch_version
+                      AND (o.expected_conversation_version IS NULL
+                           OR c.version=o.expected_conversation_version)
+                      AND (%s IS NULL OR o.recipient_id=%s)
+                    ORDER BY o.id FOR UPDATE OF o SKIP LOCKED LIMIT %s
                 ) UPDATE outbox_messages o SET status='SENDING'
                 FROM items WHERE o.id=items.id RETURNING o.outbox_id, o.payload""",
                 (recipient_id, recipient_id, limit),
             )
             rows = cursor.fetchall()
         return [
-            OutboxMessageSchema.model_validate(row[1]).model_copy(update={"outbox_id": row[0]})
+            OutboxMessageSchema.model_validate(row[1]).model_copy(
+                update={"outbox_id": row[0], "status": OutboxStatus.SENDING}
+            )
             for row in rows
         ]
 
