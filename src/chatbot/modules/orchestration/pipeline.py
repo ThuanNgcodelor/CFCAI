@@ -7,6 +7,7 @@ acknowledgement. Product answers and prices remain behind approved workflows.
 from __future__ import annotations
 
 from src.chatbot.infrastructure.messaging.outbox import OutboxStore
+from src.chatbot.modules.llm.ollama import OllamaIntentClient
 from src.chatbot.modules.ops.controls import OpsControlStore
 from src.chatbot.shared.enums import IntentType, Ownership
 from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
@@ -14,10 +15,14 @@ from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
 
 class SafeMessagePipeline:
     def __init__(
-        self, outbox: OutboxStore, controls: OpsControlStore | None = None
+        self,
+        outbox: OutboxStore,
+        controls: OpsControlStore | None = None,
+        intent_client: OllamaIntentClient | None = None,
     ) -> None:
         self.outbox = outbox
         self.controls = controls or OpsControlStore()
+        self.intent_client = intent_client
 
     @staticmethod
     def classify(text: str | None) -> IntentType:
@@ -30,6 +35,17 @@ class SafeMessagePipeline:
         if not self.controls.can_auto_reply(event.page_id):
             return None
         intent = self.classify(event.message.text)
+        if (
+            intent != IntentType.PRICE_INQUIRY
+            and self.intent_client
+            and event.message.text
+        ):
+            try:
+                intent = self.intent_client.analyze(
+                    event.page_id.value, event.message.text
+                ).primary_intent
+            except (OSError, ValueError, KeyError, TypeError):
+                intent = IntentType.GENERAL_FAQ
         # Never auto-answer prices; a future handoff service will create the task.
         if intent == IntentType.PRICE_INQUIRY:
             return None

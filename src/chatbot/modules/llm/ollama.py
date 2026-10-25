@@ -42,6 +42,7 @@ class OllamaIntentClient:
             "model": self.model,
             "stream": False,
             "format": "json",
+            "options": {"temperature": 0.0, "num_predict": 128},
             "prompt": self.build_prompt(page_id, text),
         }
         request = urllib.request.Request(

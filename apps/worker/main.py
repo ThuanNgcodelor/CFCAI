@@ -2,16 +2,26 @@ from __future__ import annotations
 
 import time
 
+from src.chatbot.core.settings import settings
 from src.chatbot.infrastructure.messaging.inbox import build_inbox_store
 from src.chatbot.infrastructure.messaging.outbox import build_outbox_store
 from src.chatbot.infrastructure.messaging.worker import InboxWorker
+from src.chatbot.modules.llm.ollama import OllamaIntentClient
 from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 
 
 def run_once() -> int:
     outbox = build_outbox_store()
-    pipeline = SafeMessagePipeline(outbox, build_ops_control_store())
+    pipeline = SafeMessagePipeline(
+        outbox,
+        build_ops_control_store(),
+        OllamaIntentClient(
+            settings.OLLAMA_BASE_URL,
+            settings.OLLAMA_MODEL_TAG,
+            settings.OLLAMA_TIMEOUT_SECONDS,
+        ),
+    )
     worker = InboxWorker(build_inbox_store(), pipeline.process)
     return worker.run_once()
 

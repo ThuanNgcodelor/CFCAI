@@ -74,5 +74,7 @@ def build_ops_control_store() -> OpsControlStore:
             store.snapshot()
             return store
         except (OSError, ConnectionError) as exc:
-            logger.warning("Redis ops controls unavailable; using local fallback: %s", exc)
+            logger.warning(
+                "Redis ops controls unavailable; using local fallback: %s", exc
+            )
     return OpsControlStore()
