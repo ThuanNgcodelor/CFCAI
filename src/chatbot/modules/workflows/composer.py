@@ -22,12 +22,42 @@ class ResponseComposer:
         self.generator = generator
 
     @staticmethod
-    def validate_no_price(text: str) -> str:
+    def sanitize_placeholders(text: str, deadline_text: str = "sớm nhất") -> str:
+        """Remove model template markers before a reply reaches the outbox."""
+        deadline_tokens = {
+            "moc_hen_lien_he",
+            "thoi_gian",
+            "deadline",
+            "deadline_text",
+            "contact_deadline",
+        }
+
+        def replace_bracketed(match: re.Match[str]) -> str:
+            token = match.group("token").casefold()
+            return deadline_text if token in deadline_tokens else ""
+
+        sanitized = re.sub(
+            r"\[(?P<token>[A-Za-z][A-Za-z0-9_]*)\]",
+            replace_bracketed,
+            text,
+        )
+        sanitized = re.sub(
+            r"\b(?:moc_hen_lien_he|thoi_gian|deadline(?:_text)?|contact_deadline)\b",
+            deadline_text,
+            sanitized,
+            flags=re.IGNORECASE,
+        )
+        sanitized = re.sub(r"[ \t]{2,}", " ", sanitized)
+        return re.sub(r"\s+([,.;!?])", r"\1", sanitized).strip()
+
+    @classmethod
+    def validate_no_price(cls, text: str, deadline_text: str = "sớm nhất") -> str:
         """Enforce zero-price-hallucination invariant (INV-1).
 
         Ensures no currency amount or price quotes slip into outbound messages.
         Avoids false positives on quantity phrases like 'giá 1 bao'.
         """
+        text = cls.sanitize_placeholders(text, deadline_text)
         price_patterns = [
             r"\b\d+[\s.]*(?:nghìn|ngàn|triệu|k|đ|vnd|đồng)\b",
             r"\b(?:giá|khoảng)\s*[:=]?\s*\d+(?:[.,]\d+)?\s*(?:nghìn|ngàn|triệu|k|đ|vnd|đồng)\b",
@@ -69,7 +99,7 @@ class ResponseComposer:
             }
             llm_reply = self.generator.generate(payload)
             if llm_reply:
-                return self.validate_no_price(llm_reply)
+                return self.validate_no_price(llm_reply, deadline_text)
 
         # Dynamic parameter-driven template fallback
         if phone:
@@ -77,16 +107,13 @@ class ResponseComposer:
                 f"Dạ em đã ghi nhận thông tin của mình ạ! Em hẹn bạn kinh doanh khu vực sẽ liên hệ trực tiếp qua số {phone} "
                 f"{deadline_text} để báo giá chi tiết và hỗ trợ ưu đãi tốt nhất cho mình nha anh/chị 🌾"
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
-        crop_part = f" cho vườn {slots.get('crop')}" if slots.get("crop") else ""
         resp = (
-            "Dạ giá 1 bao phân tùy khu vực và số lượng mình lấy nên em không báo số cụ thể được ạ, "
-            "bạn kinh doanh sẽ báo giá chính xác cho mình.\n"
-            f"Anh/chị cho em xin số điện thoại, mình ở huyện/tỉnh nào và đang trồng cây gì{crop_part} "
-            f"hay cần loại phân nào, tầm mấy bao để em hẹn bạn kinh doanh gọi báo giá {deadline_text} nha 🌾"
+            "Dạ giá 1 bao phân tùy khu vực và số lượng nên em không báo số cụ thể trên chat được ạ; "
+            f"bạn kinh doanh sẽ báo giá chính xác. Anh/chị cho em xin số điện thoại để liên hệ {deadline_text} nha 🌾"
         )
-        return self.validate_no_price(resp)
+        return self.validate_no_price(resp, deadline_text)
 
     @staticmethod
     def _brand_name(page_id: PageCode) -> str:
@@ -126,23 +153,80 @@ class ResponseComposer:
             }
             llm_reply = self.generator.generate(payload)
             if llm_reply:
-                return self.validate_no_price(llm_reply)
+                return self.validate_no_price(llm_reply, deadline_text)
 
         # Dynamic parameter-driven template fallback
         if product_record:
             resp = (
                 f"Dạ {brand} có sản phẩm này ạ:\n"
                 f"🌱 {product_title}\n"
-                f"Để em báo điểm bán gần nhất cho mình, anh/chị cho em xin mình ở tỉnh/huyện nào và số điện thoại "
-                f"để em chuyển bạn kinh doanh hỗ trợ {deadline_text} nha!"
+                f"Anh/chị cho em xin tỉnh/huyện nhận hàng để em kiểm tra điểm bán phù hợp {deadline_text} nha! "
+                "Sau khi chốt khu vực, mình có thể để lại số điện thoại nếu cần nhân viên liên hệ."
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
         resp = (
             f"Dạ hiện tại {brand} chưa tìm thấy mã sản phẩm phù hợp trong danh mục. "
             "Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!"
         )
-        return self.validate_no_price(resp)
+        return self.validate_no_price(resp, deadline_text)
+
+    def compose_agriculture_response(
+        self,
+        page_id: PageCode,
+        advice_record: Any | None = None,
+        slots: dict[str, Any] | None = None,
+        deadline_text: str = "sớm nhất",
+        customer_text: str = "",
+    ) -> str:
+        """Compose only from an approved agriculture record and explicit slots."""
+        slots = slots or {}
+        brand = self._brand_name(page_id)
+        crop = str(slots.get("crop") or "").strip()
+        stage = str(slots.get("stage") or "").strip()
+        problem = str(slots.get("problem") or "").strip()
+        has_context = bool(crop and (stage or problem))
+
+        if has_context and self.generator and advice_record:
+            payload = {
+                "page_id": page_id.value,
+                "y_dinh": "AGRI_ADVICE",
+                "tin_nhan_khach": customer_text,
+                "thong_tin_tu_van_da_duyet": {
+                    "tieu_de": getattr(advice_record, "title", ""),
+                    "noi_dung": getattr(advice_record, "content", ""),
+                    "intent": getattr(advice_record, "intent", ""),
+                    "category": getattr(advice_record, "category", ""),
+                    "risk_level": getattr(advice_record, "risk_level", ""),
+                },
+                "thong_tin_khach_hien_tai": {
+                    key: value for key, value in slots.items()
+                    if key in {"crop", "stage", "problem", "product", "location", "province", "district"}
+                    and value not in (None, "")
+                },
+                "moc_hen_lien_he": deadline_text,
+            }
+            llm_reply = self.generator.generate(payload)
+            if llm_reply:
+                return self.validate_no_price(llm_reply, deadline_text)
+
+        if has_context and advice_record:
+            content = str(getattr(advice_record, "content", "") or "").strip()
+            if content:
+                return self.validate_no_price(content, deadline_text)
+
+        missing = []
+        if not crop:
+            missing.append("loại cây")
+        if not stage:
+            missing.append("giai đoạn cây")
+        if not problem:
+            missing.append("tình trạng hoặc mục tiêu cần xử lý")
+        requested = ", ".join(missing[:2]) if missing else "thông tin hiện trạng"
+        return self.validate_no_price(
+            f"Dạ {brand} cần thêm {requested} để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.",
+            deadline_text,
+        )
 
     def compose_dealer_response(
         self,
@@ -186,7 +270,7 @@ class ResponseComposer:
                 if llm_reply:
                     if map_url and map_url not in llm_reply:
                         llm_reply += f"\n📍 Xem vị trí trên Google Maps: {map_url}"
-                    return self.validate_no_price(llm_reply)
+                    return self.validate_no_price(llm_reply, deadline_text)
 
             resp_lines = [
                 f"Dạ, mình tìm thấy điểm phân phối {brand} tại khu vực của mình:",
@@ -197,38 +281,29 @@ class ResponseComposer:
             if map_url:
                 resp_lines.append(f"📍 Xem vị trí trên Google Maps: {map_url}")
             resp_lines.append("Anh/chị có thể ghé qua hoặc để lại số điện thoại để bạn phụ trách khu vực hỗ trợ kết nối trực tiếp nha!")
-            return self.validate_no_price("\n".join(resp_lines))
+            return self.validate_no_price("\n".join(resp_lines), deadline_text)
 
         location = slots.get("location") or slots.get("province") or slots.get("district")
-        product_needed = str(slots.get("product_mentions") or slots.get("product") or "")
-        if self.generator:
-            payload = {
-                "page_id": page_id.value,
-                "y_dinh": "DEALER_LOOKUP",
-                "tin_nhan_khach": customer_text,
-                "thong_tin_dai_ly": f"Chưa tìm thấy đại lý tại {location}" if location else "Khách chưa cung cấp khu vực/tỉnh/huyện để tra cứu",
-                "link_ban_do": "chưa có",
-                "so_dien_thoai_khach": str(slots.get("phone") or ""),
-                "khu_vuc_khach": str(location or ""),
-                "san_pham_quan_tam": product_needed,
-                "moc_hen_lien_he": deadline_text,
-            }
-            llm_reply = self.generator.generate(payload)
-            if llm_reply:
-                return self.validate_no_price(llm_reply)
-
         if location:
+            phone = str(slots.get("phone") or "").strip()
+            if phone:
+                resp = (
+                    f"Dạ em đã ghi nhận số điện thoại {phone} và khu vực {location} của mình ạ. "
+                    f"Hiện bên em đang cập nhật điểm bán trực tiếp tại khu vực này; bạn kinh doanh phụ trách sẽ liên hệ trước {deadline_text} "
+                    "để hỗ trợ gửi hàng hoặc chỉ điểm mua gần nhất cho anh/chị nha!"
+                )
+                return self.validate_no_price(resp, deadline_text)
             resp = (
                 f"Dạ hiện tại bên em đang cập nhật dữ liệu đại lý tại khu vực {location}. "
                 f"Anh/chị cho em xin số điện thoại để bạn kinh doanh khu vực liên hệ chỉ điểm giao hàng thuận tiện nhất {deadline_text} cho mình nha!"
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
         resp = (
-            "Để em báo điểm bán gần nhất cho mình, anh/chị cho em xin mình ở tỉnh/huyện nào và số điện thoại "
-            f"để em chuyển bạn kinh doanh hỗ trợ {deadline_text} ạ?"
+            "Để em kiểm tra điểm bán gần nhất, anh/chị cho em xin tỉnh/huyện mình đang ở ạ? "
+            "Sau khi có khu vực, mình có thể để lại số điện thoại nếu cần nhân viên hỗ trợ liên hệ."
         )
-        return self.validate_no_price(resp)
+        return self.validate_no_price(resp, deadline_text)
 
     def compose_human_handoff_response(self, page_id: PageCode) -> str:
         return (
@@ -287,7 +362,7 @@ class ResponseComposer:
             }
             llm_reply = self.generator.generate(payload)
             if llm_reply:
-                return self.validate_no_price(llm_reply)
+                return self.validate_no_price(llm_reply, deadline_text)
 
         if found_order:
             code = found_order.get("order_code") or "N/A"
@@ -300,7 +375,7 @@ class ResponseComposer:
                 f"🚚 Trạng thái: {status}\n"
                 f"Nếu anh/chị cần hỗ trợ giao gấp hoặc hẹn lại thời gian nhận hàng, bên em sẽ liên hệ lại hỗ trợ {deadline_text} cho mình nha 🌾"
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
         if orders:
             lines = [f"• Mã {o.get('order_code')}: {o.get('status')} (ngày {o.get('order_date')})" for o in orders[:3]]
@@ -309,7 +384,7 @@ class ResponseComposer:
                 + "\n".join(lines) + "\n"
                 f"Anh/chị cần kiểm tra chi tiết đơn nào nhắn em nhé!"
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
         lookup_key = order_code or phone
         if lookup_key:
@@ -317,13 +392,13 @@ class ResponseComposer:
                 f"Dạ {brand} kiểm tra trên hệ thống chưa thấy đơn hàng nào khớp với thông tin {lookup_key}. "
                 f"Anh/chị kiểm tra lại xem có đặt bằng số điện thoại khác không, hoặc để lại lời nhắn để bạn phụ trách đơn hàng kiểm tra lại {deadline_text} cho mình nha!"
             )
-            return self.validate_no_price(resp)
+            return self.validate_no_price(resp, deadline_text)
 
         resp = (
             "Dạ để em kiểm tra hành trình và tình trạng đơn hàng cho mình, "
             f"anh/chị cho em xin Số điện thoại đặt hàng hoặc Mã đơn hàng nhé ạ 🌾"
         )
-        return self.validate_no_price(resp)
+        return self.validate_no_price(resp, deadline_text)
 
     def compose_image_inquiry_response(
         self,
@@ -346,7 +421,7 @@ class ResponseComposer:
             }
             llm_reply = self.generator.generate(payload)
             if llm_reply:
-                return self.validate_no_price(llm_reply)
+                return self.validate_no_price(llm_reply, deadline_text)
 
         crop = slots.get("crop")
         crop_part = f" đối với cây {crop}" if crop else ""
@@ -362,4 +437,4 @@ class ResponseComposer:
                 f"Để kỹ sư nông nghiệp chẩn đoán chính xác tình trạng{crop_part} và tư vấn giải pháp/sản phẩm phù hợp nhất, "
                 f"anh/chị cho em xin thêm thông tin: vườn mình ở tỉnh/huyện nào và số điện thoại để chuyên viên kỹ thuật gọi hỗ trợ xem vườn {deadline_text} nha 🌾"
             )
-        return self.validate_no_price(resp)
+        return self.validate_no_price(resp, deadline_text)

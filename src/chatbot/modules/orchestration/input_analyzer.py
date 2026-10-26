@@ -29,6 +29,26 @@ class VietnameseNormalizer:
         config = json.loads(Path(config_path).read_text(encoding="utf-8"))
         self.aliases: dict[str, str] = config.get("aliases", {})
         self.safety: dict[str, list[str]] = config.get("safety", {})
+        self.knowledge_filters: dict[str, dict[str, list[str]]] = config.get(
+            "knowledge_filters", {}
+        )
+        self.location_aliases: dict[str, str] = {}
+        for entry in config.get("locations", []):
+            canonical = str(entry.get("canonical") or "").strip()
+            if not canonical:
+                continue
+            aliases = [canonical, *(str(alias) for alias in entry.get("aliases", []))]
+            for alias in aliases:
+                self.location_aliases[self._fold_diacritics(alias)] = canonical
+        location_patterns = sorted(self.location_aliases, key=len, reverse=True)
+        self.location_pattern = (
+            re.compile(
+                rf"(?<!\w)(?:{'|'.join(re.escape(alias) for alias in location_patterns)})(?!\w)",
+                re.IGNORECASE,
+            )
+            if location_patterns
+            else None
+        )
         units = [re.escape(unit) for unit in config.get("quantity_units", [])]
         self.quantity_pattern = re.compile(
             rf"(?P<quantity>\d+(?:[.,]\d+)?)\s*(?P<unit>{'|'.join(units)})\b",
@@ -50,11 +70,59 @@ class VietnameseNormalizer:
             )
         return normalized
 
+    @staticmethod
+    def _fold_diacritics(text: str) -> str:
+        folded = unicodedata.normalize("NFD", text.casefold())
+        folded = "".join(char for char in folded if unicodedata.category(char) != "Mn")
+        return folded.replace("đ", "d")
+
     def contains(self, group: str, text: str) -> bool:
         return any(marker.casefold() in text for marker in self.safety.get(group, []))
 
+    def filters_for_workflow(self, workflow: WorkflowType) -> dict[str, tuple[str, ...]]:
+        """Return source-configured retrieval filters, never business answers."""
+        config = self.knowledge_filters.get(workflow.value, {})
+        intents = tuple(config.get("intents", []))
+        prefixes = tuple(config.get("intent_prefixes", []))
+        categories = tuple(config.get("categories", []))
+        # Prefixes are expanded by the caller only when the store supports it;
+        # keeping the source values here makes the mapping data-driven.
+        return {
+            "intents": intents,
+            "intent_prefixes": prefixes,
+            "categories": categories,
+        }
+
     def deterministic_slots(self, text: str) -> dict[str, Any]:
         slots: dict[str, Any] = {}
+        # Generic linguistic extraction, not a crop/product dictionary: the
+        # value is copied from the customer and remains subject to workflow
+        # confidence/retrieval checks.
+        crop_match = re.search(
+            r"\b(?:cây|vườn)\s+([^,.!?;\n]{1,40}?)(?=\s+(?:ở|vào|giai|giải)\b|$)",
+            text,
+            re.IGNORECASE,
+        )
+        if crop_match:
+            crop = re.sub(r"\s+", " ", crop_match.group(1)).strip(" -:")
+            crop = re.sub(r"^(?:đang|bị|mình|nhà)\s+", "", crop, flags=re.IGNORECASE)
+            if crop and crop.casefold() not in {"gì", "gi", "nào", "nao", "trồng"}:
+                slots["crop"] = crop
+        stage_match = re.search(
+            r"\b(?:giai|giải)\s*đoạn\s+([^,.!?;\n]{1,60})",
+            text,
+            re.IGNORECASE,
+        )
+        if stage_match:
+            slots["stage"] = re.sub(r"\s+", " ", stage_match.group(1)).strip(" -:")
+        if self.location_pattern:
+            folded_text = self._fold_diacritics(text)
+            location_match = self.location_pattern.search(folded_text)
+            if location_match:
+                canonical = self.location_aliases.get(location_match.group(0).casefold())
+                if canonical:
+                    slots["location"] = canonical
+                    slots["province"] = canonical
         if self.quantity_pattern:
             match = self.quantity_pattern.search(text)
             if match:
@@ -130,12 +198,32 @@ class HybridInputAnalyzer:
             forced_intent = IntentType.PRODUCT_INQUIRY
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
 
+        # Advice markers are configuration-driven. They outrank a generic FAQ
+        # result, but an open price workflow is retained unless the customer
+        # explicitly asks for usage guidance.
+        if (
+            forced_intent is None
+            and self.normalizer.contains("explicit_advice_markers", normalized)
+        ):
+            forced_intent = IntentType.AGRI_ADVICE
+            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+
         is_open_price_context = current_intent in {
             IntentType.PRICE_INQUIRY.value,
             IntentType.PRICE_INQUIRY_DETAIL.value,
         }
 
         deterministic_slots = self.normalizer.deterministic_slots(normalized)
+        if (
+            forced_intent is None
+            and (deterministic_slots.get("location") or deterministic_slots.get("phone"))
+            and current_intent in {
+                IntentType.DEALER_LOOKUP.value,
+                WorkflowType.DEALER_LOOKUP.value,
+            }
+        ):
+            forced_intent = IntentType.DEALER_LOOKUP
+            transition = IntentTransition.CONTINUE
         try:
             result = self.client.analyze(page_id.value, normalized, context)
         except (OllamaUnderstandingError, OSError, ValueError, KeyError, TypeError):
@@ -167,12 +255,17 @@ class HybridInputAnalyzer:
                 evidence_message_ids=list(context.get("message_ids", [])),
             )
 
-        merged_slots = {**context.get("current_slots", {}), **result.extracted_slots, **deterministic_slots}
+        merged_slots = {
+            key: value
+            for source in (context.get("current_slots", {}), result.extracted_slots, deterministic_slots)
+            for key, value in source.items()
+            if value is not None and value != ""
+        }
         if result.quantity:
             merged_slots["quantity"] = result.quantity
         if result.unit:
             merged_slots["unit"] = result.unit
-        if result.location:
+        if result.location and not deterministic_slots.get("location"):
             merged_slots["location"] = result.location
         if result.crop:
             merged_slots["crop"] = result.crop

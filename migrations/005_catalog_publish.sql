@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS faq_items (
     audience TEXT NOT NULL DEFAULT 'customer',
     response_mode TEXT,
     risk_level TEXT,
+    learning_tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    profile_slots JSONB NOT NULL DEFAULT '[]'::jsonb,
     source_active BOOLEAN NOT NULL DEFAULT true,
     content_hash TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'QUARANTINED'

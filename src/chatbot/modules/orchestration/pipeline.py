@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from typing import Any
 
 from src.chatbot.infrastructure.messaging.outbox import OutboxStore
 from src.chatbot.modules.conversations.repository import PostgresConversationRepository
@@ -23,7 +24,10 @@ from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
 
 
 def filter_slots_for_workflow(workflow: WorkflowType, slots: dict[str, Any]) -> dict[str, Any]:
-    common_keys = {"phone", "location", "province", "district", "area", "crop", "product", "detected_skus", "detected_formulas"}
+    common_keys = {
+        "phone", "location", "province", "district", "area", "crop", "product",
+        "stage", "problem", "product_mentions", "detected_skus", "detected_formulas",
+    }
     if workflow == WorkflowType.PRICE_HANDOFF:
         allowed = common_keys | {"quantity", "unit"}
     elif workflow == WorkflowType.ORDER_TRACKING:
@@ -53,6 +57,30 @@ class SafeMessagePipeline:
         self.conversation_repository = conversation_repository
         self.composer = composer or ResponseComposer()
         self.order_store = order_store
+
+    def _search_knowledge(
+        self,
+        page_id: PageCode,
+        query: str,
+        *,
+        limit: int,
+        record_prefix: str | tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> list[Any]:
+        if not self.knowledge_store:
+            return []
+        try:
+            return self.knowledge_store.search(
+                page_id,
+                query,
+                limit=limit,
+                record_prefix=record_prefix,
+                categories=categories,
+            )
+        except TypeError:
+            # Keep third-party/test stores compatible while the metadata-aware
+            # store contract rolls out.
+            return self.knowledge_store.search(page_id, query, limit, record_prefix)
 
     @staticmethod
     def classify(text: str | None) -> IntentType:
@@ -115,9 +143,19 @@ class SafeMessagePipeline:
             intent = self.classify(text)
 
         workflow = workflow_for_intent(intent)
-        effective_slots: dict[str, object] = dict(context.get("current_slots", {}))
+        effective_slots: dict[str, object] = {
+            key: value
+            for key, value in dict(context.get("current_slots", {})).items()
+            if value is not None and value != ""
+        }
         if analysis and analysis.extracted_slots:
-            effective_slots.update(analysis.extracted_slots)
+            effective_slots.update(
+                {
+                    key: value
+                    for key, value in analysis.extracted_slots.items()
+                    if value is not None and value != ""
+                }
+            )
         effective_slots = filter_slots_for_workflow(workflow, effective_slots)
 
         effective_conversation_version = conversation_version
@@ -170,10 +208,8 @@ class SafeMessagePipeline:
 
             matches = []
             if self.knowledge_store:
-                matches = self.knowledge_store.search(
-                    PageCode(event.page_id),
-                    search_query,
-                    limit=1,
+                matches = self._search_knowledge(
+                    PageCode(event.page_id), search_query, limit=2,
                     record_prefix=("product:", "crm-product:"),
                 )
             product_record = matches[0] if matches else None
@@ -193,10 +229,8 @@ class SafeMessagePipeline:
             if self.knowledge_store:
                 search_term = loc if loc else text
                 if search_term:
-                    matches = self.knowledge_store.search(
-                        PageCode(event.page_id),
-                        search_term,
-                        limit=1,
+                    matches = self._search_knowledge(
+                        PageCode(event.page_id), search_term, limit=1,
                         record_prefix=("dealer:",),
                     )
             answer = self.composer.compose_dealer_response(
@@ -207,7 +241,36 @@ class SafeMessagePipeline:
                 customer_text=text,
             )
 
-        # Branch 5: Order Tracking
+        # Branch 5: Agriculture advice. Retrieval is restricted to source
+        # metadata for this workflow; an unrelated FAQ can never win by a
+        # shared word such as "phân" or "trái".
+        elif intent == IntentType.AGRI_ADVICE:
+            query_parts = [text]
+            for key in ("crop", "stage", "problem", "product", "product_mentions", "detected_skus"):
+                value = effective_slots.get(key)
+                if isinstance(value, list):
+                    query_parts.extend(str(item) for item in value)
+                elif value:
+                    query_parts.append(str(value))
+            categories: tuple[str, ...] = ()
+            if self.intent_analyzer:
+                filters = self.intent_analyzer.normalizer.filters_for_workflow(
+                    WorkflowType.AGRICULTURE_ADVICE
+                )
+                categories = filters.get("categories", ())
+            matches = self._search_knowledge(
+                PageCode(event.page_id), " ".join(query_parts), limit=1,
+                record_prefix="faq:", categories=categories or None,
+            )
+            answer = self.composer.compose_agriculture_response(
+                event.page_id,
+                advice_record=matches[0] if matches else None,
+                slots=effective_slots,
+                deadline_text=deadline_text,
+                customer_text=text,
+            )
+
+        # Branch 6: Order Tracking
         elif intent == IntentType.ORDER_TRACKING:
             import re
             phone = effective_slots.get("phone")
@@ -285,11 +348,8 @@ class SafeMessagePipeline:
             else:
                 matches = []
                 if self.knowledge_store and text:
-                    matches = self.knowledge_store.search(
-                        PageCode(event.page_id),
-                        text,
-                        limit=1,
-                        record_prefix="faq:",
+                    matches = self._search_knowledge(
+                        PageCode(event.page_id), text, limit=1, record_prefix="faq:"
                     )
                 if matches:
                     answer = matches[0].content
@@ -297,7 +357,10 @@ class SafeMessagePipeline:
                     answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
 
         # Final safety validation (Zero-price check)
-        answer = self.composer.validate_no_price(answer)
+        answer = self.composer.validate_no_price(
+            answer,
+            deadline_text,
+        )
 
         delivery_batch_version = batch_version
         if delivery_batch_version is None:

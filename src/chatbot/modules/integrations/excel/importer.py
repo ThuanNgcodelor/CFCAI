@@ -113,6 +113,8 @@ class ExcelCatalogImporter:
                         "audience": _text(mapped.get("audience")) or "customer",
                         "response_mode": _text(mapped.get("response_mode")),
                         "risk_level": _text(mapped.get("risk_level")),
+                        "learning_tags": _list(mapped.get("learning_tags")),
+                        "profile_slots": _list(mapped.get("profile_slots")),
                         "source_active": _boolean(mapped.get("source_active")),
                     }
                     faqs.append(

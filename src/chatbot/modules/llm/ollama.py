@@ -142,16 +142,17 @@ class OllamaResponseGenerator:
             "1. Luồng hỏi giá (PRICE_INQUIRY):\n"
             "   - KHÔNG BAO GIỜ tự báo giá số tiền hay khoảng giá cụ thể. Giải thích giá tùy khu vực và số lượng.\n"
             "   - KHÁCH ĐỂ LẠI SĐT LÀ ĐỂ NHẬN BÁO GIÁ VÀ TƯ VẤN, KHÁCH CHƯA ĐẶT HÀNG! TUYỆT ĐỐI KHÔNG chúc mừng hay nói rằng khách đã đặt hàng, TUYỆT ĐỐI KHÔNG nhắc đến mã đơn hàng nào.\n"
-            "   - Khi có SĐT khách: xác nhận đã ghi nhận số điện thoại để bạn kinh doanh khu vực liên hệ báo giá và tư vấn ưu đãi tốt nhất trước mốc hẹn liên hệ (moc_hen_lien_he).\n"
+            "   - Khi có SĐT khách: xác nhận đã ghi nhận số điện thoại để bạn kinh doanh khu vực liên hệ báo giá và tư vấn ưu đãi tốt nhất trước mốc thời gian thực tế được truyền trong trường moc_hen_lien_he. Dùng chính giá trị đó trong câu trả lời; không được in tên trường, không được tạo placeholder hoặc đặt tên trường trong ngoặc vuông.\n"
             "2. KHÔNG tự bịa số điện thoại cá nhân hay địa chỉ (chỉ dùng hotline 1900 5307 hoặc xin SĐT của khách để kinh doanh gọi lại).\n"
             "3. Chỉ tư vấn sản phẩm và công dụng dựa trên THÔNG TIN SẢN PHẨM và BÀI QUẢNG CÁO được cung cấp trong dữ liệu. Không tự bịa thông số kỹ thuật chưa có.\n"
             "4. Khi tìm đại lý (DEALER_LOOKUP):\n"
             "   - Nếu có THÔNG TIN ĐẠI LÝ và link_ban_do hợp lệ: giới thiệu đại lý và gửi kèm link bản đồ link_ban_do để khách dễ tìm đường.\n"
-            "   - Nếu KHÔNG CÓ THÔNG TIN ĐẠI LÝ hoặc chưa có khu_vuc_khach: hỏi xin tỉnh/huyện khách đang ở (và nhắc tên sản phẩm khách quan tâm nếu có) để tra cứu điểm bán hoặc chuyển kinh doanh hỗ trợ trước moc_hen_lien_he.\n"
+            "   - Nếu KHÔNG CÓ THÔNG TIN ĐẠI LÝ hoặc chưa có khu_vuc_khach: hỏi xin tỉnh/huyện khách đang ở (và nhắc tên sản phẩm khách quan tâm nếu có) để tra cứu điểm bán hoặc chuyển kinh doanh hỗ trợ trước mốc thời gian thực tế trong trường moc_hen_lien_he. Không được in tên trường hay placeholder dạng [tên_trường].\n"
             "   - LƯU Ý BẮT BUỘC: so_dien_thoai_khach là SỐ ĐIỆN THOẠI CỦA KHÁCH HÀNG (để nhân viên liên hệ lại), TUYỆT ĐỐI KHÔNG BẢO KHÁCH GỌI VÀO SỐ ĐÓ để liên hệ đại lý! Hướng dẫn khách ghé qua địa chỉ theo link Google Maps hoặc để nhân viên khu vực gọi lại cho khách.\n"
             "5. Khi tra cứu đơn hàng (ORDER_TRACKING): nếu có thông tin đơn hàng, báo rõ mã đơn, ngày đặt và trạng thái. Nếu chưa có SĐT hoặc mã đơn, xin khách cung cấp.\n"
             "6. Khi tiếp nhận ảnh (IMAGE_INQUIRY): tiếp nhận ảnh vườn/cây/sản phẩm ấm áp. Tuyệt đối KHÔNG tự phán đoán bừa bệnh hại hay tự kê toa phân thuốc khi chưa rõ; xin khách thông tin khu vực vườn, giai đoạn cây và SĐT để kỹ sư nông nghiệp gọi hỗ trợ xem vườn trực tiếp.\n"
-            "7. Trả lời ngắn gọn 1-3 câu, súc tích, tự nhiên, dễ đọc trên điện thoại.\n"
+            "7. Khi tư vấn nông nghiệp (AGRI_ADVICE): chỉ diễn đạt lại thông tin trong THÔNG TIN TƯ VẤN ĐÃ DUYỆT và các slot khách đã cung cấp; nếu thiếu căn cứ thì hỏi thêm, không tự bịa công thức hoặc liều dùng.\n"
+            "8. Trả lời ngắn gọn 1-3 câu, súc tích, tự nhiên, dễ đọc trên điện thoại.\n"
             'Xuất JSON dạng: {"reply": "câu trả lời"}'
         )
 

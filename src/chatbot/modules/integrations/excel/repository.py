@@ -53,15 +53,16 @@ class CatalogPublishRepository:
                     """INSERT INTO faq_items(
                     faq_id,page_id,import_batch_id,source_file,source_sheet,source_row,
                     intent,category,question_examples,answer,audience,response_mode,
-                    risk_level,source_active,content_hash,status)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s,%s,%s)
+                    risk_level,learning_tags,profile_slots,source_active,content_hash,status)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s,%s,%s)
                     ON CONFLICT(import_batch_id,source_sheet,source_row) DO NOTHING""",
                     (
                         item["faq_id"], item["page_id"], batch_id, item["source_file"],
                         item["source_sheet"], item["source_row"], item["intent"],
                         item["category"], json.dumps(item["question_examples"], ensure_ascii=False),
                         item["answer"], item["audience"], item["response_mode"],
-                        item["risk_level"], item["source_active"], item["content_hash"],
+                        item["risk_level"], json.dumps(item.get("learning_tags", []), ensure_ascii=False),
+                        json.dumps(item.get("profile_slots", []), ensure_ascii=False), item["source_active"], item["content_hash"],
                         item["status"],
                     ),
                 )
@@ -280,18 +281,23 @@ class CatalogPublishRepository:
         )
         cursor.execute(
             """INSERT INTO knowledge_records(
-            record_id,page_id,title,content,status,source_batch_id,audience,is_active,source_locator)
+            record_id,page_id,title,content,status,source_batch_id,audience,is_active,source_locator,
+            intent,category,response_mode,risk_level,learning_tags,profile_slots)
             SELECT 'faq:'||faq_id,page_id,
                    array_to_string(ARRAY(SELECT jsonb_array_elements_text(question_examples)), ' | '),
                    answer,'APPROVED',import_batch_id,audience,true,
-                   source_file||':'||source_sheet||':'||source_row
+                   source_file||':'||source_sheet||':'||source_row,
+                   intent,category,response_mode,risk_level,learning_tags,profile_slots
             FROM faq_items
             WHERE import_batch_id=%s AND page_id=%s AND status='APPROVED'
               AND source_active=true AND lower(audience)='customer'
             ON CONFLICT(record_id) DO UPDATE SET
               title=EXCLUDED.title,content=EXCLUDED.content,status='APPROVED',
               source_batch_id=EXCLUDED.source_batch_id,audience=EXCLUDED.audience,
-              is_active=true,source_locator=EXCLUDED.source_locator""",
+              is_active=true,source_locator=EXCLUDED.source_locator,
+              intent=EXCLUDED.intent,category=EXCLUDED.category,response_mode=EXCLUDED.response_mode,
+              risk_level=EXCLUDED.risk_level,learning_tags=EXCLUDED.learning_tags,
+              profile_slots=EXCLUDED.profile_slots""",
             (batch_id, page_id.value),
         )
         cursor.execute(

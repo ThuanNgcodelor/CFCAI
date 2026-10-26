@@ -16,6 +16,8 @@
             "audience": "audience",
             "response_mode": "answer_mode",
             "risk_level": "risk_level",
+            "learning_tags": "learning_tags",
+            "profile_slots": "profile_slots",
             "source_active": "active"
           }
         }
@@ -36,6 +38,8 @@
             "audience": "audience",
             "response_mode": "answer_mode",
             "risk_level": "risk_level",
+            "learning_tags": "learning_tags",
+            "profile_slots": "profile_slots",
             "source_active": "active"
           }
         },

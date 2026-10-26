@@ -12,6 +12,7 @@ RÀNG BUỘC
 - Không quyết định quyền gửi tin và không thay đổi ownership.
 - Chỉ dùng page_id được cung cấp; không suy đoán dữ liệu của Page khác.
 - Slot không xuất hiện rõ thì để null hoặc bỏ khỏi extracted_slots.
+- Khi khách đề cập tỉnh/thành phố, huyện, xã hoặc khu vực địa lý (kể cả câu trả lời ngắn như "Kiên Giang"), BẮT BUỘC trích xuất nguyên văn địa danh vào `location`; nếu xác định được tỉnh/thành thì đồng thời điền `province`. Không được bỏ qua địa danh chỉ vì tin nhắn không lặp lại ý định.
 
 INTENT HỢP LỆ
 - PRICE_INQUIRY: hỏi giá, báo giá, chi phí hoặc số tiền mua hàng.

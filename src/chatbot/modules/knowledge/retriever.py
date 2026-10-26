@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import unicodedata
 from typing import Protocol
 
 from src.chatbot.core.settings import settings
@@ -16,6 +17,13 @@ class KnowledgeRecord:
     title: str
     content: str
     status: str = "QUARANTINED"
+    intent: str | None = None
+    category: str | None = None
+    response_mode: str | None = None
+    risk_level: str | None = None
+    learning_tags: tuple[str, ...] = ()
+    profile_slots: tuple[str, ...] = ()
+    source_locator: str | None = None
 
 
 class KnowledgeSearchStore(Protocol):
@@ -25,7 +33,15 @@ class KnowledgeSearchStore(Protocol):
         query: str,
         limit: int = 5,
         record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]: ...
+
+
+def _fold_search_text(text: str) -> str:
+    folded = unicodedata.normalize("NFD", text.casefold())
+    folded = "".join(char for char in folded if unicodedata.category(char) != "Mn")
+    return folded.replace("đ", "d")
 
 
 class ApprovedKnowledgeStore:
@@ -36,16 +52,28 @@ class ApprovedKnowledgeStore:
         self._records.append(record)
 
     def search(
-        self, page_id: PageCode, query: str, limit: int = 5, record_prefix: str | tuple[str, ...] | None = None
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
-        tokens = {token for token in query.lower().split() if len(token) > 1}
+        tokens = {_fold_search_text(token) for token in query.split() if len(token) > 1}
+        normalized_intents = {item.casefold() for item in intents or ()}
+        normalized_categories = {item.casefold() for item in categories or ()}
         matches = []
         for record in self._records:
             if record.page_id != page_id or record.status != "APPROVED":
                 continue
             if record_prefix and not record.record_id.startswith(record_prefix):
                 continue
-            haystack = f"{record.title} {record.content}".lower()
+            if normalized_intents and (record.intent or "").casefold() not in normalized_intents:
+                continue
+            if normalized_categories and (record.category or "").casefold() not in normalized_categories:
+                continue
+            haystack = _fold_search_text(f"{record.title} {record.content}")
             score = sum(token in haystack for token in tokens)
             if score:
                 matches.append((score, record))
@@ -65,6 +93,12 @@ class PostgresKnowledgeStore:
     ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'customer';
     ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
     ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS source_locator TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS intent TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS category TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS response_mode TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS risk_level TEXT;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS learning_tags JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS profile_slots JSONB NOT NULL DEFAULT '[]'::jsonb;
     """
 
     def __init__(self, database_url: str | None = None) -> None:
@@ -119,29 +153,45 @@ class PostgresKnowledgeStore:
             return cursor.rowcount
 
     def search(
-        self, page_id: PageCode, query: str, limit: int = 5, record_prefix: str | tuple[str, ...] | None = None
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
         self._ensure_schema()
         prefix_values = None
         if record_prefix:
             prefix_values = (record_prefix,) if isinstance(record_prefix, str) else record_prefix
-        tokens = [token for token in query.lower().split() if len(token) > 1]
+        tokens = [_fold_search_text(token) for token in query.split() if len(token) > 1]
         if not tokens:
             return []
         with self._connect() as connection, connection.cursor() as cursor:
-            sql = "SELECT record_id,page_id,title,content,status FROM knowledge_records WHERE page_id=%s AND status='APPROVED' AND audience='customer' AND is_active=true"
+            sql = "SELECT record_id,page_id,title,content,status,intent,category,response_mode,risk_level,learning_tags,profile_slots,source_locator FROM knowledge_records WHERE page_id=%s AND status='APPROVED' AND audience='customer' AND is_active=true"
             params: list[object] = [page_id.value]
             if prefix_values:
                 sql += " AND (" + " OR ".join("record_id LIKE %s" for _ in prefix_values) + ")"
                 params.extend(f"{prefix}%" for prefix in prefix_values)
+            if intents:
+                sql += " AND lower(intent) = ANY(%s)"
+                params.append([item.casefold() for item in intents])
+            if categories:
+                sql += " AND lower(category) = ANY(%s)"
+                params.append([item.casefold() for item in categories])
             cursor.execute(sql, tuple(params))
             records = [
-                KnowledgeRecord(row[0], PageCode(row[1]), row[2], row[3], row[4])
+                KnowledgeRecord(
+                    row[0], PageCode(row[1]), row[2], row[3], row[4],
+                    row[5], row[6], row[7], row[8], tuple(row[9] or ()),
+                    tuple(row[10] or ()), row[11],
+                )
                 for row in cursor.fetchall()
             ]
         scored = []
         for record in records:
-            haystack = f"{record.title} {record.content}".lower()
+            haystack = _fold_search_text(f"{record.title} {record.content}")
             score = sum(token in haystack for token in tokens)
             if score:
                 scored.append((score, record))
@@ -162,6 +212,8 @@ class RedisCrmProductStore:
     def search(
         self, page_id: PageCode, query: str, limit: int = 5,
         record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
         if page_id != PageCode.CFC or record_prefix and not (
             "crm-product:" in record_prefix if isinstance(record_prefix, tuple) else record_prefix == "crm-product:"
@@ -197,6 +249,8 @@ class RedisCrmDealerStore:
     def search(
         self, page_id: PageCode, query: str, limit: int = 5,
         record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
         if page_id != PageCode.CFC:
             return []
@@ -208,15 +262,18 @@ class RedisCrmDealerStore:
             return []
         import json
 
-        normalized_query = query.lower()
+        normalized_query = _fold_search_text(query)
         stop_words = {
-            "tôi", "cho", "mình", "tìm", "đại", "lý", "gần", "nhất", "ở", "tại",
-            "đâu", "nào", "xin", "hỏi", "mua", "muốn", "em", "anh", "chị", "ơi",
-            "điểm", "bán", "cửa", "hàng", "chỗ", "sản", "phẩm", "phân", "bón",
-            "hữu", "cơ", "thuốc", "vật", "tư", "nông", "nghiệp", "vtnn", "công",
-            "ty", "tnhh", "hộ", "kinh", "doanh", "trách", "nhiệm", "hữu", "hạn",
-            "mtv", "một", "thành", "viên", "cơ", "sở", "bên", "có", "không", "ko",
-            "dạ", "vâng", "ạ", "giúp"
+            _fold_search_text(word)
+            for word in {
+                "tôi", "cho", "mình", "tìm", "đại", "lý", "gần", "nhất", "ở", "tại",
+                "đâu", "nào", "xin", "hỏi", "mua", "muốn", "em", "anh", "chị", "ơi",
+                "điểm", "bán", "cửa", "hàng", "chỗ", "sản", "phẩm", "phân", "bón",
+                "hữu", "cơ", "thuốc", "vật", "tư", "nông", "nghiệp", "vtnn", "công",
+                "ty", "tnhh", "hộ", "kinh", "doanh", "trách", "nhiệm", "hữu", "hạn",
+                "mtv", "một", "thành", "viên", "cơ", "sở", "bên", "có", "không", "ko",
+                "dạ", "vâng", "ạ", "giúp",
+            }
         }
         tokens = [token for token in normalized_query.split() if token not in stop_words and len(token) > 1]
         if not tokens:
@@ -227,13 +284,15 @@ class RedisCrmDealerStore:
         for item in json.loads(raw):
             name = str(item.get("name") or "").strip()
             address = str(item.get("address") or "").strip()
+            folded_name = _fold_search_text(name)
+            folded_address = _fold_search_text(address)
             # Physical dealer lookup requires an address to visit, unless explicitly searching by exact dealer name
             has_valid_address = bool(address and address.lower() not in {"chưa cập nhật địa chỉ", "chưa cập nhật", "null", "none"})
-            is_exact_name_query = bool(phrase and phrase in name.lower())
+            is_exact_name_query = bool(phrase and phrase in folded_name)
             if not has_valid_address and not is_exact_name_query:
                 continue
 
-            haystack = f"{name} {address}".lower()
+            haystack = f"{folded_name} {folded_address}"
             score = 0
             if phrase and phrase in haystack:
                 score += 10
@@ -295,8 +354,15 @@ class CompositeKnowledgeStore:
     def search(
         self, page_id: PageCode, query: str, limit: int = 5,
         record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
         matches: list[KnowledgeRecord] = []
         for store in self.stores:
-            matches.extend(store.search(page_id, query, limit, record_prefix))
+            matches.extend(
+                store.search(
+                    page_id, query, limit, record_prefix,
+                    intents=intents, categories=categories,
+                )
+            )
         return matches[:limit]

@@ -5,7 +5,9 @@ from zoneinfo import ZoneInfo
 
 from src.chatbot.infrastructure.messaging.outbox import InMemoryOutboxStore
 from src.chatbot.modules.knowledge.retriever import (
+    ApprovedKnowledgeStore,
     CompositeKnowledgeStore,
+    KnowledgeRecord,
     PostgresKnowledgeStore,
     RedisCrmDealerStore,
     RedisCrmProductStore,
@@ -158,6 +160,63 @@ def test_workflow_dealer_lookup_asking_location():
     assert "số điện thoại" in reply
 
 
+def test_workflow_agriculture_uses_approved_metadata_and_slots():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(
+            IntentType.AGRI_ADVICE,
+            {"crop": "cây khách cung cấp", "stage": "giai đoạn khách cung cấp"},
+        ),
+        normalizer,
+    )
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord(
+                "faq:approved-agri",
+                PageCode.CFC,
+                "Câu hỏi nông nghiệp",
+                "Hướng dẫn đã được duyệt theo đúng giai đoạn khách cung cấp.",
+                "APPROVED",
+                intent="source_agronomy_intent",
+                category="agronomy",
+            ),
+            KnowledgeRecord(
+                "faq:unrelated",
+                PageCode.CFC,
+                "Câu hỏi chung",
+                "Không được chọn nội dung này.",
+                "APPROVED",
+                intent="opening_hours",
+                category="faq",
+            ),
+        ]
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store)
+    outbox_id = pipeline.process(_make_event("hướng dẫn cách dùng"))
+    assert outbox_id is not None
+    assert "Hướng dẫn đã được duyệt" in outbox.messages[outbox_id].text
+    assert "Không được chọn" not in outbox.messages[outbox_id].text
+
+
+def test_workflow_agriculture_asks_context_before_using_generic_match():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.AGRI_ADVICE),
+        normalizer,
+    )
+    store = ApprovedKnowledgeStore(
+        [KnowledgeRecord("faq:agri", PageCode.CFC, "Câu hỏi", "Nội dung không được đoán.", "APPROVED", category="agronomy")]
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store)
+    outbox_id = pipeline.process(_make_event("Tôi muốn được tư vấn cách dùng"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "loại cây" in reply
+    assert "Nội dung không được đoán" not in reply
+
+
 def test_workflow_dealer_lookup_with_google_maps_link():
     class MockDealerStore:
         def search(self, page_id, query, limit=1, record_prefix=None):
@@ -304,6 +363,76 @@ def test_deterministic_slot_extraction_order_code_and_phone():
     assert slots2.get("phone") == "0972669456"
 
 
+def test_deterministic_slot_extraction_location_gazetteer():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+
+    assert normalizer.deterministic_slots("Kiên giang") == {
+        "location": "Kiên Giang",
+        "province": "Kiên Giang",
+    }
+    assert normalizer.deterministic_slots("tphcm") == {
+        "location": "Hồ Chí Minh",
+        "province": "Hồ Chí Minh",
+    }
+
+
+def test_deterministic_slot_extraction_copies_crop_and_stage_without_dictionary():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    slots = normalizer.deterministic_slots("bón cho cây mít ở giai đoạn nuôi trái")
+    assert slots["crop"] == "mít"
+    assert slots["stage"] == "nuôi trái"
+
+
+def test_dealer_context_keeps_location_when_customer_sends_phone():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(MockIntentClient(IntentType.UNKNOWN), normalizer)
+
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "0388509046",
+        {
+            "current_intent": IntentType.DEALER_LOOKUP.value,
+            "current_slots": {"location": "Kiên Giang", "province": "Kiên Giang"},
+        },
+    )
+
+    assert result.primary_intent == IntentType.DEALER_LOOKUP
+    assert result.extracted_slots["location"] == "Kiên Giang"
+    assert result.extracted_slots["province"] == "Kiên Giang"
+    assert result.extracted_slots["phone"] == "0388509046"
+
+
+def test_missing_dealer_with_phone_confirms_location_and_phone():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(
+            IntentType.DEALER_LOOKUP,
+            {"location": "Kiên Giang", "province": "Kiên Giang", "phone": "0388509046"},
+        ),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+
+    outbox_id = pipeline.process(_make_event("0388509046"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "0388509046" in reply
+    assert "Kiên Giang" in reply
+    assert "ghi nhận" in reply
+    assert "[moc_hen_lien_he]" not in reply
+    assert "khu vực nào" not in reply
+
+
+def test_placeholder_sanitizer_replaces_deadline_markers():
+    reply = ResponseComposer.sanitize_placeholders(
+        "Em sẽ liên hệ trước [moc_hen_lien_he] ([deadline]) [unknown_marker].",
+        "15h hôm nay",
+    )
+
+    assert reply == "Em sẽ liên hệ trước 15h hôm nay (15h hôm nay)."
+
+
 def test_filter_slots_prunes_order_code_from_price_and_dealer_workflows():
     from src.chatbot.modules.orchestration.pipeline import filter_slots_for_workflow
     from src.chatbot.shared.enums import WorkflowType
@@ -372,5 +501,5 @@ def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
     assert loc_matches[0].title == "Đại lý Phân Bón Tuấn Kiệt"
     assert "Tây Ninh" in loc_matches[0].content
 
-
-
+    unaccented_matches = store.search(PageCode.CFC, "Tay Ninh", limit=1, record_prefix=("dealer:",))
+    assert len(unaccented_matches) == 1
