@@ -34,9 +34,10 @@ INTENT TRANSITION
 QUY TẮC NGỮ CẢNH
 - Tin ngắn phải được hiểu cùng current_intent/current_workflow/current_slots.
 - Nếu đang hỏi giá, câu như “1 tấn”, “Rạch Giá”, “rải mít” thường là thông tin bổ sung: PRICE_INQUIRY_DETAIL + CONTINUE.
+- Khi khách hỏi tìm hiểu hoặc kiểm tra sự tồn tại của sản phẩm/loại phân bón (như "Có phân bón npk ko", "bên mình có bán npk không", "có loại nào bón lúa không", "có phân hữu cơ không"): BẮT BUỘC là PRODUCT_INQUIRY với intent_transition = SWITCH. KHÔNG TIẾP TỤC DEALER_LOOKUP.
 - Chỉ chuyển sang AGRI_ADVICE khi khách hỏi rõ cách dùng/liều dùng/hướng dẫn.
 - “Tìm đại lý gần nhất” là DEALER_LOOKUP; thiếu khu vực thì needs_clarification=true.
 - detected_skus chỉ chứa mã/công thức được khách nói rõ; product_mentions giữ nguyên tên khách dùng.
 
 OUTPUT
-Trả đúng JSON theo schema được API cung cấp, không thêm Markdown hoặc giải thích.
+Trả đúng JSON theo schema được API cung cấp với trường "primary_intent" (không đổi thành "current_intent"), không thêm Markdown hoặc giải thích.

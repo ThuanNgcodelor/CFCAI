@@ -54,11 +54,16 @@ class ResponseComposer:
 
         # Try model generation first if available
         if self.generator:
+            price_slots = {
+                k: v for k, v in slots.items()
+                if k in {"product", "crop", "quantity", "unit", "location", "province", "district", "area", "phone"}
+                and v is not None
+            }
             payload = {
                 "page_id": page_id.value,
                 "y_dinh": "PRICE_INQUIRY",
                 "tin_nhan_khach": customer_text,
-                "thong_tin_khach_hien_tai": slots,
+                "thong_tin_khach_hien_tai": price_slots,
                 "bai_quang_cao": ad_title or "",
                 "moc_hen_lien_he": deadline_text,
             }
@@ -105,12 +110,17 @@ class ResponseComposer:
 
         # Try model generation first if available
         if self.generator and product_record:
+            product_slots = {
+                k: v for k, v in slots.items()
+                if k in {"product", "crop", "location", "province", "district", "area", "phone"}
+                and v is not None
+            }
             payload = {
                 "page_id": page_id.value,
                 "y_dinh": "PRODUCT_INQUIRY",
                 "tin_nhan_khach": customer_text,
                 "thong_tin_san_pham": f"{product_title} | {product_content}",
-                "thong_tin_khach_hien_tai": slots,
+                "thong_tin_khach_hien_tai": product_slots,
                 "bai_quang_cao": ad_title or "",
                 "moc_hen_lien_he": deadline_text,
             }
@@ -146,37 +156,67 @@ class ResponseComposer:
         brand = self._brand_name(page_id)
         if dealers:
             dealer = dealers[0]
-            title = getattr(dealer, "title", "")
-            content = getattr(dealer, "content", "")
-            import urllib.parse
-            map_query = f"{title} {content}".strip()
-            map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(map_query)}"
+            title = getattr(dealer, "title", "").strip()
+            content = getattr(dealer, "content", "").strip()
+            address = ""
+            if " — " in content:
+                parts = content.split(" — ", 1)
+                address = parts[1].strip()
+            elif content and content != title:
+                address = content.strip()
+
+            map_url = None
+            if address and address.lower() not in {"chưa cập nhật địa chỉ", "chưa cập nhật", "null", "none"}:
+                import urllib.parse
+                map_query = f"{title}, {address}".strip()
+                map_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(map_query)}"
 
             if self.generator:
                 payload = {
                     "page_id": page_id.value,
                     "y_dinh": "DEALER_LOOKUP",
                     "tin_nhan_khach": customer_text,
-                    "thong_tin_dai_ly": f"{title} — {content}",
-                    "link_ban_do": map_url,
-                    "thong_tin_khach_hien_tai": slots,
+                    "thong_tin_dai_ly": f"{title} (Địa chỉ: {address})" if address else title,
+                    "link_ban_do": map_url or "chưa có",
+                    "so_dien_thoai_khach": str(slots.get("phone") or ""),
+                    "khu_vuc_khach": str(slots.get("location") or slots.get("area") or slots.get("province") or ""),
                     "moc_hen_lien_he": deadline_text,
                 }
                 llm_reply = self.generator.generate(payload)
                 if llm_reply:
-                    if map_url not in llm_reply:
+                    if map_url and map_url not in llm_reply:
                         llm_reply += f"\n📍 Xem vị trí trên Google Maps: {map_url}"
                     return self.validate_no_price(llm_reply)
 
-            resp = (
-                f"Dạ, mình tìm thấy điểm phân phối {brand} tại khu vực của mình:\n"
-                f"🌾 {content}\n"
-                f"📍 Xem vị trí trên Google Maps: {map_url}\n"
-                f"Anh/chị có thể ghé qua hoặc để lại số điện thoại để bạn phụ trách khu vực hỗ trợ kết nối trực tiếp nha!"
-            )
-            return self.validate_no_price(resp)
+            resp_lines = [
+                f"Dạ, mình tìm thấy điểm phân phối {brand} tại khu vực của mình:",
+                f"🌾 {title}",
+            ]
+            if address and address.lower() not in {"chưa cập nhật địa chỉ", "chưa cập nhật", "null", "none"}:
+                resp_lines.append(f"🏠 Địa chỉ: {address}")
+            if map_url:
+                resp_lines.append(f"📍 Xem vị trí trên Google Maps: {map_url}")
+            resp_lines.append("Anh/chị có thể ghé qua hoặc để lại số điện thoại để bạn phụ trách khu vực hỗ trợ kết nối trực tiếp nha!")
+            return self.validate_no_price("\n".join(resp_lines))
 
         location = slots.get("location") or slots.get("province") or slots.get("district")
+        product_needed = str(slots.get("product_mentions") or slots.get("product") or "")
+        if self.generator:
+            payload = {
+                "page_id": page_id.value,
+                "y_dinh": "DEALER_LOOKUP",
+                "tin_nhan_khach": customer_text,
+                "thong_tin_dai_ly": f"Chưa tìm thấy đại lý tại {location}" if location else "Khách chưa cung cấp khu vực/tỉnh/huyện để tra cứu",
+                "link_ban_do": "chưa có",
+                "so_dien_thoai_khach": str(slots.get("phone") or ""),
+                "khu_vuc_khach": str(location or ""),
+                "san_pham_quan_tam": product_needed,
+                "moc_hen_lien_he": deadline_text,
+            }
+            llm_reply = self.generator.generate(payload)
+            if llm_reply:
+                return self.validate_no_price(llm_reply)
+
         if location:
             resp = (
                 f"Dạ hiện tại bên em đang cập nhật dữ liệu đại lý tại khu vực {location}. "

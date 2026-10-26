@@ -16,7 +16,7 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 )
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.modules.workflows.composer import ResponseComposer
-from src.chatbot.shared.enums import IntentType, PageCode
+from src.chatbot.shared.enums import IntentTransition, IntentType, PageCode
 from src.chatbot.shared.events import InboxEvent, IntentAnalysisResult, NormalizedMessage
 
 VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
@@ -302,5 +302,75 @@ def test_deterministic_slot_extraction_order_code_and_phone():
     slots2 = normalizer.deterministic_slots("đơn hàng DHPB06-320 của số 0972669456")
     assert slots2.get("order_code") == "DHPB06-320"
     assert slots2.get("phone") == "0972669456"
+
+
+def test_filter_slots_prunes_order_code_from_price_and_dealer_workflows():
+    from src.chatbot.modules.orchestration.pipeline import filter_slots_for_workflow
+    from src.chatbot.shared.enums import WorkflowType
+
+    polluted_slots = {
+        "phone": "0388509046",
+        "area": "Kiên Giang",
+        "product": "Cobanic 30",
+        "quantity": "1",
+        "unit": "bao",
+        "order_code": "0000332",
+    }
+    price_slots = filter_slots_for_workflow(WorkflowType.PRICE_HANDOFF, polluted_slots)
+    assert "order_code" not in price_slots
+    assert price_slots["phone"] == "0388509046"
+    assert price_slots["quantity"] == "1"
+
+    dealer_slots = filter_slots_for_workflow(WorkflowType.DEALER_LOOKUP, polluted_slots)
+    assert "order_code" not in dealer_slots
+    assert "quantity" not in dealer_slots
+    assert dealer_slots["area"] == "Kiên Giang"
+
+
+def test_product_inquiry_marker_recognition():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    assert normalizer.contains("product_markers", "có phân bón npk ko")
+    analyzer = HybridInputAnalyzer(MockIntentClient(IntentType.UNKNOWN), normalizer)
+    result = analyzer.analyze(PageCode.CFC, "Có phân bón npk ko", {"current_intent": "DEALER_LOOKUP"})
+    assert result.primary_intent == IntentType.PRODUCT_INQUIRY
+    assert result.intent_transition == IntentTransition.SWITCH
+
+
+def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
+    from src.chatbot.modules.knowledge.retriever import RedisCrmDealerStore
+    import json
+
+    class FakeRedis:
+        def get(self, key):
+            if key == "cfc:dealers:locations":
+                return json.dumps([
+                    {
+                        "name": "CÔNG TY TNHH MỘT THÀNH VIÊN PHÂN BÓN HỮU CƠ ĐẬM ĐẶC",
+                        "address": None,
+                        "code": None,
+                    },
+                    {
+                        "name": "Đại lý Phân Bón Tuấn Kiệt",
+                        "address": "Số 475 Tổ 1, Ấp An Điền, Xã Châu Thành, Tỉnh Tây Ninh",
+                        "code": "DL002",
+                    },
+                ])
+            return None
+
+    store = RedisCrmDealerStore()
+    store._redis = FakeRedis()
+
+    # Query with product tokens and no location
+    query = "Tôi muốn tìm mua Hữu cơ Cobanic 21\nTôi muốn tìm đại lý gần nhất"
+    matches = store.search(PageCode.CFC, query, limit=1, record_prefix=("dealer:",))
+    # Must NOT match the organic fertilizer dealer with no address
+    assert len(matches) == 0
+
+    # Query with specific dealer location
+    loc_matches = store.search(PageCode.CFC, "Tây Ninh", limit=1, record_prefix=("dealer:",))
+    assert len(loc_matches) == 1
+    assert loc_matches[0].title == "Đại lý Phân Bón Tuấn Kiệt"
+    assert "Tây Ninh" in loc_matches[0].content
+
 
 

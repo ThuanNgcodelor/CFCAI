@@ -18,8 +18,21 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 )
 from src.chatbot.modules.workflows.composer import ResponseComposer
 from src.chatbot.modules.workflows.sla import calculate_contact_deadline
-from src.chatbot.shared.enums import IntentType, Ownership, PageCode
+from src.chatbot.shared.enums import IntentType, Ownership, PageCode, WorkflowType
 from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
+
+
+def filter_slots_for_workflow(workflow: WorkflowType, slots: dict[str, Any]) -> dict[str, Any]:
+    common_keys = {"phone", "location", "province", "district", "area", "crop", "product", "detected_skus", "detected_formulas"}
+    if workflow == WorkflowType.PRICE_HANDOFF:
+        allowed = common_keys | {"quantity", "unit"}
+    elif workflow == WorkflowType.ORDER_TRACKING:
+        allowed = {"order_code", "phone"}
+    elif workflow in {WorkflowType.DEALER_LOOKUP, WorkflowType.PRODUCT_INQUIRY, WorkflowType.AGRICULTURE_ADVICE}:
+        allowed = common_keys
+    else:
+        allowed = common_keys
+    return {k: v for k, v in slots.items() if k in allowed and v is not None}
 
 
 class SafeMessagePipeline:
@@ -101,13 +114,14 @@ class SafeMessagePipeline:
         else:
             intent = self.classify(text)
 
+        workflow = workflow_for_intent(intent)
         effective_slots: dict[str, object] = dict(context.get("current_slots", {}))
         if analysis and analysis.extracted_slots:
             effective_slots.update(analysis.extracted_slots)
+        effective_slots = filter_slots_for_workflow(workflow, effective_slots)
 
         effective_conversation_version = conversation_version
         if self.conversation_repository and batch_version is not None:
-            workflow = workflow_for_intent(intent)
             state = self.conversation_repository.update_context(
                 event.page_id,
                 conversation_id,

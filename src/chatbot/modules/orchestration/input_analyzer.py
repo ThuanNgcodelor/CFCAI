@@ -126,6 +126,9 @@ class HybridInputAnalyzer:
         elif self.normalizer.contains("order_markers", normalized):
             forced_intent = IntentType.ORDER_TRACKING
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+        elif self.normalizer.contains("product_markers", normalized) and not self.normalizer.contains("price_markers", normalized):
+            forced_intent = IntentType.PRODUCT_INQUIRY
+            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
 
         is_open_price_context = current_intent in {
             IntentType.PRICE_INQUIRY.value,

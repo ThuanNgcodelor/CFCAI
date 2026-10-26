@@ -212,7 +212,11 @@ class RedisCrmDealerStore:
         stop_words = {
             "tôi", "cho", "mình", "tìm", "đại", "lý", "gần", "nhất", "ở", "tại",
             "đâu", "nào", "xin", "hỏi", "mua", "muốn", "em", "anh", "chị", "ơi",
-            "điểm", "bán", "cửa", "hàng", "chỗ"
+            "điểm", "bán", "cửa", "hàng", "chỗ", "sản", "phẩm", "phân", "bón",
+            "hữu", "cơ", "thuốc", "vật", "tư", "nông", "nghiệp", "vtnn", "công",
+            "ty", "tnhh", "hộ", "kinh", "doanh", "trách", "nhiệm", "hữu", "hạn",
+            "mtv", "một", "thành", "viên", "cơ", "sở", "bên", "có", "không", "ko",
+            "dạ", "vâng", "ạ", "giúp"
         }
         tokens = [token for token in normalized_query.split() if token not in stop_words and len(token) > 1]
         if not tokens:
@@ -221,18 +225,27 @@ class RedisCrmDealerStore:
         phrase = " ".join(tokens)
         matches = []
         for item in json.loads(raw):
-            name = str(item.get("name") or "")
-            address = str(item.get("address") or "")
+            name = str(item.get("name") or "").strip()
+            address = str(item.get("address") or "").strip()
+            # Physical dealer lookup requires an address to visit, unless explicitly searching by exact dealer name
+            has_valid_address = bool(address and address.lower() not in {"chưa cập nhật địa chỉ", "chưa cập nhật", "null", "none"})
+            is_exact_name_query = bool(phrase and phrase in name.lower())
+            if not has_valid_address and not is_exact_name_query:
+                continue
+
             haystack = f"{name} {address}".lower()
             score = 0
-            if phrase in haystack:
+            if phrase and phrase in haystack:
                 score += 10
             matched_tokens = sum(1 for token in tokens if token in haystack)
-            if matched_tokens:
-                score += matched_tokens
+            if matched_tokens == len(tokens) or (len(tokens) >= 2 and matched_tokens >= len(tokens) * 0.7):
+                score += matched_tokens * 2
+
+            if score >= 2:
+                content_display = f"{name} — {address}" if has_valid_address else name
                 matches.append((score, KnowledgeRecord(
                     f"dealer:{item.get('code') or name}", page_id, name,
-                    f"{name} — {address or 'chưa cập nhật địa chỉ'}",
+                    content_display,
                     "APPROVED",
                 )))
         matches.sort(key=lambda item: (-item[0], item[1].record_id))
