@@ -1,6 +1,106 @@
-version: '3.8'
-
 services:
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cfc_zeo_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      # Do not inherit a host DEBUG=release/non-boolean value into Pydantic.
+      DEBUG: ${APP_DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-cfc_zeo_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cfc_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cfc_secret_password}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-cfc_admin}:${POSTGRES_PASSWORD:-cfc_secret_password}@postgres:5432/${POSTGRES_DB:-cfc_zeo_db}
+      INBOX_BACKEND: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
+      OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
+      CFC_PAGE_ID: ${CFC_PAGE_ID:-}
+      CFC_VERIFY_TOKEN: ${CFC_VERIFY_TOKEN:-}
+      CFC_APP_SECRET: ${CFC_APP_SECRET:-}
+      CFC_PAGE_ACCESS_TOKEN: ${CFC_PAGE_ACCESS_TOKEN:-}
+      META_SEND_ENABLED: ${META_SEND_ENABLED:-false}
+      META_TEST_RECIPIENT_ID: ${META_TEST_RECIPIENT_ID:-}
+      ZEO_PAGE_ID: ${ZEO_PAGE_ID:-}
+      ZEO_VERIFY_TOKEN: ${ZEO_VERIFY_TOKEN:-}
+      ZEO_APP_SECRET: ${ZEO_APP_SECRET:-}
+      ZEO_PAGE_ACCESS_TOKEN: ${ZEO_PAGE_ACCESS_TOKEN:-}
+      AMIS_SYNC_INTERNAL_TOKEN: ${AMIS_SYNC_INTERNAL_TOKEN:-}
+      AMIS_BASE_URL: ${AMIS_BASE_URL:-https://crmconnect.misa.vn/api/v2}
+      AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
+      AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
+      AMIS_PILOT_APPROVE_ALL: ${AMIS_PILOT_APPROVE_ALL:-false}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python -c "import urllib.request;
+          urllib.request.urlopen('http://localhost:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  worker:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cfc_zeo_worker
+    restart: unless-stopped
+    command: ["python", "-m", "apps.worker.main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${APP_DEBUG:-false}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-cfc_zeo_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cfc_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cfc_secret_password}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-cfc_admin}:${POSTGRES_PASSWORD:-cfc_secret_password}@postgres:5432/${POSTGRES_DB:-cfc_zeo_db}
+      INBOX_BACKEND: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
+      OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
+      CFC_PAGE_ID: ${CFC_PAGE_ID:-}
+      CFC_APP_SECRET: ${CFC_APP_SECRET:-}
+      CFC_PAGE_ACCESS_TOKEN: ${CFC_PAGE_ACCESS_TOKEN:-}
+      ZEO_PAGE_ID: ${ZEO_PAGE_ID:-}
+      ZEO_APP_SECRET: ${ZEO_APP_SECRET:-}
+      ZEO_PAGE_ACCESS_TOKEN: ${ZEO_PAGE_ACCESS_TOKEN:-}
+      META_SEND_ENABLED: ${META_SEND_ENABLED:-false}
+      META_TEST_RECIPIENT_ID: ${META_TEST_RECIPIENT_ID:-}
+      AMIS_BASE_URL: ${AMIS_BASE_URL:-https://crmconnect.misa.vn/api/v2}
+      AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
+      AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
+      AMIS_SYNC_INTERNAL_TOKEN: ${AMIS_SYNC_INTERNAL_TOKEN:-}
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: cfc_zeo_postgres
@@ -13,11 +113,15 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cfc_admin} -d ${POSTGRES_DB:-cfc_zeo_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+    # The init directory is only applied when the volume is created. Existing
+    # volumes must be upgraded through the migration runner.
 
   redis:
     image: redis:7-alpine

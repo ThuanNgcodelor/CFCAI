@@ -4,9 +4,8 @@ This module intentionally has no Redis/PostgreSQL dependency.  It is the
 deterministic domain layer used by both the durable repositories and tests.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from threading import RLock
-from typing import Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -20,9 +19,9 @@ class ConversationState(BaseModel):
     ownership: Ownership = Ownership.AI
     version: int = 0
     batch_version: int = 0
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    owner_reason: Optional[str] = None
-    owner_actor: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    owner_reason: str | None = None
+    owner_actor: str | None = None
 
 
 class ConversationStateStore:
@@ -34,7 +33,7 @@ class ConversationStateStore:
     """
 
     def __init__(self) -> None:
-        self._states: Dict[str, ConversationState] = {}
+        self._states: dict[str, ConversationState] = {}
         self._lock = RLock()
 
     def get_or_create(
@@ -68,10 +67,12 @@ class ConversationStateStore:
             current.batch_version += 1
             current.owner_actor = actor
             current.owner_reason = reason
-            current.updated_at = datetime.now(timezone.utc)
+            current.updated_at = datetime.now(UTC)
             return current.model_copy(deep=True)
 
-    def takeover(self, conversation_id: str, actor: str, reason: str) -> ConversationState:
+    def takeover(
+        self, conversation_id: str, actor: str, reason: str
+    ) -> ConversationState:
         return self._transition(
             conversation_id,
             ownership=Ownership.HUMAN,
@@ -87,7 +88,9 @@ class ConversationStateStore:
             reason=reason,
         )
 
-    def resume(self, conversation_id: str, actor: str, reason: str) -> ConversationState:
+    def resume(
+        self, conversation_id: str, actor: str, reason: str
+    ) -> ConversationState:
         return self._transition(
             conversation_id,
             ownership=Ownership.AI,
@@ -99,7 +102,7 @@ class ConversationStateStore:
         with self._lock:
             current = self._states[conversation_id]
             current.batch_version += 1
-            current.updated_at = datetime.now(timezone.utc)
+            current.updated_at = datetime.now(UTC)
             return current.model_copy(deep=True)
 
     def snapshot(self, conversation_id: str) -> ConversationState:

@@ -1255,3 +1255,42 @@ Các phase chỉ được đánh dấu `[x]` khi test path tương ứng tồn t
 - [ ] Ops kill switch đã thử trên từng Page.
 - [ ] Handoff task có người nhận và notification thật.
 - [ ] Shadow/canary được business ký duyệt.
+
+## 33. Implementation status — 25/10/2026
+
+Đây là trạng thái triển khai thực tế, cập nhật theo code/test/runtime; các mục
+chưa đạt không được hiểu là đã bật auto-reply production.
+
+| Area | Current evidence | Status |
+|---|---|---|
+| Foundation | Docker Compose, contracts, fixtures; full suite pass | Done for local/staging |
+| Meta ingress | Cloudflare Tunnel → `/webhooks/meta` → Postgres; Meta POST đã trả 200; page-specific HMAC/dedup | Phase 1 staging complete |
+| Worker/outbox | `cfc_zeo_worker`, Postgres lease, outbox schema, Meta sender adapter, allowlisted dispatcher, unique delivery version | Partial: aggregation/takeover/retry reconciliation vẫn thiếu |
+| Aggregation/handoff | PostgreSQL conversation/message/batch/slot runtime, Redis deadline schedule, Ops takeover/resume, transactional outbox suppression; Phase 2 integration gate pass | Staging pass; còn xác minh live Business Suite human echo/takeover và Phase 4 follow-up analyzer |
+| Ollama | `qwen2.5:7b` installed; strict intent adapter; price handoff guard | Partial: deterministic FAQ/product routing đã ưu tiên trước Ollama; full eval vẫn thiếu |
+| Data publish | Excel mapping ngoài code; versioned import batch/provenance/checksum; record/batch review; atomic publish/rollback; customer-only read model | Phase 3 complete; hai batch nguồn thật đang QUARANTINED chờ người duyệt |
+| Knowledge | Published page-scoped/customer-only read model, CRM product/dealer Redis snapshots | Partial: semantic vector retrieval, citation và conversational CRM state vẫn thiếu |
+| Ops | Redis-shared per-page pause/resume API and worker control | Partial: auth/RBAC/audit/takeover/task queue chưa có |
+| CRM/MISA | Warm thành công: 422 locations, 942 products, 7,913 orders, 5,000 loyalty records; Redis snapshots đã ghi | Partial: 0 GPS locations; dealer/order/loyalty workflows cần tích hợp end-to-end |
+| Go-live | 45 automated tests pass; Ruff/mypy pass; API/worker/Postgres/Redis healthy | Not ready: T01–T12 eval, backup/restore, security và production outbound gates còn thiếu |
+
+### 33.1 Runtime endpoints currently available
+
+```text
+GET  /health
+GET  /webhook              (Meta verification)
+POST /webhook              (alias: /webhooks/meta)
+GET  /admin/ops/status
+POST /admin/ops/{CFC|ZEO}/pause
+POST /admin/ops/{CFC|ZEO}/resume
+```
+
+Các `/admin/ops/*` endpoint hiện là internal staging controls; trước production
+phải thêm authentication/RBAC, audit append-only và idempotency.
+
+### 33.2 Current phase decision
+
+Phase 0 và Phase 1 được xem là đạt gate staging. Phase 2, 3, 4, 5, 6, 7 chỉ ở
+mức partial cho tới khi test path/evaluation tương ứng và các tiêu chí vận hành
+được hoàn tất. Phase 8 vẫn giữ `ai_enabled=false`/không bật auto-reply
+production cho đến khi toàn bộ regression và go-live checklist pass.

@@ -1,0 +1,14 @@
+{
+  "aliases": {
+    "hc": "hữu cơ",
+    "sp": "sản phẩm",
+    "đl": "đại lý",
+    "sdt": "số điện thoại"
+  },
+  "safety": {
+    "price_markers": ["giá", "báo giá", "xin giá", "bao nhiêu tiền", "chi phí", "price"],
+    "human_markers": ["gặp nhân viên", "người thật", "nhân viên tư vấn", "admin hỗ trợ"],
+    "explicit_advice_markers": ["cách dùng", "hướng dẫn", "liều", "bón thế nào", "rải thế nào", "dùng thế nào"]
+  },
+  "quantity_units": ["kg", "g", "tấn", "t", "bao", "gói", "chai", "lít", "lit"]
+}

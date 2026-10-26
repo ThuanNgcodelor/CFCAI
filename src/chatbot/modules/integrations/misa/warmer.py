@@ -1,8 +1,8 @@
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from src.chatbot.core.settings import settings
 from src.chatbot.modules.integrations.misa.client import AmisCrmClient
@@ -15,17 +15,19 @@ from src.chatbot.modules.integrations.misa.schemas import (
 
 logger = logging.getLogger(__name__)
 
+
 class AmisCacheWarmer:
     """
     Pure Python AMIS Cache Warmer.
     Replaces n8n 'AMIS CRM Full Warm — Redis Sync Every 1h' workflow.
     """
-    def __init__(self, client: Optional[AmisCrmClient] = None):
+
+    def __init__(self, client: AmisCrmClient | None = None):
         self.client = client or AmisCrmClient()
-        self.latest_result: Optional[AmisSyncResult] = None
-        self._in_memory_dealers: List[Dict[str, Any]] = []
-        self._in_memory_products: List[Dict[str, Any]] = []
-        self._in_memory_orders: Dict[str, List[Dict[str, Any]]] = {}
+        self.latest_result: AmisSyncResult | None = None
+        self._in_memory_dealers: list[dict[str, Any]] = []
+        self._in_memory_products: list[dict[str, Any]] = []
+        self._in_memory_orders: dict[str, list[dict[str, Any]]] = {}
 
     def _hash_data(self, data: Any) -> str:
         s = json.dumps(data, sort_keys=True, ensure_ascii=False)
@@ -50,7 +52,9 @@ class AmisCacheWarmer:
 
         # 4. Source Count Validation Gates (matching ValidateSourceCounts node in n8n)
         if len(eligible_dealers) < 1 and not settings.DEBUG:
-            raise ValueError(f"[AMIS Warmer] Too few eligible dealers: {len(eligible_dealers)} (raw: {len(all_customers)})")
+            raise ValueError(
+                f"[AMIS Warmer] Too few eligible dealers: {len(eligible_dealers)} (raw: {len(all_customers)})"
+            )
 
         if len(all_products) < 1 and not settings.DEBUG:
             raise ValueError("[AMIS Warmer] No products fetched from AMIS.")
@@ -95,7 +99,7 @@ class AmisCacheWarmer:
             await redis_client.set("cfc:products:catalog", json.dumps(products_data))
             await redis_client.set("cfc:sync:last_hash", loc_hash)
 
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(UTC).isoformat()
         result = AmisSyncResult(
             status="ok",
             source="amis_crm",
@@ -115,10 +119,11 @@ class AmisCacheWarmer:
         )
         return result
 
-    def get_dealers(self) -> List[Dict[str, Any]]:
+    def get_dealers(self) -> list[dict[str, Any]]:
         return self._in_memory_dealers
 
-    def get_products(self) -> List[Dict[str, Any]]:
+    def get_products(self) -> list[dict[str, Any]]:
         return self._in_memory_products
+
 
 amis_warmer = AmisCacheWarmer()
