@@ -30,6 +30,9 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
+      ADMINISTRATIVE_AREAS_PATH: ${ADMINISTRATIVE_AREAS_PATH:-config/normalization/administrative_areas.json}
+      MARKDOWN_CATALOG_MAPPING_PATH: ${MARKDOWN_CATALOG_MAPPING_PATH:-config/data_sources/markdown_mapping.json}
+      SUPPORT_CONTACTS_PATH: ${SUPPORT_CONTACTS_PATH:-config/business/support_contacts.json}
       CFC_PAGE_ID: ${CFC_PAGE_ID:-}
       CFC_VERIFY_TOKEN: ${CFC_VERIFY_TOKEN:-}
       CFC_APP_SECRET: ${CFC_APP_SECRET:-}
@@ -51,6 +54,7 @@ services:
       - ./src:/app/src
       - ./apps:/app/apps
       - ./config:/app/config
+      - ./CFC_Co_Bay_FAQ.md:/app/CFC_Co_Bay_FAQ.md:ro
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
@@ -100,6 +104,8 @@ services:
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
       OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
+      ADMINISTRATIVE_AREAS_PATH: ${ADMINISTRATIVE_AREAS_PATH:-config/normalization/administrative_areas.json}
+      SUPPORT_CONTACTS_PATH: ${SUPPORT_CONTACTS_PATH:-config/business/support_contacts.json}
       CFC_PAGE_ID: ${CFC_PAGE_ID:-}
       CFC_APP_SECRET: ${CFC_APP_SECRET:-}
       CFC_PAGE_ACCESS_TOKEN: ${CFC_PAGE_ACCESS_TOKEN:-}

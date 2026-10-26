@@ -3,6 +3,7 @@ import json
 import logging
 from typing import Any
 
+# pyrefly: ignore[missing-import]
 import httpx
 
 from src.chatbot.core.settings import settings

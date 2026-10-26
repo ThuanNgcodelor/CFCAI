@@ -1,5 +1,6 @@
 from typing import Any
 
+# pyrefly: ignore[missing-import]
 from pydantic import BaseModel, Field
 
 

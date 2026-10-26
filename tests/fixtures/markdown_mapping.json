@@ -1,0 +1,25 @@
+{
+  "mapping_version": 1,
+  "sources": [
+    {
+      "id": "fixture-cfc-faq",
+      "page_id": "CFC",
+      "path": "tests/fixtures/markdown_faq_legacy.md",
+      "source_sheet": "FAQ",
+      "columns": {
+        "topic": ["Chủ đề"],
+        "question_examples": ["Câu hỏi mẫu"],
+        "answer": ["Câu trả lời"]
+      },
+      "defaults": {
+        "intent_prefix": "markdown_faq",
+        "category": "faq",
+        "audience": "customer",
+        "response_mode": "direct",
+        "risk_level": "MEDIUM",
+        "source_active": true
+      },
+      "skip_answer_contains": ["chưa có câu trả lời", "cần bổ sung"]
+    }
+  ]
+}

@@ -7,6 +7,7 @@ deterministic domain layer used by both the durable repositories and tests.
 from datetime import UTC, datetime
 from threading import RLock
 
+# pyrefly: ignore[missing-import]
 from pydantic import BaseModel, Field
 
 from src.chatbot.shared.enums import Ownership, PageCode

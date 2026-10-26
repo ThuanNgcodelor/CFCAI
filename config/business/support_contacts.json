@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "pages": {
+    "CFC": {
+      "contacts": [
+        {
+          "id": "sales-manager",
+          "name": "Lê Trọng Nhơn",
+          "title": "Trưởng phòng Kinh doanh",
+          "phone": "0981205448"
+        },
+        {
+          "id": "agronomist-le-thanh-dam",
+          "name": "Lê Thanh Đạm",
+          "title": "Khuyến nông",
+          "phone": "+84353857516"
+        },
+        {
+          "id": "agronomist-cao-van-duoc",
+          "name": "Cao Văn Được",
+          "title": "Khuyến nông",
+          "phone": "+84939852529"
+        }
+      ],
+      "hotline": {
+        "id": "company-hotline",
+        "name": "Cò Bay",
+        "title": "Hotline công ty",
+        "phone": "19005307"
+      },
+      "purposes": {
+        "sales": {
+          "label": "tư vấn giá và mua hàng",
+          "contact_ids": ["sales-manager"],
+          "include_hotline": true
+        },
+        "agronomy": {
+          "label": "tư vấn kỹ thuật nông nghiệp",
+          "contact_ids": [
+            "agronomist-le-thanh-dam",
+            "agronomist-cao-van-duoc"
+          ],
+          "include_hotline": true
+        },
+        "general": {
+          "label": "hỗ trợ khách hàng",
+          "contact_ids": ["sales-manager"],
+          "include_hotline": true
+        }
+      },
+      "workflow_purposes": {
+        "PRICE_HANDOFF": "sales",
+        "AGRICULTURE_ADVICE": "agronomy",
+        "CONTACT_SUPPORT": "general"
+      },
+      "request_routing": [
+        {
+          "purpose": "agronomy",
+          "markers": [
+            "khuyến nông",
+            "kỹ thuật",
+            "kỹ sư nông nghiệp",
+            "tư vấn cây trồng",
+            "cách bón",
+            "liều dùng"
+          ]
+        },
+        {
+          "purpose": "sales",
+          "markers": [
+            "kinh doanh",
+            "mua hàng",
+            "báo giá",
+            "giá",
+            "đặt hàng"
+          ]
+        }
+      ]
+    }
+  }
+}

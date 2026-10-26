@@ -3,8 +3,10 @@ import logging
 
 # pyrefly: ignore[missing-import]
 from fastapi import FastAPI, Header, HTTPException, Request
+
 # pyrefly: ignore[missing-import]
 from fastapi.responses import JSONResponse, PlainTextResponse
+
 # pyrefly: ignore[missing-import]
 from pydantic import BaseModel
 
@@ -19,6 +21,7 @@ from src.chatbot.modules.channels.meta.signature import verify_meta_signature
 from src.chatbot.modules.conversations.repository import PostgresConversationRepository
 from src.chatbot.modules.integrations.excel.importer import ExcelCatalogImporter
 from src.chatbot.modules.integrations.excel.repository import CatalogPublishRepository
+from src.chatbot.modules.integrations.markdown.importer import MarkdownCatalogImporter
 from src.chatbot.modules.integrations.misa.warmer import amis_warmer
 from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.shared.enums import PageCode
@@ -240,6 +243,23 @@ async def import_excel_catalog():
         "total_staged_faqs": len(importer.staged_faqs),
         "total_staged_products": len(importer.staged_products),
         "conflicts": importer.conflicts,
+    }
+
+
+@app.post("/admin/catalog/import-markdown")
+async def import_markdown_catalog():
+    """Stage configured Markdown FAQ sources; records remain quarantined."""
+    repository = CatalogPublishRepository(settings.get_database_url())
+    importer = MarkdownCatalogImporter(
+        mapping_path=settings.MARKDOWN_CATALOG_MAPPING_PATH,
+        repository=repository,
+    )
+    reports = importer.import_all()
+    return {
+        "status": "ok",
+        "batches": reports,
+        "total_staged_faqs": len(importer.staged_faqs),
+        "publication_required": True,
     }
 
 

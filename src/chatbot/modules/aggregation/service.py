@@ -4,6 +4,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from threading import RLock
 
+# pyrefly: ignore[missing-import]
 from pydantic import BaseModel, Field
 
 from src.chatbot.modules.conversations.state_machine import ConversationStateStore

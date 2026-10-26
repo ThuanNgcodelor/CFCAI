@@ -80,6 +80,17 @@ def test_short_followup_keeps_open_price_workflow() -> None:
     assert result.requires_human_handoff
 
 
+def test_contact_request_is_forced_before_model_guess() -> None:
+    analyzer = _analyzer(
+        IntentAnalysisResult(primary_intent=IntentType.GENERAL_FAQ, confidence=0.8)
+    )
+
+    result = analyzer.analyze(PageCode.CFC, "Cho tôi xin số hotline công ty")
+
+    assert result.primary_intent == IntentType.CONTACT_REQUEST
+    assert not result.requires_human_handoff
+
+
 def test_switch_from_open_price_workflow_to_dealer() -> None:
     analyzer = _analyzer(
         IntentAnalysisResult(primary_intent=IntentType.DEALER_LOOKUP, confidence=0.9)

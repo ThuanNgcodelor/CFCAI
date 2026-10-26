@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from src.chatbot.modules.llm.ollama import OllamaUnderstandingError
+from src.chatbot.shared.administrative_areas import (
+    AdministrativeArea,
+    AdministrativeAreaResolver,
+    fold_administrative_text,
+)
 from src.chatbot.shared.enums import (
     IntentTransition,
     IntentType,
@@ -25,14 +30,23 @@ class StructuredIntentClient(Protocol):
 
 
 class VietnameseNormalizer:
-    def __init__(self, config_path: str | Path) -> None:
-        config = json.loads(Path(config_path).read_text(encoding="utf-8"))
+    def __init__(
+        self,
+        config_path: str | Path,
+        administrative_areas_path: str | Path | None = None,
+    ) -> None:
+        config_file = Path(config_path)
+        config = json.loads(config_file.read_text(encoding="utf-8"))
         self.aliases: dict[str, str] = config.get("aliases", {})
         self.safety: dict[str, list[str]] = config.get("safety", {})
         self.knowledge_filters: dict[str, dict[str, list[str]]] = config.get(
             "knowledge_filters", {}
         )
+        self.contextual_continuation: dict[str, dict[str, Any]] = config.get(
+            "contextual_continuation", {}
+        )
         self.location_aliases: dict[str, str] = {}
+        fallback_provinces: list[AdministrativeArea] = []
         for entry in config.get("locations", []):
             canonical = str(entry.get("canonical") or "").strip()
             if not canonical:
@@ -40,6 +54,23 @@ class VietnameseNormalizer:
             aliases = [canonical, *(str(alias) for alias in entry.get("aliases", []))]
             for alias in aliases:
                 self.location_aliases[self._fold_diacritics(alias)] = canonical
+            fallback_provinces.append(
+                AdministrativeArea(
+                    area_id=f"province-{fold_administrative_text(canonical).replace(' ', '-')}",
+                    canonical=canonical,
+                    level="province",
+                    aliases=tuple(aliases),
+                )
+            )
+        source_path = (
+            Path(administrative_areas_path)
+            if administrative_areas_path is not None
+            else config_file.with_name("administrative_areas.json")
+        )
+        self.area_resolver = AdministrativeAreaResolver.from_file(
+            source_path,
+            fallback_areas=fallback_provinces,
+        )
         location_patterns = sorted(self.location_aliases, key=len, reverse=True)
         self.location_pattern = (
             re.compile(
@@ -93,6 +124,41 @@ class VietnameseNormalizer:
             "categories": categories,
         }
 
+    def resolve_location(
+        self,
+        value: str | None,
+        *,
+        parent_province: str | None = None,
+    ) -> AdministrativeArea | None:
+        """Resolve user or model location text through the configured gazetteer."""
+        return self.area_resolver.resolve(value, parent_province=parent_province)
+
+    def continuation_intent(
+        self,
+        current_intent: object,
+        model_intent: IntentType | None = None,
+    ) -> IntentType | None:
+        """Return a configured workflow continuation, never a content answer."""
+        current = str(
+            current_intent.value if isinstance(current_intent, IntentType) else current_intent or ""
+        )
+        rule = self.contextual_continuation.get(current)
+        if not isinstance(rule, dict):
+            return None
+        if model_intent is None:
+            should_retain = bool(rule.get("retain_when_model_unavailable"))
+        else:
+            retained_intents = {
+                str(value) for value in rule.get("retain_on_model_intents", [])
+            }
+            should_retain = model_intent.value in retained_intents
+        if not should_retain:
+            return None
+        try:
+            return IntentType(current)
+        except ValueError:
+            return None
+
     def deterministic_slots(self, text: str) -> dict[str, Any]:
         slots: dict[str, Any] = {}
         # Generic linguistic extraction, not a crop/product dictionary: the
@@ -115,14 +181,9 @@ class VietnameseNormalizer:
         )
         if stage_match:
             slots["stage"] = re.sub(r"\s+", " ", stage_match.group(1)).strip(" -:")
-        if self.location_pattern:
-            folded_text = self._fold_diacritics(text)
-            location_match = self.location_pattern.search(folded_text)
-            if location_match:
-                canonical = self.location_aliases.get(location_match.group(0).casefold())
-                if canonical:
-                    slots["location"] = canonical
-                    slots["province"] = canonical
+        location_area = self.resolve_location(text)
+        if location_area:
+            slots.update(location_area.slots())
         if self.quantity_pattern:
             match = self.quantity_pattern.search(text)
             if match:
@@ -185,6 +246,20 @@ class HybridInputAnalyzer:
                 }
                 else IntentTransition.SWITCH if current_intent else IntentTransition.START
             )
+        elif self.normalizer.contains("contact_markers", normalized):
+            if current_intent in {
+                IntentType.PRICE_INQUIRY.value,
+                IntentType.PRICE_INQUIRY_DETAIL.value,
+            }:
+                forced_intent = IntentType.PRICE_INQUIRY_DETAIL
+                transition = IntentTransition.CONTINUE
+            else:
+                forced_intent = IntentType.CONTACT_REQUEST
+                transition = (
+                    IntentTransition.SWITCH
+                    if current_intent
+                    else IntentTransition.START
+                )
         elif self.normalizer.contains("human_markers", normalized):
             forced_intent = IntentType.HUMAN_REQUEST
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
@@ -230,6 +305,9 @@ class HybridInputAnalyzer:
             if forced_intent:
                 fallback_intent = forced_intent
                 fallback_trans = transition
+            elif continuation_intent := self.normalizer.continuation_intent(current_intent):
+                fallback_intent = continuation_intent
+                fallback_trans = IntentTransition.CONTINUE
             elif is_open_price_context and not self.normalizer.contains("explicit_advice_markers", normalized):
                 fallback_intent = IntentType.PRICE_INQUIRY_DETAIL
                 fallback_trans = IntentTransition.CONTINUE
@@ -255,6 +333,15 @@ class HybridInputAnalyzer:
                 evidence_message_ids=list(context.get("message_ids", [])),
             )
 
+        if forced_intent is None:
+            continuation_intent = self.normalizer.continuation_intent(
+                current_intent,
+                result.primary_intent,
+            )
+            if continuation_intent:
+                result.primary_intent = continuation_intent
+                result.intent_transition = IntentTransition.CONTINUE
+
         merged_slots = {
             key: value
             for source in (context.get("current_slots", {}), result.extracted_slots, deterministic_slots)
@@ -265,8 +352,19 @@ class HybridInputAnalyzer:
             merged_slots["quantity"] = result.quantity
         if result.unit:
             merged_slots["unit"] = result.unit
-        if result.location and not deterministic_slots.get("location"):
-            merged_slots["location"] = result.location
+        if not deterministic_slots.get("location"):
+            model_location = result.location or merged_slots.get("location")
+            model_parent = result.extracted_slots.get("province") or merged_slots.get("province")
+            resolved_model_location = self.normalizer.resolve_location(
+                str(model_location) if model_location else None,
+                parent_province=str(model_parent) if model_parent else None,
+            )
+            if resolved_model_location:
+                merged_slots.update(resolved_model_location.slots())
+            elif result.location:
+                # Preserve the raw customer/model location for an exact CRM
+                # address match, but do not invent province/district hierarchy.
+                merged_slots["location"] = result.location
         if result.crop:
             merged_slots["crop"] = result.crop
         if result.stage:
@@ -289,6 +387,7 @@ class HybridInputAnalyzer:
                 IntentType.ORDER_TRACKING,
                 IntentType.PRODUCT_INQUIRY,
                 IntentType.HUMAN_REQUEST,
+                IntentType.CONTACT_REQUEST,
             }:
                 result.intent_transition = IntentTransition.SWITCH
             elif result.primary_intent == IntentType.AGRI_ADVICE and not self.normalizer.contains("explicit_advice_markers", normalized):
@@ -318,6 +417,7 @@ def workflow_for_intent(intent: IntentType) -> WorkflowType:
         IntentType.AGRI_ADVICE: WorkflowType.AGRICULTURE_ADVICE,
         IntentType.SALES_LEAD: WorkflowType.SALES_LEAD,
         IntentType.HUMAN_REQUEST: WorkflowType.HUMAN_REQUEST,
+        IntentType.CONTACT_REQUEST: WorkflowType.CONTACT_SUPPORT,
         IntentType.GENERAL_FAQ: WorkflowType.FAQ_ANSWER,
         IntentType.UNKNOWN: WorkflowType.FALLBACK,
     }[intent]

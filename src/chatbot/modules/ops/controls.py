@@ -36,6 +36,7 @@ class RedisOpsControlStore(OpsControlStore):
     """Shared control state visible to API and worker processes."""
 
     def __init__(self, redis_url: str) -> None:
+        # pyrefly: ignore[missing-import]
         import redis
 
         self._redis = redis.Redis.from_url(redis_url, decode_responses=True)

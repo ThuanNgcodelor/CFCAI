@@ -28,6 +28,7 @@ workflows:
   - PRODUCT_INQUIRY
   - AGRI_ADVICE
   - HUMAN_REQUEST
+  - CONTACT_REQUEST
 
 pricing:
   mode: HUMAN_HANDOFF # BẮT BUỘC: Không bao giờ tự báo giá

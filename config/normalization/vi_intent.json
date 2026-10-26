@@ -37,6 +37,19 @@
       "admin hỗ trợ",
       "cho gặp nhân viên"
     ],
+    "contact_markers": [
+      "số điện thoại",
+      "so dien thoai",
+      "xin số liên hệ",
+      "xin so lien he",
+      "số liên hệ",
+      "so lien he",
+      "hotline",
+      "liên hệ ai",
+      "lien he ai",
+      "gọi số nào",
+      "goi so nao"
+    ],
     "explicit_advice_markers": [
       "cách dùng",
       "hướng dẫn",
@@ -133,6 +146,12 @@
       "categories": ["agronomy", "soil_weather", "support"],
       "intent_prefixes": ["cfc_agronomy_"],
       "intents": ["cfc_dosage_usage_review", "cfc_crop_consultation_request"]
+    }
+  },
+  "contextual_continuation": {
+    "DEALER_LOOKUP": {
+      "retain_on_model_intents": ["GENERAL_FAQ", "UNKNOWN"],
+      "retain_when_model_unavailable": true
     }
   },
   "locations": [

@@ -30,6 +30,7 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 )
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.modules.workflows.composer import ResponseComposer
+from src.chatbot.modules.workflows.support_contacts import SupportContactDirectory
 
 logger = logging.getLogger("cfc.worker")
 
@@ -52,14 +53,22 @@ class WorkerRuntime:
         )
         intent_analyzer = HybridInputAnalyzer(
             ollama_client,
-            VietnameseNormalizer(settings.INTENT_NORMALIZATION_PATH),
+            VietnameseNormalizer(
+                settings.INTENT_NORMALIZATION_PATH,
+                settings.ADMINISTRATIVE_AREAS_PATH,
+            ),
         )
         generator = OllamaResponseGenerator(
             settings.OLLAMA_BASE_URL,
             settings.OLLAMA_MODEL_TAG,
             timeout_seconds=settings.OLLAMA_TIMEOUT_SECONDS,
         )
-        composer = ResponseComposer(generator=generator)
+        composer = ResponseComposer(
+            generator=generator,
+            contact_directory=SupportContactDirectory.from_file(
+                settings.SUPPORT_CONTACTS_PATH
+            ),
+        )
         self.pipeline = SafeMessagePipeline(
             self.outbox,
             build_ops_control_store(),

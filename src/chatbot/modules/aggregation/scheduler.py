@@ -7,6 +7,7 @@ from datetime import datetime
 
 class RedisDebounceScheduler:
     def __init__(self, redis_url: str, *, namespace: str = "chatbot:debounce") -> None:
+        # pyrefly: ignore[missing-import]
         import redis
 
         self._redis = redis.Redis.from_url(redis_url, decode_responses=True)

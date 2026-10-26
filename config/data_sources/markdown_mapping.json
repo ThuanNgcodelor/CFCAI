@@ -1,0 +1,36 @@
+{
+  "mapping_version": 1,
+  "sources": [
+    {
+      "id": "cfc-co-bay-faq",
+      "page_id": "CFC",
+      "path": "CFC_Co_Bay_FAQ.md",
+      "source_sheet": "FAQ",
+      "columns": {
+        "topic": ["Chủ đề", "Topic", "Category"],
+        "question_examples": ["Câu hỏi mẫu", "Question examples", "question_examples", "Question"],
+        "answer": ["Câu trả lời", "Answer", "answer", "Response"],
+        "intent": ["Intent"],
+        "category": ["Category"],
+        "audience": ["Audience"],
+        "response_mode": ["Response mode", "Answer mode"],
+        "risk_level": ["Risk level"],
+        "learning_tags": ["Learning tags"],
+        "profile_slots": ["Profile slots"],
+        "source_active": ["Active"]
+      },
+      "defaults": {
+        "intent_prefix": "markdown_faq",
+        "category": "faq",
+        "audience": "customer",
+        "response_mode": "direct",
+        "risk_level": "MEDIUM",
+        "source_active": true
+      },
+      "skip_answer_contains": [
+        "chưa có câu trả lời",
+        "cần bổ sung"
+      ]
+    }
+  ]
+}

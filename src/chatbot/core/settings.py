@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     OLLAMA_MAX_ATTEMPTS: int = 2
     INTENT_PROMPT_PATH: str = "config/prompts/intent.md"
     INTENT_NORMALIZATION_PATH: str = "config/normalization/vi_intent.json"
+    ADMINISTRATIVE_AREAS_PATH: str = "config/normalization/administrative_areas.json"
+    MARKDOWN_CATALOG_MAPPING_PATH: str = "config/data_sources/markdown_mapping.json"
+    SUPPORT_CONTACTS_PATH: str = "config/business/support_contacts.json"
 
     # Meta Messenger - CFC
     CFC_PAGE_ID: str = ""

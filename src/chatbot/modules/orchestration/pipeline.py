@@ -10,6 +10,7 @@ from src.chatbot.modules.conversations.repository import PostgresConversationRep
 from src.chatbot.modules.knowledge.retriever import (
     ApprovedKnowledgeStore,
     CompositeKnowledgeStore,
+    DealerLookupResult,
     PostgresKnowledgeStore,
 )
 from src.chatbot.modules.ops.controls import OpsControlStore
@@ -25,14 +26,21 @@ from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
 
 def filter_slots_for_workflow(workflow: WorkflowType, slots: dict[str, Any]) -> dict[str, Any]:
     common_keys = {
-        "phone", "location", "province", "district", "area", "crop", "product",
+        "phone", "location", "province", "district", "ward", "area", "parent_province",
+        "admin_area_id", "admin_level", "crop", "product",
         "stage", "problem", "product_mentions", "detected_skus", "detected_formulas",
+    }
+    dealer_state_keys = {
+        "dealer_search_status", "dealer_search_area", "dealer_parent_province",
+        "dealer_match_scope",
     }
     if workflow == WorkflowType.PRICE_HANDOFF:
         allowed = common_keys | {"quantity", "unit"}
     elif workflow == WorkflowType.ORDER_TRACKING:
         allowed = {"order_code", "phone"}
-    elif workflow in {WorkflowType.DEALER_LOOKUP, WorkflowType.PRODUCT_INQUIRY, WorkflowType.AGRICULTURE_ADVICE}:
+    elif workflow == WorkflowType.DEALER_LOOKUP:
+        allowed = common_keys | dealer_state_keys
+    elif workflow in {WorkflowType.PRODUCT_INQUIRY, WorkflowType.AGRICULTURE_ADVICE}:
         allowed = common_keys
     else:
         allowed = common_keys
@@ -82,6 +90,74 @@ class SafeMessagePipeline:
             # store contract rolls out.
             return self.knowledge_store.search(page_id, query, limit, record_prefix)
 
+    def _resolve_dealer_lookup(
+        self,
+        page_id: PageCode,
+        slots: dict[str, object],
+        customer_text: str,
+    ) -> DealerLookupResult:
+        """Resolve a dealer through exact admin data before considering GPS.
+
+        The result is explicit even when no CRM record can be confirmed, so a
+        later turn never has to pretend that the data are merely "updating".
+        """
+        location = str(
+            slots.get("location")
+            or slots.get("district")
+            or slots.get("ward")
+            or slots.get("province")
+            or ""
+        ).strip()
+        area = None
+        if self.intent_analyzer:
+            normalizer = self.intent_analyzer.normalizer
+            area = normalizer.area_resolver.by_id(
+                str(slots.get("admin_area_id") or "")
+            )
+            if area is None:
+                area = normalizer.resolve_location(
+                    location,
+                    parent_province=str(slots.get("province") or "") or None,
+                )
+
+        resolver = getattr(self.knowledge_store, "resolve_dealers", None)
+        if callable(resolver):
+            return resolver(page_id, location, area=area, limit=3)
+
+        if not location and area is None:
+            return DealerLookupResult(status="LOCATION_REQUIRED")
+        if self.knowledge_store:
+            search_term = location or customer_text
+            matches = self._search_knowledge(
+                page_id,
+                search_term,
+                limit=3,
+                record_prefix=("dealer:",),
+            )
+            if matches:
+                from src.chatbot.modules.knowledge.retriever import DealerCandidate
+
+                return DealerLookupResult(
+                    status="CONFIRMED_MATCH",
+                    area_label=area.canonical if area else location or None,
+                    parent_province=(
+                        area.parent_province
+                        if area and area.level != "province"
+                        else (area.canonical if area else None)
+                    ),
+                    match_scope="EXACT_ADDRESS_TEXT",
+                    candidates=tuple(DealerCandidate(record=match) for match in matches[:3]),
+                )
+        return DealerLookupResult(
+            status="NO_CONFIRMED_MATCH",
+            area_label=area.canonical if area else location or None,
+            parent_province=(
+                area.parent_province
+                if area and area.level != "province"
+                else (area.canonical if area else None)
+            ),
+        )
+
     @staticmethod
     def classify(text: str | None) -> IntentType:
         import re
@@ -91,6 +167,8 @@ class SafeMessagePipeline:
         cleaned = re.sub(r"(?<=[a-zA-ZÀ-ỹ])(?=\d)|(?<=\d)(?=[a-zA-ZÀ-ỹ])", " ", cleaned)
         if any(w in cleaned for w in ("giá", "gia", "bao nhiêu", "bao nhieu", "price", "báo giá", "bao gia", "mấy tiền", "may tien", "chi phí", "chi phi")):
             return IntentType.PRICE_INQUIRY
+        if any(w in cleaned for w in ("số điện thoại", "so dien thoai", "số liên hệ", "so lien he", "hotline", "liên hệ ai", "lien he ai", "gọi số nào", "goi so nao")):
+            return IntentType.CONTACT_REQUEST
         if any(w in cleaned for w in ("đại lý", "dai ly", "ở đâu", "o dau", "mua ở đâu", "mua o dau", "cửa hàng", "cua hang")):
             return IntentType.DEALER_LOOKUP
         if (
@@ -158,6 +236,20 @@ class SafeMessagePipeline:
             )
         effective_slots = filter_slots_for_workflow(workflow, effective_slots)
 
+        dealer_lookup: DealerLookupResult | None = None
+        previously_no_confirmed_match = (
+            str(dict(context.get("current_slots", {})).get("dealer_search_status") or "")
+            == "NO_CONFIRMED_MATCH"
+        )
+        if intent == IntentType.DEALER_LOOKUP:
+            dealer_lookup = self._resolve_dealer_lookup(
+                event.page_id,
+                effective_slots,
+                text,
+            )
+            effective_slots.update(dealer_lookup.state_slots())
+            effective_slots = filter_slots_for_workflow(workflow, effective_slots)
+
         effective_conversation_version = conversation_version
         if self.conversation_repository and batch_version is not None:
             state = self.conversation_repository.update_context(
@@ -189,11 +281,20 @@ class SafeMessagePipeline:
                 deadline_text=deadline_text,
                 ad_title=ad_title,
                 customer_text=text,
+                customer_key=event.sender_id,
             )
 
         # Branch 2: Human request
         elif intent == IntentType.HUMAN_REQUEST:
             answer = self.composer.compose_human_handoff_response(event.page_id)
+
+        # Branch 2b: deterministic, config-backed contact directory
+        elif intent == IntentType.CONTACT_REQUEST:
+            answer = self.composer.compose_contact_response(
+                event.page_id,
+                customer_key=event.sender_id,
+                customer_text=text,
+            )
 
         # Branch 3: Product inquiries
         elif intent == IntentType.PRODUCT_INQUIRY:
@@ -224,21 +325,14 @@ class SafeMessagePipeline:
 
         # Branch 4: Dealer lookup
         elif intent == IntentType.DEALER_LOOKUP:
-            loc = str(effective_slots.get("location") or effective_slots.get("province") or effective_slots.get("district") or "")
-            matches = []
-            if self.knowledge_store:
-                search_term = loc if loc else text
-                if search_term:
-                    matches = self._search_knowledge(
-                        PageCode(event.page_id), search_term, limit=1,
-                        record_prefix=("dealer:",),
-                    )
             answer = self.composer.compose_dealer_response(
                 event.page_id,
-                dealers=matches,
+                dealers=dealer_lookup.records if dealer_lookup else [],
                 slots=effective_slots,
                 deadline_text=deadline_text,
                 customer_text=text,
+                lookup_result=dealer_lookup,
+                previously_no_confirmed_match=previously_no_confirmed_match,
             )
 
         # Branch 5: Agriculture advice. Retrieval is restricted to source
@@ -268,6 +362,7 @@ class SafeMessagePipeline:
                 slots=effective_slots,
                 deadline_text=deadline_text,
                 customer_text=text,
+                customer_key=event.sender_id,
             )
 
         # Branch 6: Order Tracking

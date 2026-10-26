@@ -18,8 +18,13 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 )
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.modules.workflows.composer import ResponseComposer
+from src.chatbot.modules.workflows.support_contacts import SupportContactDirectory
 from src.chatbot.shared.enums import IntentTransition, IntentType, PageCode
-from src.chatbot.shared.events import InboxEvent, IntentAnalysisResult, NormalizedMessage
+from src.chatbot.shared.events import (
+    InboxEvent,
+    IntentAnalysisResult,
+    NormalizedMessage,
+)
 
 VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -217,7 +222,7 @@ def test_workflow_agriculture_asks_context_before_using_generic_match():
     assert "Nội dung không được đoán" not in reply
 
 
-def test_workflow_dealer_lookup_with_google_maps_link():
+def test_workflow_dealer_lookup_shows_address_without_google_maps_link():
     class MockDealerStore:
         def search(self, page_id, query, limit=1, record_prefix=None):
             from src.chatbot.modules.knowledge.retriever import KnowledgeRecord
@@ -243,8 +248,9 @@ def test_workflow_dealer_lookup_with_google_maps_link():
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
     assert "Huỳnh Hưng" in reply
-    assert "maps/search" in reply
-    assert "google.com/maps" in reply
+    assert "Ấp 3, Xã An Hữu, Đồng Tháp" in reply
+    assert "maps/search" not in reply
+    assert "google.com/maps" not in reply
 
 
 def test_workflow_image_inquiry_attachment_only():
@@ -366,14 +372,15 @@ def test_deterministic_slot_extraction_order_code_and_phone():
 def test_deterministic_slot_extraction_location_gazetteer():
     normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
 
-    assert normalizer.deterministic_slots("Kiên giang") == {
-        "location": "Kiên Giang",
-        "province": "Kiên Giang",
-    }
-    assert normalizer.deterministic_slots("tphcm") == {
-        "location": "Hồ Chí Minh",
-        "province": "Hồ Chí Minh",
-    }
+    kien_giang = normalizer.deterministic_slots("Kiên giang")
+    assert kien_giang["location"] == "Kiên Giang"
+    assert kien_giang["province"] == "Kiên Giang"
+    assert kien_giang["admin_level"] == "province"
+
+    tphcm = normalizer.deterministic_slots("tphcm")
+    assert tphcm["location"] == "Hồ Chí Minh"
+    assert tphcm["province"] == "Hồ Chí Minh"
+    assert tphcm["admin_level"] == "province"
 
 
 def test_deterministic_slot_extraction_copies_crop_and_stage_without_dictionary():
@@ -417,9 +424,9 @@ def test_missing_dealer_with_phone_confirms_location_and_phone():
     outbox_id = pipeline.process(_make_event("0388509046"))
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
-    assert "0388509046" in reply
     assert "Kiên Giang" in reply
-    assert "ghi nhận" in reply
+    assert "chưa có điểm bán được xác nhận" in reply
+    assert "đang cập nhật" not in reply
     assert "[moc_hen_lien_he]" not in reply
     assert "khu vực nào" not in reply
 
@@ -431,6 +438,115 @@ def test_placeholder_sanitizer_replaces_deadline_markers():
     )
 
     assert reply == "Em sẽ liên hệ trước 15h hôm nay (15h hôm nay)."
+
+
+def test_placeholder_sanitizer_handles_all_supported_template_syntaxes():
+    reply = ResponseComposer.sanitize_placeholders(
+        "A {unknown} {{second}} ${third} [fourth] "
+        "trước {moc\\_hen\\_lien\\_he}.",
+        "16h hôm nay",
+    )
+
+    assert "unknown" not in reply
+    assert "second" not in reply
+    assert "third" not in reply
+    assert "fourth" not in reply
+    assert "{" not in reply and "[" not in reply and "$" not in reply
+    assert "16h hôm nay" in reply
+
+
+def test_cobanic_product_reply_rejects_phone_placeholder_without_customer_phone():
+    class LeakingGenerator:
+        def generate(self, payload):
+            return (
+                "Anh/chị muốn tìm mua Hữu cơ Cobanic 21, đúng rồi nhé! "
+                "Em sẽ để lại số điện thoại {so\\_dien\\_thoai\\_khach} "
+                "để kinh doanh liên hệ báo giá."
+            )
+
+    composer = ResponseComposer(generator=LeakingGenerator())
+    record = KnowledgeRecord(
+        "product:cobanic-21",
+        PageCode.CFC,
+        "Hữu cơ Cobanic 21",
+        "Phân hữu cơ 21%, bao 25kg",
+        "APPROVED",
+    )
+
+    reply = composer.compose_product_response(
+        PageCode.CFC,
+        product_record=record,
+        slots={},
+        customer_text="Tôi muốn tìm mua Hữu cơ Cobanic 21",
+        deadline_text="18h30 hôm nay",
+    )
+
+    assert "so_dien_thoai_khach" not in reply
+    assert "{" not in reply and "}" not in reply
+    assert "Em sẽ để lại số điện thoại" not in reply
+    assert "tỉnh/huyện" in reply
+
+
+def test_generated_reply_cannot_claim_customer_phone_when_slot_is_missing():
+    class FalseClaimGenerator:
+        def generate(self, payload):
+            return "Dạ em đã ghi nhận số điện thoại của anh/chị để nhân viên gọi lại."
+
+    composer = ResponseComposer(generator=FalseClaimGenerator())
+    record = KnowledgeRecord(
+        "product:safe",
+        PageCode.CFC,
+        "Sản phẩm đã duyệt",
+        "Nội dung đã duyệt",
+        "APPROVED",
+    )
+
+    reply = composer.compose_product_response(
+        PageCode.CFC,
+        product_record=record,
+        slots={},
+    )
+
+    assert "đã ghi nhận số điện thoại" not in reply
+    assert "tỉnh/huyện" in reply
+
+
+def test_contact_request_and_price_use_configured_contacts():
+    directory = SupportContactDirectory.from_file(
+        "config/business/support_contacts.json"
+    )
+    composer = ResponseComposer(contact_directory=directory)
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.GENERAL_FAQ),
+        normalizer,
+    )
+
+    contact_outbox = InMemoryOutboxStore()
+    contact_pipeline = SafeMessagePipeline(
+        contact_outbox,
+        intent_analyzer=analyzer,
+        composer=composer,
+    )
+    contact_id = contact_pipeline.process(_make_event("Cho tôi xin số hotline"))
+    assert contact_id is not None
+    contact_reply = contact_outbox.messages[contact_id].text
+    assert "Trưởng phòng Kinh doanh Lê Trọng Nhơn" in contact_reply
+    assert "0981 205 448" in contact_reply
+    assert "1900 5307" in contact_reply
+
+    price_outbox = InMemoryOutboxStore()
+    price_pipeline = SafeMessagePipeline(
+        price_outbox,
+        intent_analyzer=analyzer,
+        composer=composer,
+    )
+    price_id = price_pipeline.process(_make_event("Xin giá Cobanic 21"))
+    assert price_id is not None
+    price_reply = price_outbox.messages[price_id].text
+    assert "0981 205 448" in price_reply
+    assert "1900 5307" in price_reply
+    assert "đồng" not in price_reply.lower()
 
 
 def test_filter_slots_prunes_order_code_from_price_and_dealer_workflows():
@@ -466,8 +582,9 @@ def test_product_inquiry_marker_recognition():
 
 
 def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
-    from src.chatbot.modules.knowledge.retriever import RedisCrmDealerStore
     import json
+
+    from src.chatbot.modules.knowledge.retriever import RedisCrmDealerStore
 
     class FakeRedis:
         def get(self, key):
