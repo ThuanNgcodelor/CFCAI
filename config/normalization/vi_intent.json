@@ -21,8 +21,6 @@
       "bao nhiêu 1bao",
       "bao nhiêu một bao",
       "bao nhieu mot bao",
-      "bao nhiêu",
-      "bao nhieu",
       "mấy tiền",
       "may tien",
       "chi phí",
@@ -65,14 +63,10 @@
       "tưới cho"
     ],
     "dealer_markers": [
-      "đại lý",
-      "dai ly",
       "điểm bán",
       "diem ban",
       "mua ở đâu",
       "mua o dau",
-      "cửa hàng",
-      "cua hang",
       "chỗ bán",
       "cho ban",
       "tìm đại lý",
@@ -105,8 +99,6 @@
       "co npk",
       "sản phẩm nào",
       "san pham nao",
-      "loại phân nào",
-      "loai phan nao",
       "danh mục",
       "danh muc"
     ],

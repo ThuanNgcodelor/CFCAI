@@ -180,7 +180,7 @@ def test_workflow_agriculture_uses_approved_metadata_and_slots():
             KnowledgeRecord(
                 "faq:approved-agri",
                 PageCode.CFC,
-                "Câu hỏi nông nghiệp",
+                "Câu hỏi nông nghiệp|hướng dẫn cách dùng",
                 "Hướng dẫn đã được duyệt theo đúng giai đoạn khách cung cấp.",
                 "APPROVED",
                 intent="source_agronomy_intent",

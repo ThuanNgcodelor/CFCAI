@@ -85,7 +85,8 @@ def test_ambiguous_lexical_match_is_explicit_and_returns_no_answer() -> None:
     )
     assert isinstance(decision, KnowledgeSearchResult)
     assert decision.status == "AMBIGUOUS"
-    assert decision.records == ()
+    assert len(decision.records) == 2
+    assert store.search(PageCode.CFC, "cách bón cây", record_prefix="faq:") == []
 
 
 def test_postgres_knowledge_store_is_page_scoped() -> None:

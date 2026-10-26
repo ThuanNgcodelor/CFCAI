@@ -110,8 +110,18 @@ class KnowledgeRanker:
             for value in payload.get("ignored_query_terms", [])
             if _fold_search_text(value)
         }
-        self._ignored = {
-            value for value in self._ignored_queries if " " not in value
+        self._stop_words = {
+            _fold_search_text(value)
+            for value in payload.get("stop_words", [])
+            if _fold_search_text(value)
+        }
+        self._synonyms = {
+            _fold_search_text(phrase): tuple(
+                _fold_search_text(value)
+                for value in values
+                if _fold_search_text(value)
+            )
+            for phrase, values in payload.get("synonyms", {}).items()
         }
         self._strategies = payload.get("strategies", {})
         self._prefix_domains = payload.get("prefix_domains", {})
@@ -131,11 +141,23 @@ class KnowledgeRanker:
         return "faq"
 
     def _tokens(self, text: str) -> set[str]:
-        return {
+        normalized = _fold_search_text(text)
+        tokens = {
             token
-            for token in _fold_search_text(text).split()
-            if len(token) > 1 and token not in self._ignored
+            for token in normalized.split()
+            if len(token) > 1 and token not in self._stop_words
         }
+        for phrase, synonyms in self._synonyms.items():
+            if re.search(
+                rf"(?<![a-z0-9]){re.escape(phrase)}(?![a-z0-9])", normalized
+            ):
+                for synonym in synonyms:
+                    tokens.update(
+                        token
+                        for token in synonym.split()
+                        if len(token) > 1 and token not in self._stop_words
+                    )
+        return tokens
 
     @staticmethod
     def _aliases(record: KnowledgeRecord) -> tuple[str, ...]:
@@ -202,7 +224,13 @@ class KnowledgeRanker:
         if top_score < minimum:
             return KnowledgeSearchResult("NO_MATCH", top_score=top_score, margin=margin, strategy=domain)
         if not top_exact and margin is not None and margin < minimum_margin:
-            return KnowledgeSearchResult("AMBIGUOUS", top_score=top_score, margin=margin, strategy=domain)
+            return KnowledgeSearchResult(
+                "AMBIGUOUS",
+                tuple(item[2] for item in scored[:limit]),
+                top_score,
+                margin,
+                domain,
+            )
         return KnowledgeSearchResult(
             "CONFIDENT",
             tuple(item[2] for item in scored[:limit]),
@@ -234,10 +262,11 @@ class ApprovedKnowledgeStore:
         intents: tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
-        return list(self.search_with_confidence(
+        result = self.search_with_confidence(
             page_id, query, limit=limit, record_prefix=record_prefix,
             intents=intents, categories=categories,
-        ).records)
+        )
+        return list(result.records) if result.status == "CONFIDENT" else []
 
     def search_with_confidence(
         self,

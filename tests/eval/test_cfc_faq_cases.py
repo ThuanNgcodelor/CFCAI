@@ -15,6 +15,7 @@ from src.chatbot.shared.enums import PageCode
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_PATH = ROOT / "tests/fixtures/cfc_faq_cases.json"
+HELDOUT_PATH = ROOT / "tests/fixtures/cfc_faq_heldout_paraphrases.json"
 
 
 def _catalog() -> dict:
@@ -92,3 +93,33 @@ def test_every_faq_question_variant_retrieves_its_expected_answer(
     assert matches[0].record_id == expected_record_id
     assert matches[0].page_id == PageCode.CFC
     assert store.search(PageCode.ZEO, question, limit=1, record_prefix="faq:") == []
+
+
+def test_heldout_paraphrase_retrieval_meets_quality_gate() -> None:
+    catalog = _catalog()
+    heldout = json.loads(HELDOUT_PATH.read_text(encoding="utf-8"))["cases"]
+    record_ids = {
+        case["case_id"]: f"faq:{case['faq_id']}"
+        for case in catalog["cases"]
+        if case["status"] == "ANSWERABLE"
+    }
+    store = ApprovedKnowledgeStore(_records(catalog))
+    top1 = 0
+    top3 = 0
+    failures = []
+    for case in heldout:
+        expected = record_ids[case["case_id"]]
+        decision = store.search_with_confidence(
+            PageCode.CFC,
+            case["query"],
+            limit=3,
+            record_prefix="faq:",
+        )
+        ids = [record.record_id for record in decision.records]
+        top1 += bool(ids and ids[0] == expected)
+        top3 += expected in ids
+        if not ids or ids[0] != expected:
+            failures.append((case["case_id"], case["query"], ids))
+    if top1 / len(heldout) < 0.90:
+        pytest.fail(json.dumps(failures, ensure_ascii=False, indent=2))
+    assert top3 / len(heldout) >= 0.98, failures

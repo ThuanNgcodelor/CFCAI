@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"text": "bón cho cây mít", "expected": {"crop": "mít"}},
+    {"text": "vườn sầu riêng giai đoạn nuôi trái", "expected": {"crop": "sầu riêng", "stage": "nuôi trái"}},
+    {"text": "thới lai", "expected": {"location": "Thới Lai", "province": "Cần Thơ", "district": "Thới Lai"}},
+    {"text": "Rạch Giá", "expected": {"location": "Rạch Giá", "province": "An Giang", "ward": "Rạch Giá"}},
+    {"text": "30 tấn", "expected": {"quantity": "30", "unit": "tấn"}},
+    {"text": "0981205448", "expected": {"phone": "0981205448"}},
+    {"text": "+84353857516", "expected": {"phone": "0353857516"}},
+    {"text": "NPK 20-20-15", "expected": {"detected_formulas": ["20-20-15"]}},
+    {"text": "cây bưởi ở Thới Lai", "expected": {"crop": "bưởi", "location": "Thới Lai", "province": "Cần Thơ"}},
+    {"text": "giải đoạn nuôi trái", "expected": {"stage": "nuôi trái"}}
+  ]
+}

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -13,6 +15,8 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 )
 from src.chatbot.shared.enums import IntentTransition, IntentType, PageCode
 from src.chatbot.shared.events import IntentAnalysisResult
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class ScriptedClient:
@@ -58,6 +62,63 @@ def test_real_transcript_intents(
     assert result.primary_intent == expected_intent
     if expected_intent == IntentType.PRICE_INQUIRY:
         assert result.requires_human_handoff
+
+
+def test_source_question_intents_follow_governance_metadata() -> None:
+    catalog = json.loads(
+        (ROOT / "tests/fixtures/cfc_faq_cases.json").read_text(encoding="utf-8")
+    )
+    total = 0
+    correct = 0
+    failures = []
+    for case in catalog["cases"]:
+        expected = IntentType(case["intent"])
+        analyzer = _analyzer(
+            IntentAnalysisResult(primary_intent=expected, confidence=0.9)
+        )
+        for question in case["questions"]:
+            total += 1
+            result = analyzer.analyze(PageCode.CFC, question)
+            correct += result.primary_intent == expected
+            if result.primary_intent != expected:
+                failures.append((case["case_id"], question, expected, result.primary_intent))
+    assert total == 129
+    assert correct / total >= 0.95, failures
+
+
+def test_configured_slot_fixture_meets_f1_gate() -> None:
+    fixture = json.loads(
+        (ROOT / "tests/fixtures/cfc_slot_cases.json").read_text(encoding="utf-8")
+    )
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    true_positive = 0
+    false_positive = 0
+    false_negative = 0
+    failures = []
+    scored_slots = {
+        "product_mentions", "crop", "stage", "location", "quantity", "unit", "phone"
+    }
+    for case in fixture["cases"]:
+        actual = normalizer.deterministic_slots(normalizer.normalize(case["text"]))
+        expected = case["expected"]
+        if any(actual.get(key) != value for key, value in expected.items()):
+            failures.append((case["text"], expected, actual))
+        for key, value in actual.items():
+            if key not in scored_slots:
+                continue
+            if key in expected and expected[key] == value:
+                true_positive += 1
+            else:
+                false_positive += 1
+        false_negative += sum(
+            key not in actual or actual[key] != value
+            for key, value in expected.items()
+            if key in scored_slots
+        )
+    precision = true_positive / (true_positive + false_positive)
+    recall = true_positive / (true_positive + false_negative)
+    f1 = 2 * precision * recall / (precision + recall)
+    assert f1 >= 0.95, failures
 
 
 def test_explicit_agronomy_action_switches_from_open_price_workflow() -> None:

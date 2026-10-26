@@ -109,7 +109,14 @@ class VietnameseNormalizer:
         return folded.replace("đ", "d")
 
     def contains(self, group: str, text: str) -> bool:
-        return any(marker.casefold() in text for marker in self.safety.get(group, []))
+        return any(
+            re.search(
+                rf"(?<!\w){re.escape(marker.casefold())}(?!\w)",
+                text,
+                flags=re.IGNORECASE,
+            )
+            for marker in self.safety.get(group, [])
+        )
 
     def filters_for_workflow(self, workflow: WorkflowType) -> dict[str, tuple[str, ...]]:
         """Return source-configured retrieval filters, never business answers."""

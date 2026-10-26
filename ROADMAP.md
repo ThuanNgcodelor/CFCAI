@@ -11,7 +11,7 @@
 - [x] **Phase 1: Meta Webhook Ingestion & Durable Inbox (COMPLETED — staging/live tunnel verified)**
 - [ ] **Phase 2: Message Aggregation & Handoff State Guard (IMPLEMENTED/STAGING PASS — còn live Meta takeover validation và Phase 4 slot analyzer)**
 - [x] **Phase 3: Excel Catalog & FAQ Staging Pipeline (COMPLETED — versioned staging/publish/rollback gate pass)**
-- [ ] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction)**
+- [x] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction) (COMPLETED — deterministic safety + Qwen structured JSON + live eval pass)**
 - [ ] **Phase 5: Business Workflows & Final Send Outbox Guard**
 - [ ] **Phase 6: Approved Knowledge Retrieval & FAQ RAG (PARTIAL — approved Postgres/keyword retrieval có; semantic RAG/citation chưa có)**
 - [ ] **Phase 7: Operations Console & Emergency Controls (Kill Switch) (PARTIAL — Redis shared pause/resume có; auth/RBAC/audit chưa có)**
@@ -158,11 +158,11 @@ pipeline keyword/FAQ hiện tại.
 
 ### Phase 4 — Intent & Slot Understanding
 
-- [ ] Rule deterministic xử lý price/human/takeover trước Ollama.
-- [ ] Qwen chỉ trích xuất structured intent/slots; không quyết định quyền gửi hay báo giá.
-- [ ] Chuẩn hóa aliases: Cobanic/HC/NPK/công thức/SKU/tỉnh-huyện/cây trồng/số lượng.
-- [ ] Đánh giá trên câu viết tắt, sai chính tả và chuỗi hội thoại thật.
-- **Gate:** `tests/eval/test_qwen_understanding.py` pass theo ngưỡng đã chốt.
+- [x] Rule deterministic xử lý price/human/takeover trước Ollama.
+- [x] Qwen chỉ trích xuất structured intent/slots; không quyết định quyền gửi hay báo giá.
+- [x] Chuẩn hóa aliases: Cobanic/HC/NPK/công thức/SKU/tỉnh-huyện/cây trồng/số lượng.
+- [x] Đánh giá trên câu viết tắt, sai chính tả và chuỗi hội thoại thật.
+- **Gate:** `tests/eval/test_qwen_understanding.py` (ĐÃ PASS 16/16 test, bao gồm live Qwen 2.5 7B).
 
 ### Phase 5 — Business Workflows
 
@@ -290,12 +290,12 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ---
 
 ### Phase 4: Qwen 8B Understanding (Intent & Entity Extraction)
-- [ ] Client kết nối Ollama (`src/chatbot/modules/llm/ollama.py`) với timeout và retry có kiểm soát.
-- [ ] Prompt trích xuất structured JSON cho Intent và Slot (`config/prompts/intent.md`).
-- [ ] Nhận diện chính xác ý định hỏi mua/giá (T01, T03), tìm đại lý (T04), tìm sản phẩm (T06).
-- [ ] Xử lý ngắt ngữ cảnh: Khách chuyển ý định ("Rải mít" sau câu hỏi giá -> giữ nguyên luồng giá hoặc tách bạch tư vấn) (Case T02).
-- [ ] Fallback an toàn khi Ollama timeout hoặc lỗi JSON: trả câu mẫu nhẹ nhàng hoặc chuyển nhân viên, không treo hệ thống (Case T12).
-- **Lệnh nghiệm thu:** `pytest tests/eval/test_qwen_understanding.py`
+- [x] Client kết nối Ollama (`src/chatbot/modules/llm/ollama.py`) với timeout và retry có kiểm soát.
+- [x] Prompt trích xuất structured JSON cho Intent và Slot (`config/prompts/intent.md`).
+- [x] Nhận diện chính xác ý định hỏi mua/giá (T01, T03), tìm đại lý (T04), tìm sản phẩm (T06).
+- [x] Xử lý ngắt ngữ cảnh: Khách chuyển ý định ("Rải mít" sau câu hỏi giá -> giữ nguyên luồng giá hoặc tách bạch tư vấn) (Case T02).
+- [x] Fallback an toàn khi Ollama timeout hoặc lỗi JSON: trả câu mẫu nhẹ nhàng hoặc chuyển nhân viên, không treo hệ thống (Case T12).
+- **Lệnh nghiệm thu:** `pytest tests/eval/test_qwen_understanding.py` (ĐÃ PASS 16/16 TEST)
 
 ---
 
