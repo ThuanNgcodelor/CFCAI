@@ -1,0 +1,3014 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-26T08:17:58.551028+00:00",
+  "source_file": "CFC_Co_Bay_FAQ.md",
+  "source_sha256": "a0bdd9dccf0f7f2e7450250ef14d66a08cbe788de77e1ce20c3145697af89662",
+  "source_summary": {
+    "faq_rows": 47,
+    "answerable_rows": 44,
+    "missing_answer_rows": 3,
+    "answerable_question_variants": 119,
+    "all_question_variants": 129
+  },
+  "production": {
+    "status": "CHECKED",
+    "active_approved_records": 0,
+    "import_batches": 0
+  },
+  "source_review": {
+    "style_conflict_rows": 36,
+    "strong_claim_rows": 18,
+    "missing_answer_case_ids": [
+      "CFC-FAQ-004",
+      "CFC-FAQ-017",
+      "CFC-FAQ-019"
+    ],
+    "details": [
+      {
+        "case_id": "CFC-FAQ-001",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-002",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-003",
+        "flags": [
+          "persona_flip"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-005",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-006",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-007",
+        "flags": []
+      },
+      {
+        "case_id": "CFC-FAQ-008",
+        "flags": []
+      },
+      {
+        "case_id": "CFC-FAQ-009",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-010",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-011",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-012",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-013",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-014",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-015",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-016",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-018",
+        "flags": []
+      },
+      {
+        "case_id": "CFC-FAQ-020",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-021",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-022",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-023",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-024",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-025",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-026",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-027",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-028",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-029",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-030",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-031",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-032",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-033",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-034",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-035",
+        "flags": [
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-036",
+        "flags": [
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-037",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-038",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-039",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-040",
+        "flags": []
+      },
+      {
+        "case_id": "CFC-FAQ-041",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-042",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-043",
+        "flags": [
+          "customer_called_ban"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-044",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-045",
+        "flags": []
+      },
+      {
+        "case_id": "CFC-FAQ-046",
+        "flags": [
+          "strong_agronomy_claim"
+        ]
+      },
+      {
+        "case_id": "CFC-FAQ-047",
+        "flags": [
+          "customer_called_ban",
+          "strong_agronomy_claim"
+        ]
+      }
+    ]
+  },
+  "retrieval_summary": {
+    "total": 119,
+    "top1_pass": 109,
+    "top3_pass": 118,
+    "zeo_isolated": 119
+  },
+  "retrieval_results": [
+    {
+      "case_id": "CFC-FAQ-001",
+      "question_index": 1,
+      "question": "Shop mở cửa lúc mấy giờ?",
+      "expected_record_id": "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+      "retrieved_record_ids": [
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-001",
+      "question_index": 2,
+      "question": "Giờ làm việc của CFC Cò Bay?",
+      "expected_record_id": "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+      "retrieved_record_ids": [
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-001",
+      "question_index": 3,
+      "question": "Shop bán từ mấy giờ?",
+      "expected_record_id": "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+      "retrieved_record_ids": [
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-001",
+      "question_index": 4,
+      "question": "Hôm nay công ty có làm việc không?",
+      "expected_record_id": "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+      "retrieved_record_ids": [
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "question_index": 1,
+      "question": "Có những loại phân bón nào?",
+      "expected_record_id": "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "question_index": 2,
+      "question": "Cò Bay có những loại phân nào?",
+      "expected_record_id": "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "question_index": 3,
+      "question": "Danh mục phân bón CFC gồm những gì?",
+      "expected_record_id": "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "question_index": 4,
+      "question": "Công ty có phân bón gì?",
+      "expected_record_id": "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "question_index": 5,
+      "question": "Tôi muốn xem về phân bón Cò Bay Muốn xem các dòng phân bón Cho mình xem danh mục phân bón Tìm hiểu sản phẩm phân bón CFC Thông tin các loại phân Cò Bay",
+      "expected_record_id": "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "question_index": 1,
+      "question": "Có giao hàng không?",
+      "expected_record_id": "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "question_index": 2,
+      "question": "Có ship không?",
+      "expected_record_id": "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "question_index": 3,
+      "question": "Nhận hàng bằng cách nào?",
+      "expected_record_id": "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "question_index": 4,
+      "question": "Giao hàng như thế nào?",
+      "expected_record_id": "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "question_index": 5,
+      "question": "Có giao tận nơi không?",
+      "expected_record_id": "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-005",
+      "question_index": 1,
+      "question": "Muốn nhập hàng Muốn làm đại lý Muốn phân phối sản phẩm Muốn kinh doanh phân bón Làm nhà phân phối được không?",
+      "expected_record_id": "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+      "retrieved_record_ids": [
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-005",
+      "question_index": 2,
+      "question": "Muốn lấy sỉ phân bón Cò Bay Chính sách làm đại lý CFC thế nào Tôi muốn nhập số lượng lớn",
+      "expected_record_id": "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+      "retrieved_record_ids": [
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-006",
+      "question_index": 1,
+      "question": "Cần hỗ trợ Hỗ trợ giúp mình Muốn gặp admin Cần tư vấn thêm Có người hỗ trợ không?",
+      "expected_record_id": "faq:54e8aa72e1ad38bc8a1ec95a7c6704e7bde6d848fb8a1a5b43b7d34443c8f332",
+      "retrieved_record_ids": [
+        "faq:54e8aa72e1ad38bc8a1ec95a7c6704e7bde6d848fb8a1a5b43b7d34443c8f332",
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "question_index": 1,
+      "question": "Địa chỉ ở đâu?",
+      "expected_record_id": "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+      "retrieved_record_ids": [
+        "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "question_index": 2,
+      "question": "Công ty ở đâu?",
+      "expected_record_id": "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+      "retrieved_record_ids": [
+        "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "question_index": 3,
+      "question": "Cò Bay ở đâu?",
+      "expected_record_id": "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+      "retrieved_record_ids": [
+        "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "question_index": 4,
+      "question": "Địa chỉ công ty CFC Nhà máy ở đâu?",
+      "expected_record_id": "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+      "retrieved_record_ids": [
+        "faq:264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+        "faq:6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "question_index": 1,
+      "question": "Giới thiệu về công ty bạn đi Công ty bạn là công ty gì?",
+      "expected_record_id": "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+      "retrieved_record_ids": [
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "question_index": 2,
+      "question": "CFC Cò Bay là gì?",
+      "expected_record_id": "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+      "retrieved_record_ids": [
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "question_index": 3,
+      "question": "Cò Bay làm về gì?",
+      "expected_record_id": "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+      "retrieved_record_ids": [
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "question_index": 4,
+      "question": "Thông tin về CFC Cò Bay",
+      "expected_record_id": "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 1,
+      "question": "Cò Bay có NPK không?",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": null,
+      "top1_pass": false,
+      "top3_pass": false,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 2,
+      "question": "Bên mình có phân NPK không?",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c"
+      ],
+      "rank": 3,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 3,
+      "question": "NPK Cò Bay là gì?",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 4,
+      "question": "Có dòng NPK cho cây trồng không?",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 5,
+      "question": "Phân NPK CFC có không?",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "question_index": 6,
+      "question": "Tôi muốn xem về NPK Muốn tìm hiểu phân NPK Cho mình xem dòng NPK Tư vấn NPK Cò Bay",
+      "expected_record_id": "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "retrieved_record_ids": [
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "question_index": 1,
+      "question": "Cò Bay có phân hữu cơ không?",
+      "expected_record_id": "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "retrieved_record_ids": [
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "question_index": 2,
+      "question": "Có phân bón hữu cơ sinh học không?",
+      "expected_record_id": "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "retrieved_record_ids": [
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "question_index": 3,
+      "question": "Phân hữu cơ Cò Bay là gì?",
+      "expected_record_id": "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "retrieved_record_ids": [
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "question_index": 4,
+      "question": "Bên mình có hữu cơ không?",
+      "expected_record_id": "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "retrieved_record_ids": [
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "question_index": 5,
+      "question": "Tôi muốn xem về phân hữu cơ Muốn tìm hiểu hữu cơ Cò Bay Cho mình xem dòng phân hữu cơ Tư vấn phân hữu cơ",
+      "expected_record_id": "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "retrieved_record_ids": [
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "question_index": 1,
+      "question": "Giá phân bón Cò Bay bao nhiêu?",
+      "expected_record_id": "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "question_index": 2,
+      "question": "Cho xin bảng giá CFC NPK Cò Bay giá bao nhiêu?",
+      "expected_record_id": "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "question_index": 3,
+      "question": "Phân hữu cơ giá sao?",
+      "expected_record_id": "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "question_index": 4,
+      "question": "Bao 25kg bao nhiêu tiền?",
+      "expected_record_id": "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "question_index": 5,
+      "question": "Giá đại lý thế nào?",
+      "expected_record_id": "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "question_index": 1,
+      "question": "Ở khu vực tôi có đại lý Cò Bay không?",
+      "expected_record_id": "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+      "retrieved_record_ids": [
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2"
+      ],
+      "rank": 3,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "question_index": 2,
+      "question": "Có nhà phân phối gần tôi không?",
+      "expected_record_id": "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+      "retrieved_record_ids": [
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "question_index": 3,
+      "question": "Mua phân Cò Bay ở tỉnh tôi ở đâu?",
+      "expected_record_id": "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+      "retrieved_record_ids": [
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "question_index": 4,
+      "question": "Tôi muốn tìm đại lý gần nhất Có npp ở Cần Thơ không?",
+      "expected_record_id": "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+      "retrieved_record_ids": [
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-013",
+      "question_index": 1,
+      "question": "Tôi muốn đặt phân Cò Bay Cho mình mua phân bón Cò Bay Mình muốn đặt NPK Đặt phân hữu cơ như thế nào?",
+      "expected_record_id": "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+      "retrieved_record_ids": [
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-013",
+      "question_index": 2,
+      "question": "Tôi muốn mua 2 bao phân",
+      "expected_record_id": "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+      "retrieved_record_ids": [
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "question_index": 1,
+      "question": "Ship phân bón về tỉnh được không?",
+      "expected_record_id": "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "retrieved_record_ids": [
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "question_index": 2,
+      "question": "Có giao phân về khu vực tôi không?",
+      "expected_record_id": "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "retrieved_record_ids": [
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "question_index": 3,
+      "question": "Giao hàng tận nơi được không?",
+      "expected_record_id": "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "retrieved_record_ids": [
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "question_index": 4,
+      "question": "Tôi ở Cần Thơ nhận hàng sao?",
+      "expected_record_id": "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "retrieved_record_ids": [
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "question_index": 5,
+      "question": "Nhận tại nhà phân phối gần tôi được không?",
+      "expected_record_id": "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "retrieved_record_ids": [
+        "faq:bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+        "faq:987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "question_index": 1,
+      "question": "Bón bao nhiêu kg cho 1 công lúa?",
+      "expected_record_id": "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "retrieved_record_ids": [
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "question_index": 2,
+      "question": "Liều lượng bón phân Cò Bay thế nào?",
+      "expected_record_id": "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "retrieved_record_ids": [
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "question_index": 3,
+      "question": "Pha phân Cò Bay ra sao?",
+      "expected_record_id": "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "retrieved_record_ids": [
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "question_index": 4,
+      "question": "Dùng NPK Cò Bay như thế nào?",
+      "expected_record_id": "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "retrieved_record_ids": [
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895"
+      ],
+      "rank": 2,
+      "top1_pass": false,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "question_index": 5,
+      "question": "Trộn phân này với thuốc sâu được không?",
+      "expected_record_id": "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "retrieved_record_ids": [
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "question_index": 1,
+      "question": "Tư vấn phân bón cho cây trồng giúp mình Cây lúa nên dùng phân nào?",
+      "expected_record_id": "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+      "retrieved_record_ids": [
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "question_index": 2,
+      "question": "Cây ăn trái dùng phân gì?",
+      "expected_record_id": "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+      "retrieved_record_ids": [
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "question_index": 3,
+      "question": "Rau màu dùng phân nào?",
+      "expected_record_id": "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+      "retrieved_record_ids": [
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "question_index": 4,
+      "question": "Tôi cần kỹ sư tư vấn Tôi muốn tư vấn phân cho cây trồng Tư vấn phân cho lúa giúp mình Tư vấn phân cho cây ăn trái Tìm hiểu phân phù hợp cho cây trồng",
+      "expected_record_id": "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+      "retrieved_record_ids": [
+        "faq:2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+        "faq:9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+        "faq:940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-018",
+      "question_index": 1,
+      "question": "Đã gửi thông tin rồi có ai liên hệ chưa?",
+      "expected_record_id": "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+      "retrieved_record_ids": [
+        "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-018",
+      "question_index": 2,
+      "question": "Sao chưa thấy gọi lại?",
+      "expected_record_id": "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+      "retrieved_record_ids": [
+        "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-018",
+      "question_index": 3,
+      "question": "Kiểm tra giúp mình yêu cầu trước đó Tôi đã nhắn số điện thoại rồi",
+      "expected_record_id": "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+      "retrieved_record_ids": [
+        "faq:9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+        "faq:605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+        "faq:e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-020",
+      "question_index": 1,
+      "question": "Cây sầu riêng đang nhú mũi giáo rải dòng nào để mập đọt mà không rụng trái non?",
+      "expected_record_id": "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+      "retrieved_record_ids": [
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-020",
+      "question_index": 2,
+      "question": "Sầu riêng đang nhú đọt bón phân gì Bón phân gì cho đọt sầu riêng mập khỏe không rụng trái sầu riêng đi đọt kèm trái non bón gì",
+      "expected_record_id": "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+      "retrieved_record_ids": [
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-021",
+      "question_index": 1,
+      "question": "Cây đang ra bông dùng loại phân nào để dai cuống chống rụng sinh lý?",
+      "expected_record_id": "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+      "retrieved_record_ids": [
+        "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-021",
+      "question_index": 2,
+      "question": "Phân bón dai cuống cho cây đang ra hoa bón gì chống rụng bông sầu riêng mít bưởi",
+      "expected_record_id": "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+      "retrieved_record_ids": [
+        "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-022",
+      "question_index": 1,
+      "question": "Giai đoạn xả nhụy nên bón gì để đậu trái đều mà hãm được đọt không cho phóng tược?",
+      "expected_record_id": "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+      "retrieved_record_ids": [
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-022",
+      "question_index": 2,
+      "question": "Sau xả nhụy bón phân gì cho đậu trái",
+      "expected_record_id": "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+      "retrieved_record_ids": [
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-023",
+      "question_index": 1,
+      "question": "Trái non mới đậu rải NPK dòng nào để trái lớn nhanh như thổi mà không bị méo trái?",
+      "expected_record_id": "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+      "retrieved_record_ids": [
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-023",
+      "question_index": 2,
+      "question": "Phân bón nuôi trái non chống méo",
+      "expected_record_id": "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+      "retrieved_record_ids": [
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-024",
+      "question_index": 1,
+      "question": "Vườn đang bị vàng lá rễ đen thui không ra rễ tơ tưới kích rễ loại nào cho cây tỉnh lại nhanh?",
+      "expected_record_id": "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+      "retrieved_record_ids": [
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-024",
+      "question_index": 2,
+      "question": "Cây bị vàng lá thối rễ tưới phân gì rễ bị nghẹn rễ thối phục hồi sao",
+      "expected_record_id": "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+      "retrieved_record_ids": [
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-025",
+      "question_index": 1,
+      "question": "Sắp thu hoạch rồi đánh dòng Kali nào cho lên màu đẹp nặng ký nặng zem chắc hạt mà không cháy múi?",
+      "expected_record_id": "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+      "retrieved_record_ids": [
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+        "faq:7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-025",
+      "question_index": 2,
+      "question": "Bón phân gì trước thu hoạch cho ngọt trái đẹp màu",
+      "expected_record_id": "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+      "retrieved_record_ids": [
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+        "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+        "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-026",
+      "question_index": 1,
+      "question": "Làm sao để bón phân mà trái sầu riêng không bị sượng cơm cháy múi hay tích nước lúc mưa dầm?",
+      "expected_record_id": "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+      "retrieved_record_ids": [
+        "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+        "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-026",
+      "question_index": 2,
+      "question": "Chống sượng cơm cháy múi sầu riêng mùa mưa",
+      "expected_record_id": "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+      "retrieved_record_ids": [
+        "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+        "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-027",
+      "question_index": 1,
+      "question": "Cây mới thu hoạch xong xơ xác quá rải hữu cơ nào kết hợp với đạm để bung đọt nhanh phục hồi lẹ cho vụ sau?",
+      "expected_record_id": "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+      "retrieved_record_ids": [
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-027",
+      "question_index": 2,
+      "question": "Phân bón phục hồi cây sau thu hoạch",
+      "expected_record_id": "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+      "retrieved_record_ids": [
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-028",
+      "question_index": 1,
+      "question": "Sắp tới làm bông giờ bón Lân và Kali loại nào để ép cây phân hóa mầm hoa mạnh nhất?",
+      "expected_record_id": "faq:7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+      "retrieved_record_ids": [
+        "faq:7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+        "faq:a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-028",
+      "question_index": 2,
+      "question": "Phân bón làm bông tạo mầm hoa",
+      "expected_record_id": "faq:7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+      "retrieved_record_ids": [
+        "faq:7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-029",
+      "question_index": 1,
+      "question": "Cây đang nuôi trái lớn bón Kali trắng Kali Sunphat hay Kali đỏ thì êm hơn cho chất lượng trái xuất khẩu?",
+      "expected_record_id": "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+      "retrieved_record_ids": [
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+        "faq:cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-029",
+      "question_index": 2,
+      "question": "Nên bón kali trắng hay kali đỏ nuôi trái",
+      "expected_record_id": "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+      "retrieved_record_ids": [
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+        "faq:d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-030",
+      "question_index": 1,
+      "question": "Bao DAP Urê hôm nay giá bao nhiêu rồi tuần tới có nhích lên hay tuột xuống không?",
+      "expected_record_id": "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+      "retrieved_record_ids": [
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-030",
+      "question_index": 2,
+      "question": "Giá phân bón tuần này tăng hay giảm",
+      "expected_record_id": "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+      "retrieved_record_ids": [
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-031",
+      "question_index": 1,
+      "question": "Loại phân Cò Bay này xài có êm bằng hàng ngoại cũ tui hay dùng không giá rẻ hơn nhiều không?",
+      "expected_record_id": "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+      "retrieved_record_ids": [
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-031",
+      "question_index": 2,
+      "question": "Phân Cò Bay chất lượng so với phân nhập khẩu thế nào",
+      "expected_record_id": "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+      "retrieved_record_ids": [
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-032",
+      "question_index": 1,
+      "question": "Mua dòng hữu cơ vi sinh này tốn kém quá một gốc rải mấy ký là vừa túi tiền?",
+      "expected_record_id": "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+      "retrieved_record_ids": [
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-032",
+      "question_index": 2,
+      "question": "Định mức rải phân hữu cơ tiết kiệm chi phí",
+      "expected_record_id": "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+      "retrieved_record_ids": [
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+        "faq:6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-033",
+      "question_index": 1,
+      "question": "Có cho ghi sổ không tới cuối vụ bán trái xong tui ra thanh toán một lượt nhé?",
+      "expected_record_id": "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+      "retrieved_record_ids": [
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-033",
+      "question_index": 2,
+      "question": "Chính sách mua phân bón nợ cuối vụ",
+      "expected_record_id": "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+      "retrieved_record_ids": [
+        "faq:9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+        "faq:1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+        "faq:2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-034",
+      "question_index": 1,
+      "question": "NPK này là hàng tháp cao phức hợp hay hàng trộn thủ công rải xuống có tan hết không?",
+      "expected_record_id": "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+      "retrieved_record_ids": [
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-034",
+      "question_index": 2,
+      "question": "Phân bón tháp cao Cò Bay là gì",
+      "expected_record_id": "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+      "retrieved_record_ids": [
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-035",
+      "question_index": 1,
+      "question": "Cách thử phân bón thật giả tại nhà mẹo thử urê kali npk thật giả thử hòa tan urê vào nước có lạnh tay không",
+      "expected_record_id": "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d",
+      "retrieved_record_ids": [
+        "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d",
+        "faq:dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-036",
+      "question_index": 1,
+      "question": "Sao bao phân này mở ra thấy chảy nước bết dính vậy có bị rút ruột hàm lượng không?",
+      "expected_record_id": "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+      "retrieved_record_ids": [
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-036",
+      "question_index": 2,
+      "question": "Phân bón bị vón cục chảy nước có xài được không",
+      "expected_record_id": "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+      "retrieved_record_ids": [
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-037",
+      "question_index": 1,
+      "question": "Đất vườn đang bị phèn mặn rải Lân nung chảy hay Canxi để hạ phèn trước khi bón NPK?",
+      "expected_record_id": "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+      "retrieved_record_ids": [
+        "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-037",
+      "question_index": 2,
+      "question": "Cách hạ phèn rửa mặn cho đất vườn",
+      "expected_record_id": "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+      "retrieved_record_ids": [
+        "faq:69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-038",
+      "question_index": 1,
+      "question": "Trời đang mưa dầm rải phân có sợ bị rửa trôi hết không có loại nào chậm tan không?",
+      "expected_record_id": "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+      "retrieved_record_ids": [
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-038",
+      "question_index": 2,
+      "question": "Bón phân mùa mưa dầm chống rửa trôi",
+      "expected_record_id": "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+      "retrieved_record_ids": [
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-039",
+      "question_index": 1,
+      "question": "Đất đỏ bazan xài lâu năm bị chai cứng bón phân gì cho đất tơi xốp giữ nước tốt mùa khô?",
+      "expected_record_id": "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+      "retrieved_record_ids": [
+        "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+        "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+        "faq:3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-039",
+      "question_index": 2,
+      "question": "Cải tạo đất chai cứng đất bạc màu",
+      "expected_record_id": "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+      "retrieved_record_ids": [
+        "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-040",
+      "question_index": 1,
+      "question": "Cây bị vàng lá gân xanh có phải do thiếu vi lượng TE không?",
+      "expected_record_id": "faq:ee2270e21478b15d2881b0ef9005ab62a6c65de190aff6c983ce7677d1603b67",
+      "retrieved_record_ids": [
+        "faq:ee2270e21478b15d2881b0ef9005ab62a6c65de190aff6c983ce7677d1603b67",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-040",
+      "question_index": 2,
+      "question": "Dấu hiệu cây thiếu vi lượng TE",
+      "expected_record_id": "faq:ee2270e21478b15d2881b0ef9005ab62a6c65de190aff6c983ce7677d1603b67",
+      "retrieved_record_ids": [
+        "faq:ee2270e21478b15d2881b0ef9005ab62a6c65de190aff6c983ce7677d1603b67",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-041",
+      "question_index": 1,
+      "question": "Pha phân bón lá chung với thuốc sâu thuốc rầy xịt một lần có bị kết tủa đục nước không?",
+      "expected_record_id": "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+      "retrieved_record_ids": [
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-041",
+      "question_index": 2,
+      "question": "Trộn phân bón lá với thuốc bảo vệ thực vật được không",
+      "expected_record_id": "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+      "retrieved_record_ids": [
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-042",
+      "question_index": 1,
+      "question": "Trộn NPK chung với phân hữu cơ rải một lượt luôn cho đỡ tốn công được không?",
+      "expected_record_id": "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+      "retrieved_record_ids": [
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-042",
+      "question_index": 2,
+      "question": "Có nên trộn phân hóa học với phân hữu cơ rải chung",
+      "expected_record_id": "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+      "retrieved_record_ids": [
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-043",
+      "question_index": 1,
+      "question": "Phân Cò Bay có hòa tan 100% để tưới qua hệ thống nhỏ giọt mà không nghẹt béc không?",
+      "expected_record_id": "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+      "retrieved_record_ids": [
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+        "faq:2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-043",
+      "question_index": 2,
+      "question": "Phân bón tưới hệ thống nhỏ giọt tưới béc cfc",
+      "expected_record_id": "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+      "retrieved_record_ids": [
+        "faq:47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-044",
+      "question_index": 1,
+      "question": "Hữu cơ đi trước Hóa học theo sau là sao cách nhau bao nhiêu ngày là chuẩn?",
+      "expected_record_id": "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+      "retrieved_record_ids": [
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+        "faq:4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-044",
+      "question_index": 2,
+      "question": "Quy tắc bón hữu cơ trước hóa học sau",
+      "expected_record_id": "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+      "retrieved_record_ids": [
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-045",
+      "question_index": 1,
+      "question": "Làm sao biết mấy con vi sinh đang hoạt động dưới gốc có dấu hiệu gì nhìn thấy được không?",
+      "expected_record_id": "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+      "retrieved_record_ids": [
+        "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+        "faq:42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+        "faq:c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-045",
+      "question_index": 2,
+      "question": "5 dấu hiệu vi sinh hoạt động tốt trong đất",
+      "expected_record_id": "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+      "retrieved_record_ids": [
+        "faq:d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+        "faq:56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-046",
+      "question_index": 1,
+      "question": "Phân bò phân gà tươi bón trực tiếp có được không hay bắt buộc phải ủ hoai?",
+      "expected_record_id": "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+      "retrieved_record_ids": [
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+        "faq:96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-046",
+      "question_index": 2,
+      "question": "Bón phân chuồng tươi có hại cây không",
+      "expected_record_id": "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+      "retrieved_record_ids": [
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+        "faq:51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+        "faq:28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-047",
+      "question_index": 1,
+      "question": "Vừa bón vi sinh xong mà đổ thuốc nấm hóa học xuống thì có phí tiền không?",
+      "expected_record_id": "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+      "retrieved_record_ids": [
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    },
+    {
+      "case_id": "CFC-FAQ-047",
+      "question_index": 2,
+      "question": "Khoảng cách giữa bón vi sinh và tưới thuốc trị nấm",
+      "expected_record_id": "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+      "retrieved_record_ids": [
+        "faq:6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+        "faq:9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+        "faq:11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7"
+      ],
+      "rank": 1,
+      "top1_pass": true,
+      "top3_pass": true,
+      "zeo_isolated": true
+    }
+  ],
+  "runtime_summary": {
+    "gate_status": "COMPLETED",
+    "counts": {
+      "FAIL": 44,
+      "NO_REFERENCE": 3
+    },
+    "total": 47,
+    "exact_source_matches": 1
+  },
+  "runtime_results": [
+    {
+      "case_id": "CFC-FAQ-001",
+      "faq_number": 1,
+      "topic": "Giờ mở cửa",
+      "question": "Shop mở cửa lúc mấy giờ?",
+      "expected_answer": "Dạ shop Cò Bay mở cửa từ 8:00 đến 21:00 mỗi ngày nha bạn.",
+      "actual_answer": "Dạ shop Cò Bay mở cửa từ 8:00 đến 21:00 mỗi ngày nha bạn.",
+      "intent": "UNKNOWN",
+      "slots": {},
+      "exact_source_match": true,
+      "contains_expected_answer": true,
+      "fact_token_recall": 1.0,
+      "violations": [
+        "customer_called_ban"
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "faq_number": 2,
+      "topic": "Danh mục phân bón",
+      "question": "Có những loại phân bón nào?",
+      "expected_answer": "Dạ chào bạn, Cò Bay hiện có các dòng phân bón như NPK, Hữu cơ,... Bạn đang cần tư vấn cho loại cây trồng nào để bên mình hỗ trợ phù hợp hơn ạ?",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.35,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "faq_number": 3,
+      "topic": "Giao hàng / nhận hàng",
+      "question": "Có giao hàng không?",
+      "expected_answer": "Dạ có, chúng tôi hiện tại giao hàng thông qua 02 hình thức chính là nhận trực tiếp tại Công ty hoặc nhận tại nhà phân phối gần bạn nhất nhé ạ.",
+      "actual_answer": "Dạ để em kiểm tra hành trình và tình trạng đơn hàng cho mình, anh/chị cho em xin Số điện thoại đặt hàng hoặc Mã đơn hàng nhé ạ 🌾",
+      "intent": "ORDER_TRACKING",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.15,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-004",
+      "faq_number": 4,
+      "topic": "Mua hàng / link sản phẩm",
+      "question": "Muốn mua hàng Mua ở đâu?",
+      "expected_answer": null,
+      "actual_answer": "Để em kiểm tra điểm bán gần nhất, anh/chị cho em xin tỉnh/huyện mình đang ở ạ? Sau khi có khu vực, mình có thể để lại số điện thoại nếu cần nhân viên hỗ trợ liên hệ.",
+      "intent": "DEALER_LOOKUP",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": null,
+      "violations": [],
+      "status": "NO_REFERENCE"
+    },
+    {
+      "case_id": "CFC-FAQ-005",
+      "faq_number": 5,
+      "topic": "Nhập hàng / làm đại lý",
+      "question": "Muốn nhập hàng Muốn làm đại lý Muốn phân phối sản phẩm Muốn kinh doanh phân bón Làm nhà phân phối được không?",
+      "expected_answer": "Bạn vui lòng để lại số điện thoại và khu vực muốn kinh doanh, admin sẽ gửi đến nhà phân phối hoặc nhân viên khu vực liên hệ bạn sớm nhất ạ.",
+      "actual_answer": "Để em kiểm tra điểm bán gần nhất, anh/chị cho em xin tỉnh/huyện mình đang ở ạ? Sau khi có khu vực, mình có thể để lại số điện thoại nếu cần nhân viên hỗ trợ liên hệ.",
+      "intent": "DEALER_LOOKUP",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.4762,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-006",
+      "faq_number": 6,
+      "topic": "Cần hỗ trợ / gặp admin",
+      "question": "Cần hỗ trợ Hỗ trợ giúp mình Muốn gặp admin Cần tư vấn thêm Có người hỗ trợ không?",
+      "expected_answer": "Dạ bạn cần admin hỗ trợ gì về sản phẩm hay dịch vụ ạ?",
+      "actual_answer": "Dạ em đã chuyển tin nhắn của anh/chị đến nhân viên phụ trách fanpage rồi ạ. Bạn sẽ vào hỗ trợ mình ngay nhé! Cảm ơn anh/chị đã kiên nhẫn ạ 😊",
+      "intent": "HUMAN_REQUEST",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.25,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "faq_number": 7,
+      "topic": "Địa chỉ công ty",
+      "question": "Địa chỉ ở đâu?",
+      "expected_answer": "Dạ, địa chỉ Công ty ở: Trục chính KCN Trà Nóc 1, phường Thới An Đông, thành phố Cần Thơ ạ.",
+      "actual_answer": "Dạ Mình đã kiểm tra khu vực địa chỉ ở đâu?, nhưng snapshot CRM hiện chưa có điểm bán được xác nhận tại đây nên em không muốn chỉ nhầm địa chỉ. Anh/chị có thể cho em thêm xã/ấp cụ thể hoặc nhắn “gặp nhân viên” nếu cần kiểm tra thủ công ạ.",
+      "intent": "DEALER_LOOKUP",
+      "slots": {
+        "location": "địa chỉ ở đâu?"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.2857,
+      "violations": [
+        "internal_term"
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "faq_number": 8,
+      "topic": "Giới thiệu công ty",
+      "question": "Giới thiệu về công ty bạn đi Công ty bạn là công ty gì?",
+      "expected_answer": "Dạ, Cò Bay là thương hiệu phân bón thuộc Công ty Cổ phần Phân bón và Hóa chất Cần Thơ (thành lập năm 1977, hơn 45 năm kinh nghiệm), hiện cung cấp các dòng phân bón như NPK và phân Hữu cơ. Địa chỉ Công ty ở: Trục chính KCN Trà Nóc 1, phường Thới An Đông, thành phố Cần Thơ ạ.",
+      "actual_answer": "Dạ em đã chuyển tin nhắn của anh/chị đến nhân viên phụ trách fanpage rồi ạ. Bạn sẽ vào hỗ trợ mình ngay nhé! Cảm ơn anh/chị đã kiên nhẫn ạ 😊",
+      "intent": "HUMAN_REQUEST",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "faq_number": 9,
+      "topic": "Phân NPK",
+      "question": "Cò Bay có NPK không?",
+      "expected_answer": "Dạ Cò Bay hiện có dòng phân bón NPK chất lượng cao nha bạn. Bạn đang cần tư vấn cho cây trồng nào và khu vực nào để kỹ sư Cò Bay hỗ trợ phù hợp hơn ạ?",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "npk"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.2632,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "faq_number": 10,
+      "topic": "Phân hữu cơ",
+      "question": "Cò Bay có phân hữu cơ không?",
+      "expected_answer": "Dạ Cò Bay hiện có dòng phân bón Hữu cơ nha bạn. Bạn cho mình biết loại cây trồng và khu vực để bên mình tư vấn cách chọn sản phẩm phù hợp hơn ạ.",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân hữu cơ"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.35,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "faq_number": 11,
+      "topic": "Giá phân bón",
+      "question": "Giá phân bón Cò Bay bao nhiêu?",
+      "expected_answer": "Dạ bảng giá phân bón Cò Bay phụ thuộc vào từng dòng sản phẩm, quy cách đóng bao và khu vực phân phối. Bạn gửi giúp mình số điện thoại, khu vực và loại cây trồng cần bón, kỹ sư hoặc nhân viên Cò Bay sẽ kiểm tra và liên hệ báo giá chính xác nhất nha.",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân bón cfc"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.3235,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "faq_number": 12,
+      "topic": "Tìm đại lý / nhà phân phối gần nhất",
+      "question": "Ở khu vực tôi có đại lý Cò Bay không?",
+      "expected_answer": "Dạ bạn gửi giúp mình số điện thoại và khu vực/tỉnh thành cụ thể. Admin sẽ chuyển thông tin để nhà phân phối hoặc nhân viên phụ trách khu vực liên hệ hướng dẫn điểm mua gần bạn nhất ạ.",
+      "actual_answer": "Dạ Mình đã kiểm tra khu vực khu vực tôi, nhưng snapshot CRM hiện chưa có điểm bán được xác nhận tại đây nên em không muốn chỉ nhầm địa chỉ. Anh/chị có thể cho em thêm xã/ấp cụ thể hoặc nhắn “gặp nhân viên” nếu cần kiểm tra thủ công ạ.",
+      "intent": "DEALER_LOOKUP",
+      "slots": {
+        "location": "khu vực tôi"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.28,
+      "violations": [
+        "internal_term"
+      ],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-013",
+      "faq_number": 13,
+      "topic": "Đặt mua phân bón",
+      "question": "Tôi muốn đặt phân Cò Bay Cho mình mua phân bón Cò Bay Mình muốn đặt NPK Đặt phân hữu cơ như thế nào?",
+      "expected_answer": "Dạ Cò Bay đã ghi nhận nhu cầu mua phân bón của bạn. Bạn gửi thêm số điện thoại, khu vực và loại cây trồng cần bón để bên mình kiểm tra đúng sản phẩm và hỗ trợ đặt hàng nha.",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân cfc",
+          "phân bón cfc",
+          "npk",
+          "phân hữu cơ"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.3704,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "faq_number": 14,
+      "topic": "Giao phân về tỉnh / khu vực",
+      "question": "Ship phân bón về tỉnh được không?",
+      "expected_answer": "Dạ hiện bên mình hỗ trợ giao nhận thông qua 2 hình thức: nhận trực tiếp tại Công ty hoặc nhận tại nhà phân phối gần bạn nhất. Bạn gửi khu vực/tỉnh thành để bên mình kiểm tra hình thức nhận hàng phù hợp nha.",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY_DETAIL",
+      "slots": {
+        "location": "tỉnh"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1852,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "faq_number": 15,
+      "topic": "Liều lượng / cách dùng / phối trộn",
+      "question": "Bón bao nhiêu kg cho 1 công lúa?",
+      "expected_answer": "Dạ phần liều lượng, cách bón hoặc phối trộn cần kỹ sư nông nghiệp kiểm tra theo cây trồng, giai đoạn và khu vực canh tác. Bạn gửi giúp mình loại cây trồng, diện tích/khu vực và số điện thoại để kỹ sư Cò Bay tư vấn an toàn, đúng nhu cầu ạ.",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.2121,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "faq_number": 16,
+      "topic": "Tư vấn phân theo cây trồng",
+      "question": "Tư vấn phân bón cho cây trồng giúp mình Cây lúa nên dùng phân nào?",
+      "expected_answer": "Dạ mình sẵn sàng hỗ trợ ạ. Bạn cho biết loại cây trồng, giai đoạn cây hiện tại và khu vực/tỉnh thành để kỹ sư Cò Bay tư vấn dòng phân bón phù hợp hơn nha.",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.3182,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-017",
+      "faq_number": 17,
+      "topic": "Sản phẩm ngoài phân bón (nước giặt, nước rửa chén, lau sàn...)",
+      "question": "Bên Cò Bay có bán nước giặt ZeO không?",
+      "expected_answer": null,
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "nước giặt zeo"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": null,
+      "violations": [],
+      "status": "NO_REFERENCE"
+    },
+    {
+      "case_id": "CFC-FAQ-018",
+      "faq_number": 18,
+      "topic": "Hỏi lại yêu cầu đã gửi",
+      "question": "Đã gửi thông tin rồi có ai liên hệ chưa?",
+      "expected_answer": "Dạ mình đã ghi nhận tin nhắn của bạn. Nếu bạn đã gửi số điện thoại và khu vực, admin đang chuyển thông tin để kỹ sư hoặc nhân viên Cò Bay liên hệ lại sớm nhất ạ.",
+      "actual_answer": "Dạ, để hỗ trợ khách hàng, anh/chị có thể liên hệ trực tiếp:\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "CONTACT_REQUEST",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.05,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-019",
+      "faq_number": 19,
+      "topic": "Website Cò Bay",
+      "question": "Website của Cò Bay là gì?",
+      "expected_answer": null,
+      "actual_answer": "Dạ Cò Bay hiện có dòng phân bón Hữu cơ nha bạn. Bạn cho mình biết loại cây trồng và khu vực để bên mình tư vấn cách chọn sản phẩm phù hợp hơn ạ.",
+      "intent": "UNKNOWN",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": null,
+      "violations": [
+        "customer_called_ban"
+      ],
+      "status": "NO_REFERENCE"
+    },
+    {
+      "case_id": "CFC-FAQ-020",
+      "faq_number": 20,
+      "topic": "Sầu riêng nhú đọt + trái non",
+      "question": "Cây sầu riêng đang nhú mũi giáo rải dòng nào để mập đọt mà không rụng trái non?",
+      "expected_answer": "Dạ chào bạn! Khi sầu riêng đang nhú 'mũi giáo' đồng thời đang mang trái non, bạn nên ưu tiên bón dòng Hữu cơ sinh học Cobanic kết hợp NPK cân bằng hàm lượng đạm vừa phải (như NPK Cò Bay 20-20-15 TE hoặc 16-16-16) với liều nhẹ, chia làm nhiều lần bón. Tránh rải đạm đơn hoặc NPK đạm cao vì sẽ gây phóng đọt mạnh, cạnh tranh dinh dưỡng làm rụng trái non. Bạn để lại SĐT và tuổi cây/số lượng trái để kỹ sư Cò Bay tư vấn công thức chuẩn xác nhất nhé ạ!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "cây sầu riêng"
+        ],
+        "application": "rải dòng",
+        "growth_stage": "nhú mũi giáo",
+        "needs_clarification": false
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1167,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-021",
+      "faq_number": 21,
+      "topic": "Chống rụng hoa, dai cuống",
+      "question": "Cây đang ra bông dùng loại phân nào để dai cuống chống rụng sinh lý?",
+      "expected_answer": "Dạ trong giai đoạn cây đang ra bông, để dai cuống và chống rụng hoa sinh lý, bạn nên bổ sung phân bón giàu Canxi, Bo và Kẽm kết hợp NPK Cò Bay hàm lượng Lân và Kali cao (như NPK Cò Bay 15-15-15 hoặc phân bón lá vi lượng chuyên hoa). Tuyệt đối hạn chế bón phân có hàm lượng Đạm cao lúc này để tránh cây xả bông non. Bạn nhắn lại loại cây trồng và thời tiết vườn đang mưa hay nắng để kỹ sư hướng dẫn liều phun/bón phù hợp nha!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "cây đang ra bông"
+        ],
+        "usage": [
+          "dai cuống",
+          "chống rụng sinh lý"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1321,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-022",
+      "faq_number": 22,
+      "topic": "Giai đoạn xả nhụy, hãm đọt",
+      "question": "Giai đoạn xả nhụy nên bón gì để đậu trái đều mà hãm được đọt không cho phóng tược?",
+      "expected_answer": "Dạ giai đoạn xả nhụy là thời điểm cực kỳ nhạy cảm! Để giúp đậu trái đều và chặn cây phóng đọt non, bạn nên giữ ẩm vừa phải, ngưng rải phân gốc đạm cao, ưu tiên phun qua lá các dòng Bo, Canxi hữu cơ kết hợp Kali trắng để dằn đọt. Khi trái đã chạy gai xanh ổn định mới bắt đầu nhử nhẹ NPK Cò Bay cân đối. Bạn gửi SĐT và hình ảnh đọt/bông qua tin nhắn, kỹ sư Cò Bay sẽ hỗ trợ kiểm tra trực tiếp cho vườn mình nhé ạ!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "agriculture_stage": "giai đoạn xả nhụy",
+        "crop_type": "đậu",
+        "problem": "xuất hiện đọt không cho phóng tược",
+        "stage": "xả nhụy nên bón gì để đậu trái đều mà hãm được đọt không cho"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1111,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-023",
+      "faq_number": 23,
+      "topic": "Nuôi trái non, chống méo trái",
+      "question": "Trái non mới đậu rải NPK dòng nào để trái lớn nhanh như thổi mà không bị méo trái?",
+      "expected_answer": "Dạ khi trái non đã định hình (bằng quả trứng gà), để trái lớn nhanh, tròn đều và không bị giật hộc/méo trái, bạn nên dùng dòng NPK Cò Bay 20-20-15 TE hoặc NPK Cò Bay Ba Số Đều (15-15-15 / 16-16-16 TE) kết hợp bổ sung Trung - Vi lượng (Canxi, Magie). Nên chia nhỏ lượng bón định kỳ 10-12 ngày/lần. Bạn cho mình biết vườn đang trồng cây gì (sầu riêng, mít hay bưởi) để bên mình lên quy trình bón chuẩn nhé!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "trái non mới đậu",
+          "npk"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1458,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-024",
+      "faq_number": 24,
+      "topic": "Vàng lá, rễ đen, thối rễ",
+      "question": "Vườn đang bị vàng lá rễ đen thui không ra rễ tơ tưới kích rễ loại nào cho cây tỉnh lại nhanh?",
+      "expected_answer": "Dạ tình trạng rễ đen thui, không ra rễ tơ thường do đất bị chua (pH thấp) kết hợp nấm rễ tấn công. Quy trình cứu rễ chuẩn của Cò Bay gồm 3 bước: 1. Rải Lân nung chảy hoặc vôi để nâng pH đất lên > 5.5. 2. Xử lý nấm bệnh bằng hoạt chất trừ nấm hoặc vi sinh đối kháng Trichoderma/Bacillus. 3. Sau 5-7 ngày tưới Axit Humic/Fulvic hoặc Hữu cơ lỏng Cobanic để kích rễ tơ bung mới. Tuyệt đối KHÔNG rải phân hóa học NPK nồng độ cao lúc này vì sẽ làm cháy rễ non. Bạn để lại SĐT kỹ sư Cò Bay sẽ gọi hỗ trợ phác đồ trị bệnh nhé!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Cao Văn Được: 0939 852 529\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "symptoms": "vườn đang bị vàng lá rễ đen thui không ra rễ",
+        "treatment": "tơ tưới kích rễ",
+        "plant": "cây"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0597,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-025",
+      "faq_number": 25,
+      "topic": "Kali nuôi trái trước thu hoạch",
+      "question": "Sắp thu hoạch rồi đánh dòng Kali nào cho lên màu đẹp nặng ký nặng zem chắc hạt mà không cháy múi?",
+      "expected_answer": "Dạ trước khi thu hoạch 20-30 ngày, để trái lên màu cơm vàng đẹp, đậm vị, ngọt nước, chắc hạt (nặng zem) mà không gây cháy múi, bạn nên dùng dòng NPK Cò Bay chuyên nuôi trái chín có hàm lượng Kali Sunphat (Kali trắng) cao như NPK Cò Bay 15-5-20 TE, 16-6-18 TE hoặc Kali hữu cơ. Dòng Kali Sunphat giúp tinh bột chuyển hóa thành đường nhanh, không làm tích nước hay nhạt cơm. Bạn gửi loại nông sản đang canh tác để chuyên viên Cò Bay gửi định mức bón chuẩn nha!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "dòng kali"
+        ],
+        "usage": [
+          "đánh dòng kali"
+        ],
+        "crop": [
+          "sắp thu hoạch",
+          "lúa"
+        ],
+        "soil_quality": [
+          "up màu đẹp",
+          "nặng ký",
+          "nặng zem",
+          "chắc hạt",
+          "không cháy múi"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-026",
+      "faq_number": 26,
+      "topic": "Chống sượng cơm, cháy múi, tích nước",
+      "question": "Làm sao để bón phân mà trái sầu riêng không bị sượng cơm cháy múi hay tích nước lúc mưa dầm?",
+      "expected_answer": "Dạ hiện tượng sượng cơm, cháy múi và tích nước mùa mưa dầm thường do 3 nguyên nhân: thừa Đạm, thiếu Canxi - Bo - Magie và dư nước làm cây đi đọt non. Cách khắc phục: 1. Cắt giảm hoàn toàn Đạm từ 30 ngày trước cắt trái. 2. Bón NPK Cò Bay giàu Kali Sunphat (K2SO4) và bổ sung Canxi Bo định kỳ. 3. Làm rãnh thoát nước gốc thật tốt, không để đọng vũng. Bạn để lại SĐT và khu vực vườn, kỹ sư Cò Bay sẽ gửi cẩm nang phòng ngừa sượng cơm chi tiết cho bạn nhé!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {},
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0678,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-027",
+      "faq_number": 27,
+      "topic": "Phục hồi cây sau thu hoạch",
+      "question": "Cây mới thu hoạch xong xơ xác quá rải hữu cơ nào kết hợp với đạm để bung đọt nhanh phục hồi lẹ cho vụ sau?",
+      "expected_answer": "Dạ sau thu hoạch cây bị kiệt sức, bạn cần tiến hành tỉa cành rửa vườn và phục hồi theo công thức: Bón gốc Hữu cơ Cobanic 30% (từ 3 - 5 kg/gốc tùy tuổi cây) kết hợp tưới kích rễ Humic, sau đó bón nhử NPK Cò Bay 20-20-15 TE hoặc 16-16-8 TE để kích đọt bung đồng loạt, lá dày bóng. Bộ đôi Hữu cơ Cobanic + NPK Cò Bay sẽ giúp đất tơi xốp và cây tích lũy dinh dưỡng dồi dào cho mùa hoa tới. Bạn cho mình biết diện tích vườn để tính toán số bao phân cần dùng nha!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "hữu cơ",
+          "đạm"
+        ],
+        "needs_clarification": false
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0909,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-028",
+      "faq_number": 28,
+      "topic": "Làm bông, tạo mầm hoa",
+      "question": "Sắp tới làm bông giờ bón Lân và Kali loại nào để ép cây phân hóa mầm hoa mạnh nhất?",
+      "expected_answer": "Dạ để ép cây tạo mầm hoa khỏe và ra hoa đồng loạt, công thức chuẩn là: 1. Dưới gốc: Bón Lân nung chảy kết hợp Kali Sunphat hoặc NPK Cò Bay công thức Lân cao (như NPK 10-50-10 hoặc 9-25-17). 2. Trên lá: Phun hoạt chất chặn đọt kết hợp MKP (Lân + Kali cao) để lá nhanh già lụa và hình thành mầm hoa. 3. Siết nước tạo khô hạn cho đến khi mầm hoa nhú rõ. Bạn gửi SĐT và loại cây đang làm bông, kỹ sư nông nghiệp Cò Bay sẽ lên lịch trình cắt nước và bón phân cụ thể theo ngày cho bạn nhé!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "bông",
+          "lân",
+          "kali"
+        ],
+        "application_stage": "áp dụng"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0877,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-029",
+      "faq_number": 29,
+      "topic": "Kali trắng và Kali đỏ",
+      "question": "Cây đang nuôi trái lớn bón Kali trắng Kali Sunphat hay Kali đỏ thì êm hơn cho chất lượng trái xuất khẩu?",
+      "expected_answer": "Dạ với các dòng cây ăn trái nhạy cảm với gốc Clo (như sầu riêng, bưởi da xanh, mãng cầu, thuốc lá, tiêu) hoặc nông sản định hướng xuất khẩu, bạn **nên ưu tiên dùng Kali trắng (Kali Sunphat - K2SO4)**. Ưu điểm của Kali trắng: Không chứa gốc Clo gây sượng múi/cháy mép lá, giúp múi dẻo quánh, vỏ mỏng, ngọt thanh tự nhiên. Kali đỏ (KCl) chỉ phù hợp cho cây trồng chịu mặn tốt như lúa, ngô, mía hoặc dùng vào đầu giai đoạn nuôi trái với chi phí tiết kiệm hơn. Cò Bay có đầy đủ cả dòng NPK nền Kali trắng cao cấp, bạn nhắn lại nhu cầu để bên mình báo điểm đại lý gần nhất nha!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "cây đang nuôi",
+          "kali trắng",
+          "kali sunphat",
+          "kali đỏ"
+        ],
+        "detected_skus": [
+          "kali trắng",
+          "kali sunphat",
+          "kali đỏ"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.16,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-030",
+      "faq_number": 30,
+      "topic": "Giá DAP, Urê và xu hướng giá",
+      "question": "Bao DAP Urê hôm nay giá bao nhiêu rồi tuần tới có nhích lên hay tuột xuống không?",
+      "expected_answer": "Dạ giá phân bón (DAP, Urê, NPK) biến động theo ngày theo giá nguyên liệu thế giới và chính sách vận chuyển từng khu vực. Để nhận thông báo bảng giá cập nhật sớm nhất hôm nay và dự báo xu hướng tuần tới từ Cò Bay, bạn vui lòng để lại số điện thoại và tỉnh/huyện đang canh tác. Chuyên viên kinh doanh Cò Bay khu vực sẽ liên hệ gửi báo giá đại lý/nhà vườn chi tiết cho bạn nha!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "bao dap urê"
+        ],
+        "price_timeframe": [
+          "hôm nay",
+          "tuần tới"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.24,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-031",
+      "faq_number": 31,
+      "topic": "So sánh với phân nhập khẩu",
+      "question": "Loại phân Cò Bay này xài có êm bằng hàng ngoại cũ tui hay dùng không giá rẻ hơn nhiều không?",
+      "expected_answer": "Dạ phân bón CFC Cò Bay được sản xuất trên dây chuyền công nghệ Tháp Cao hiện đại, với nguồn nguyên liệu chọn lọc tương đương chuẩn quốc tế nhưng giá thành tiết kiệm hơn 15 - 25% do không phải chịu thuế nhập khẩu và chi phí vận chuyển biển cao. Đặc biệt, công thức phân Cò Bay được nghiên cứu chuyên biệt cho đất và khí hậu Việt Nam (chống chua đất, giữ dinh dưỡng mùa mưa dầm), giúp cây xanh bền, rễ mập mà không bị bốc nhanh rồi sụp cây. Bạn có thể bón thử nghiệm trên một liếp vườn để đối chứng hiệu quả thực tế nhé!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân cfc"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0597,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-032",
+      "faq_number": 32,
+      "topic": "Định mức hữu cơ tiết kiệm chi phí",
+      "question": "Mua dòng hữu cơ vi sinh này tốn kém quá một gốc rải mấy ký là vừa túi tiền?",
+      "expected_answer": "Dạ để bón phân Hữu cơ Cobanic vừa khỏe cây vừa tiết kiệm chi phí tối đa, bạn nên áp dụng nguyên tắc: - Cây kiến thiết cơ bản (1-3 năm): 1 - 2 kg/gốc/đợt (mỗi năm 3-4 đợt). - Cây kinh doanh (nuôi trái): 3 - 5 kg/gốc sau khi thu hoạch để phục hồi bộ rễ. Mẹo tiết kiệm: Rải phân kết hợp cuốc xới nhẹ quanh tán và lấp lớp đất mỏng/lá khô để tránh nắng gắt làm bay hơi chất hữu cơ. Bạn nhắn loại cây và số lượng gốc trong vườn, bên mình sẽ tính toán số bao phân tối ưu ngân sách nhất cho bạn nha!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "dòng hữu cơ vi sinh"
+        ],
+        "quantity": "một gốc",
+        "unit": "rải",
+        "price_range": "tốn kém"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1429,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-033",
+      "faq_number": 33,
+      "topic": "Công nợ, ghi sổ cuối vụ",
+      "question": "Có cho ghi sổ không tới cuối vụ bán trái xong tui ra thanh toán một lượt nhé?",
+      "expected_answer": "Dạ chính sách công nợ (ghi sổ cuối vụ) sẽ do các Đại lý và Nhà phân phối Cò Bay tại địa phương trực tiếp xem xét và hỗ trợ cho bà con thân thiết. Công ty Cổ phần Phân bón & Hóa chất Cần Thơ (CFC) luôn có các chương trình trợ giá và liên kết đại lý để tạo điều kiện thuận lợi nhất cho nhà nông. Bạn để lại số điện thoại và địa bàn xã/huyện, admin sẽ kết nối bạn với đại lý Cò Bay gần nhất để trao đổi chính sách thanh toán linh hoạt nhé ạ!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "ghi sổ"
+        ],
+        "payment_method": "thanh toán một lượt"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1667,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-034",
+      "faq_number": 34,
+      "topic": "NPK Tháp Cao (phức hợp) khác phân trộn",
+      "question": "NPK này là hàng tháp cao phức hợp hay hàng trộn thủ công rải xuống có tan hết không?",
+      "expected_answer": "Dạ các dòng NPK chủ lực của Cò Bay được sản xuất bằng **Công nghệ Tháp Cao (Phức hợp)** tiên tiến nhất hiện nay! Khác biệt hoàn toàn với phân trộn 3 màu thủ công: 1. Từng hạt phân đều chứa đầy đủ N-P-K và vi lượng đồng nhất từ vỏ đến lõi, không bị phân lớp khi vận chuyển. 2. Hạt phân tròn bóng, độ tan cực kỳ nhanh và tan hoàn toàn 100% khi gặp ẩm, giúp rễ cây hấp thụ trọn vẹn không để lại cặn bã chai đất. Bạn có thể lấy vài hạt phân Cò Bay hòa vào ly nước sẽ thấy phân tan nhanh trong 1-2 phút nhé ạ!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "npk"
+        ],
+        "detected_skus": [
+          "npk"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1186,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-035",
+      "faq_number": 35,
+      "topic": "Cách thử phân bón thật giả",
+      "question": "Cách thử phân bón thật giả tại nhà mẹo thử urê kali npk thật giả thử hòa tan urê vào nước có lạnh tay không",
+      "expected_answer": "Dạ Cò Bay chia sẻ với bạn 3 mẹo kiểm tra phân bón thật - giả cực chuẩn ngay tại nhà: 1. **Thử Nước (Urê & Kali):** Urê thật tan rất nhanh và làm nước **lạnh buốt tay**. Kali đỏ thật tan hoàn toàn trong nước, nước có màu hồng/đỏ nhạt nhưng **không để lại lớp cặn bột gạch dày** ở đáy ly. 2. **Thử Lửa (Đạm & NPK):** Đặt hạt phân lên miếng sắt nung nóng, phân thật sẽ nóng chảy, sủi bọt và bốc mùi khai nồng (Amoniac). Phân giả pha bột đá sẽ không tan, cháy đen hoặc nổ lách tách. 3. **Cảm Quan Hạt Tháp Cao:** Hạt phân Cò Bay bẻ đôi ra có màu sắc và cấu trúc đồng nhất từ trong ra ngoài, hạt cứng, không bị nhuộm màu bên ngoài. Bà con nên mua tại đại lý ủy quyền của Cò Bay để đảm bảo 100% hàng chính hãng nha!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Cao Văn Được: 0939 852 529\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "agriculture_topic": "thử phân bón",
+        "product_mentions": [
+          "urê",
+          "kali",
+          "npk"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0779,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-036",
+      "faq_number": 36,
+      "topic": "Phân bị ẩm, vón cục; bảo quản",
+      "question": "Sao bao phân này mở ra thấy chảy nước bết dính vậy có bị rút ruột hàm lượng không?",
+      "expected_answer": "Dạ hiện tượng phân bón bị ẩm hoặc bết dính nhẹ thường do đặc tính hút ẩm tự nhiên của Đạm (Urê) và Kali khi tiếp xúc với không khí ẩm, hoàn toàn **không bị rút ruột hay giảm hàm lượng dinh dưỡng**. Cách bảo quản chuẩn: - Để bao phân trên pallet gỗ cách mặt đất 15-20cm, cách tường 20cm. - Bao đã mở miệng nên buộc thật kín bằng dây sau khi lấy phân. - Tránh để phân tiếp xúc trực tiếp với ánh nắng gắt hoặc nơi ẩm ướt. Nếu hạt phân bị vón cục, bạn chỉ cần bóp nhẹ là phân tơi ra và rải bình thường nhé ạ!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "bao phân"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0345,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-037",
+      "faq_number": 37,
+      "topic": "Đất phèn mặn",
+      "question": "Đất vườn đang bị phèn mặn rải Lân nung chảy hay Canxi để hạ phèn trước khi bón NPK?",
+      "expected_answer": "Dạ khi đất bị nhiễm phèn hoặc hạn mặn, rễ cây bị bó và ngộ độc kim loại, bón NPK ngay sẽ làm rễ cháy nhanh hơn! Quy trình xử lý đất phèn mặn chuẩn: 1. **Hạ phèn:** Rải **Lân nung chảy** kết hợp Vôi/Canxi (từ 300 - 500 kg/ha) để cố định độc chất nhôm sắt, nâng pH đất lên mức an toàn (5.5 - 6.5). 2. **Rửa mặn & Dưỡng rễ:** Tưới Axit Humic hoặc bón Hữu cơ Cobanic để tạo phức chelate đẩy muối mặn ra khỏi vùng rễ và kích rễ tơ tái sinh. 3. Khi cây nhú rễ tơ mới bắt đầu bón lại NPK Cò Bay với lượng nhẹ. Bạn để lại SĐT và đo giúp mình độ mặn/độ pH hiện tại, kỹ sư Cò Bay sẽ hỗ trợ hướng dẫn chi tiết nhé!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "lân nung chảy",
+          "canxi"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1324,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-038",
+      "faq_number": 38,
+      "topic": "Bón phân mùa mưa dầm",
+      "question": "Trời đang mưa dầm rải phân có sợ bị rửa trôi hết không có loại nào chậm tan không?",
+      "expected_answer": "Dạ mùa mưa dầm nguy cơ thất thoát phân bón do rửa trôi và xói mòn rất lớn (lên tới 40 - 50%)! Bí quyết bón phân mùa mưa của Cò Bay: 1. **Chia nhỏ cữ bón:** Thay vì bón 1 lần nhiều phân, hãy chia làm 2-3 đợt bón cách nhau 10 ngày. 2. **Dùng Hữu cơ lót nền:** Rải Hữu cơ Cobanic giúp tăng dung tích hấp thu của đất, giữ hạt phân NPK lại quanh vùng rễ không bị trôi tuột xuống mương. 3. **Công nghệ Tháp cao Cò Bay:** Tan đều và ngấm sâu vào đất theo rễ, không bị bốc hơi. Bạn nhắn diện tích vườn để bên mình tính toán lịch rải phân đón mưa an toàn nhé!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Cao Văn Được: 0939 852 529\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "product_mentions": [
+          "rải phân",
+          "loại phân chậm tan"
+        ],
+        "needs_clarification": false
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0725,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-039",
+      "faq_number": 39,
+      "topic": "Cải tạo đất chai cứng, bạc màu",
+      "question": "Đất đỏ bazan xài lâu năm bị chai cứng bón phân gì cho đất tơi xốp giữ nước tốt mùa khô?",
+      "expected_answer": "Dạ đất đỏ bazan hoặc đất vườn canh tác lâu năm bị chai cứng là do mất đi lớp mùn hữu cơ và vi sinh vật bản địa. Giải pháp cải tạo đất bền vững của Cò Bay: 1. Bổ sung **Hữu cơ vi sinh Cobanic** định kỳ (3 - 5 tấn/ha/năm) để tái tạo kết cấu xốp như bọt biển cho đất, giúp giữ ẩm cực tốt qua 6 tháng mùa khô Tây Nguyên. 2. Tưới bổ sung Humic Acid để giải phóng các hạt sét bị nén chặt và mở rộng đường cho rễ cây thở. 3. Giữ thảm cỏ vườn (cắt cỏ để lại thân mục) thay vì xịt thuốc diệt cỏ làm trơ trọi đất. Bạn nhắn lại vị trí vườn (Tây Nguyên hay Miền Đông/Miền Tây) để kỹ sư Cò Bay tư vấn định mức cải tạo đất nhé!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "product_mentions": [
+          "đất đỏ bazan"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0658,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-040",
+      "faq_number": 40,
+      "topic": "Thiếu vi lượng TE, vàng lá gân xanh",
+      "question": "Cây bị vàng lá gân xanh có phải do thiếu vi lượng TE không?",
+      "expected_answer": "Dạ hiện tượng 'vàng lá gân xanh' (thịt lá chuyển vàng nhưng gân lá vẫn giữ màu xanh) là dấu hiệu điển hình của việc cây bị **thiếu Trung - Vi lượng (Magiê, Kẽm, Sắt, Mangan, Bo)**. Cách xử lý nhanh: 1. Phun qua lá dung dịch vi lượng Chelate tổng hợp để lá hấp thụ tức thì sau 3-5 ngày. 2. Dưới gốc: Chuyển sang dùng các dòng **NPK Cò Bay có ký hiệu TE** (như NPK Cò Bay 20-20-15 TE, 16-16-8 TE) được tích hợp sẵn vi lượng dạng khoáng dễ tiêu, giúp cây quang hợp mạnh mẽ và lá xanh dày trở lại. Bạn chụp ảnh lá gửi qua tin nhắn để chuyên viên Cò Bay chẩn đoán chính xác loại vi lượng đang thiếu nha!",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "symptom": "cây bị vàng lá gân xanh",
+        "deficiency": "vi lượng te"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.1111,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-041",
+      "faq_number": 41,
+      "topic": "Pha phân bón lá với thuốc BVTV",
+      "question": "Pha phân bón lá chung với thuốc sâu thuốc rầy xịt một lần có bị kết tủa đục nước không?",
+      "expected_answer": "Dạ bạn hoàn toàn có thể phối trộn phân bón lá với thuốc trừ sâu rầy để tiết kiệm công phun xịt, nhưng cần tuân thủ **Quy tắc thử nghiệm 3 phút**: 1. Múc 1 ca nước nhỏ, cho thuốc và phân bón lá vào khuấy đều. Nếu nước đồng nhất, không sủi bọt lạ, không kết tủa hay vón cục đóng cặn đáy ca thì phối trộn an toàn. 2. **Thứ tự pha phuy 200L:** Thuốc dạng bột (WP) -> Thuốc dạng sữa/nhũ dầu (EC/SC) -> Phân bón lá hòa tan cuối cùng. 3. **Lưu ý:** Không pha chung phân bón giàu Canxi, Đồng (Gốc đồng) với các loại thuốc gốc Lân hoặc Lưu huỳnh vì sẽ tạo cặn làm cháy lá và nghẹt béc xịt. Bạn nhắn tên loại phân thuốc đang muốn pha để kỹ sư kiểm tra tính tương thích cho an toàn nhé!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "pha phân bón lá",
+          "thuốc sâu thuốc rầy"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0857,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-042",
+      "faq_number": 42,
+      "topic": "Trộn NPK với phân hữu cơ",
+      "question": "Trộn NPK chung với phân hữu cơ rải một lượt luôn cho đỡ tốn công được không?",
+      "expected_answer": "Dạ bạn **HOÀN TOÀN CÓ THỂ** trộn NPK Cò Bay chung với Hữu cơ Cobanic để rải cùng một lần giúp tiết kiệm công lao động! Lợi ích: Chất hữu cơ sẽ bao bọc các hạt NPK, giảm thất thoát do bốc hơi và giữ phân tan từ từ quanh vùng rễ. **Nguyên tắc quan trọng:** - Trộn xong nên mang đi rải ngay trong ngày, không để phân đã trộn qua đêm vì phân sẽ hút ẩm và vón cục. - Nếu là dòng **Hữu cơ vi sinh vật sống** (chứa nấm đối kháng Trichoderma), không nên trộn với lượng NPK quá đậm đặc vì nồng độ muối khoáng cao có thể làm giảm mật độ vi sinh. Bạn cho mình biết công thức phân dự kiến trộn để kỹ sư Cò Bay góp ý tỷ lệ chuẩn nha!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "npk",
+          "phân hữu cơ"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0597,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-043",
+      "faq_number": 43,
+      "topic": "Phân tưới nhỏ giọt (Fertigation)",
+      "question": "Phân Cò Bay có hòa tan 100% để tưới qua hệ thống nhỏ giọt mà không nghẹt béc không?",
+      "expected_answer": "Dạ Cò Bay có các dòng sản phẩm NPK Tháp Cao hòa tan nhanh và dòng phân bón tưới nhỏ giọt chuyên dụng (Fertigation)! Đặc điểm: Độ tinh khiết cực cao, tan 100% trong nước, không chứa tạp chất không tan hoặc cặn bã, giúp nước phân lưu thông mượt mà qua hệ thống dây nhỏ giọt và đầu béc bù áp mà không sợ nghẹt béc. Bạn để lại SĐT và loại cây/quy mô hệ thống tưới tự động, bên mình sẽ gửi danh mục các dòng phân tưới nhỏ giọt phù hợp nhất nhé!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân cfc"
+        ],
+        "dissolution": "100%",
+        "application_method": "tưới qua hệ thống nhỏ giọt",
+        "detected_skus": [
+          "CFC"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.25,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-044",
+      "faq_number": 44,
+      "topic": "Hữu cơ trước, hóa học sau",
+      "question": "Hữu cơ đi trước Hóa học theo sau là sao cách nhau bao nhiêu ngày là chuẩn?",
+      "expected_answer": "Dạ 'Hữu cơ đi trước, Hóa học theo sau' là quy tắc vàng trong canh tác nông nghiệp thông minh: 1. **Bón Hữu cơ trước (Ngày 1):** Bón Hữu cơ Cobanic để 'nuôi đất', kích hoạt hệ vi sinh vật và kích thích rễ non bung ra tạo mạng lưới rễ cám dày đặc. 2. **Bón NPK theo sau (Cách 7 - 10 ngày):** Khi rễ tơ đã sẵn sàng, bạn bón NPK Cò Bay vào. Lúc này rễ cây sẽ hấp thụ phân hóa học đạt hiệu suất tối đa (80-90%), tránh tình trạng rải NPK trên nền đất trơ làm cháy rễ và thất thoát phân bón. Bạn nhắn loại cây và giai đoạn để Cò Bay lên bảng lịch bón phân chuẩn từng tuần nha!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "agriculture_advice": "hữu cơ đi trước hóa học theo sau là sao cách nhau bao nhiêu ngày là chuẩn"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0448,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-045",
+      "faq_number": 45,
+      "topic": "Dấu hiệu vi sinh hoạt động trong đất",
+      "question": "Làm sao biết mấy con vi sinh đang hoạt động dưới gốc có dấu hiệu gì nhìn thấy được không?",
+      "expected_answer": "Dạ Cò Bay chia sẻ với bạn **5 dấu hiệu nhận biết mắt thường** cho thấy vi sinh vật đang hoạt động cực tốt quanh gốc sau khi bón Hữu cơ Cobanic: 1. **Tơ nấm trắng:** Xuất hiện các mảng tơ nấm trắng mỏng chằng chịt như mạng nhện dưới lớp lá mục/phân hữu cơ (đây là nấm có lợi phân hủy xenlulozo). 2. **Đùn phân trùn:** Đất xuất hiện nhiều ụ phân trùn đất đùn lên, đất tơi xốp rõ rệt. 3. **Mùi đất ngọt thơm:** Đất có mùi mùn ngai ngái dễ chịu sau mưa, không còn mùi chua nồng hay hôi thối. 4. **Kết cấu xốp mềm:** Đất chuyển màu nâu sẫm, xốp như miếng bọt biển, bóp nhẹ là vỡ vụn không đóng váng. 5. **Rễ tơ trắng muốt:** Lớp rễ cám mập mạp mọc trồi lên tầng mặt để ăn dinh dưỡng. Vườn bạn đã có những dấu hiệu nào trong 5 dấu hiệu trên chưa ạ?",
+      "actual_answer": "Dạ Cò Bay cần thêm loại cây, giai đoạn cây để tra đúng hướng dẫn đã được duyệt và tư vấn sát vườn mình ạ.\n☎️ Khuyến nông Lê Thanh Đạm: 0353 857 516\n☎️ Hotline công ty: 1900 5307",
+      "intent": "AGRI_ADVICE",
+      "slots": {
+        "product_mentions": [
+          "vi sinh"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0353,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-046",
+      "faq_number": 46,
+      "topic": "Phân chuồng tươi có cần ủ hoai không",
+      "question": "Phân bò phân gà tươi bón trực tiếp có được không hay bắt buộc phải ủ hoai?",
+      "expected_answer": "Dạ bạn **TUYỆT ĐỐI KHÔNG NÊN** bón phân chuồng tươi (phân bò, phân gà tươi) trực tiếp vào gốc cây! Tác hại nghiêm trọng của phân tươi: 1. Sinh nhiệt độ cao (quá trình tự ủ dưới gốc) làm **cháy rễ non**. 2. Mang theo mầm bệnh tuyến trùng, nấm Phytophthora gây vàng lá thối rễ và hạt cỏ dại. 3. Tạo môi trường cho ấu trùng sùng đất và ruồi đục rễ phát triển. **Khuyến nghị:** Hãy ủ hoai bằng nấm Trichoderma từ 45-60 ngày hoặc sử dụng trực tiếp dòng **Hữu cơ sinh học Cobanic 30%** của Cò Bay đã được xử lý thanh trùng, khử mùi và bổ sung vi sinh có lợi sẵn, rải vừa an toàn vừa tiện lợi nhé ạ!",
+      "actual_answer": "Dạ hiện tại Cò Bay chưa tìm thấy mã sản phẩm phù hợp trong danh mục. Anh/chị cho bên mình xin thêm tên cụ thể hoặc nhu cầu sử dụng để bên mình hỗ trợ chi tiết nhé!",
+      "intent": "PRODUCT_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "phân bò phân gà tươi"
+        ],
+        "usage": [
+          "bón trực tiếp"
+        ]
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0845,
+      "violations": [],
+      "status": "FAIL"
+    },
+    {
+      "case_id": "CFC-FAQ-047",
+      "faq_number": 47,
+      "topic": "Vi sinh và thuốc trị nấm hóa học",
+      "question": "Vừa bón vi sinh xong mà đổ thuốc nấm hóa học xuống thì có phí tiền không?",
+      "expected_answer": "Dạ nếu vừa bón phân vi sinh xong mà tưới ngay thuốc trừ nấm hóa học (như Mancozeb, Ridomil, Hexaconazole...) thì thuốc sẽ **tiêu diệt toàn bộ vi sinh vật có lợi**, làm lãng phí 100% tiền mua phân vi sinh! **Quy tắc chuẩn:** - Nếu cây đang bị bệnh rễ nặng: Xử lý thuốc nấm hóa học trước để chặn đứng mầm bệnh. - Sau **7 - 10 ngày** khi thuốc hóa học đã phân hủy hết độc lực, mới tiến hành tưới bổ sung vi sinh đối kháng và Hữu cơ Cobanic để phục hồi đất. Bạn để lại SĐT và tình trạng bệnh của vườn, kỹ sư Cò Bay sẽ hỗ trợ hướng dẫn quy trình luân phiên an toàn nha!",
+      "actual_answer": "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾\n☎️ Trưởng phòng Kinh doanh Lê Trọng Nhơn: 0981 205 448\n☎️ Hotline công ty: 1900 5307",
+      "intent": "PRICE_INQUIRY",
+      "slots": {
+        "product_mentions": [
+          "vi sinh",
+          "thuốc nấm hóa học"
+        ],
+        "price_context": "bón vi sinh xong mà đổ thuốc nấm hóa học xuống"
+      },
+      "exact_source_match": false,
+      "contains_expected_answer": false,
+      "fact_token_recall": 0.0303,
+      "violations": [],
+      "status": "FAIL"
+    }
+  ]
+}

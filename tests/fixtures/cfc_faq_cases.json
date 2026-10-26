@@ -1,0 +1,850 @@
+{
+  "schema_version": 1,
+  "source_file": "CFC_Co_Bay_FAQ.md",
+  "source_sha256": "a0bdd9dccf0f7f2e7450250ef14d66a08cbe788de77e1ce20c3145697af89662",
+  "mapping_file": "config/data_sources/markdown_mapping.json",
+  "source_id": "cfc-co-bay-faq",
+  "summary": {
+    "faq_rows": 47,
+    "answerable_rows": 44,
+    "missing_answer_rows": 3,
+    "answerable_question_variants": 119,
+    "all_question_variants": 129
+  },
+  "cases": [
+    {
+      "case_id": "CFC-FAQ-001",
+      "faq_number": 1,
+      "source_row": 5,
+      "topic": "Giờ mở cửa",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Shop mở cửa lúc mấy giờ?",
+        "Giờ làm việc của CFC Cò Bay?",
+        "Shop bán từ mấy giờ?",
+        "Hôm nay công ty có làm việc không?"
+      ],
+      "expected_answer": "Dạ shop Cò Bay mở cửa từ 8:00 đến 21:00 mỗi ngày nha bạn.",
+      "faq_id": "6b86621981b792da74fc2af95fbaa5fd4ac48a4aaef3aa3f67dcaa1c62d8f40b",
+      "intent": "markdown_faq_gio_mo_cua",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:5"
+    },
+    {
+      "case_id": "CFC-FAQ-002",
+      "faq_number": 2,
+      "source_row": 6,
+      "topic": "Danh mục phân bón",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Có những loại phân bón nào?",
+        "Cò Bay có những loại phân nào?",
+        "Danh mục phân bón CFC gồm những gì?",
+        "Công ty có phân bón gì?",
+        "Tôi muốn xem về phân bón Cò Bay Muốn xem các dòng phân bón Cho mình xem danh mục phân bón Tìm hiểu sản phẩm phân bón CFC Thông tin các loại phân Cò Bay"
+      ],
+      "expected_answer": "Dạ chào bạn, Cò Bay hiện có các dòng phân bón như NPK, Hữu cơ,... Bạn đang cần tư vấn cho loại cây trồng nào để bên mình hỗ trợ phù hợp hơn ạ?",
+      "faq_id": "940886ac27dfcac942ee3a2191738660ae186dee1f5ddc1e7b24fee1ec051678",
+      "intent": "markdown_faq_danh_muc_phan_bon",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:6"
+    },
+    {
+      "case_id": "CFC-FAQ-003",
+      "faq_number": 3,
+      "source_row": 7,
+      "topic": "Giao hàng / nhận hàng",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Có giao hàng không?",
+        "Có ship không?",
+        "Nhận hàng bằng cách nào?",
+        "Giao hàng như thế nào?",
+        "Có giao tận nơi không?"
+      ],
+      "expected_answer": "Dạ có, chúng tôi hiện tại giao hàng thông qua 02 hình thức chính là nhận trực tiếp tại Công ty hoặc nhận tại nhà phân phối gần bạn nhất nhé ạ.",
+      "faq_id": "987758a6aa734ba1810db33d2b0891745d6924ab5dfd8d3e4169a7bb1f32d02e",
+      "intent": "markdown_faq_giao_hang_nhan_hang",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:7"
+    },
+    {
+      "case_id": "CFC-FAQ-004",
+      "faq_number": 4,
+      "source_row": 8,
+      "topic": "Mua hàng / link sản phẩm",
+      "status": "MISSING_ANSWER",
+      "questions": [
+        "Muốn mua hàng Mua ở đâu?",
+        "Có link sản phẩm không?",
+        "Mua phân bón Cò Bay ở đâu?",
+        "Đặt hàng như thế nào?"
+      ],
+      "expected_answer": null,
+      "faq_id": null,
+      "intent": null,
+      "category": null,
+      "risk_level": null,
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:8"
+    },
+    {
+      "case_id": "CFC-FAQ-005",
+      "faq_number": 5,
+      "source_row": 9,
+      "topic": "Nhập hàng / làm đại lý",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Muốn nhập hàng Muốn làm đại lý Muốn phân phối sản phẩm Muốn kinh doanh phân bón Làm nhà phân phối được không?",
+        "Muốn lấy sỉ phân bón Cò Bay Chính sách làm đại lý CFC thế nào Tôi muốn nhập số lượng lớn"
+      ],
+      "expected_answer": "Bạn vui lòng để lại số điện thoại và khu vực muốn kinh doanh, admin sẽ gửi đến nhà phân phối hoặc nhân viên khu vực liên hệ bạn sớm nhất ạ.",
+      "faq_id": "1ab6386fb345865c6078ddd7d7bcfc36721033301b09866dd0ad00ae8d7bd855",
+      "intent": "markdown_faq_nhap_hang_lam_dai_ly",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:9"
+    },
+    {
+      "case_id": "CFC-FAQ-006",
+      "faq_number": 6,
+      "source_row": 10,
+      "topic": "Cần hỗ trợ / gặp admin",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cần hỗ trợ Hỗ trợ giúp mình Muốn gặp admin Cần tư vấn thêm Có người hỗ trợ không?"
+      ],
+      "expected_answer": "Dạ bạn cần admin hỗ trợ gì về sản phẩm hay dịch vụ ạ?",
+      "faq_id": "54e8aa72e1ad38bc8a1ec95a7c6704e7bde6d848fb8a1a5b43b7d34443c8f332",
+      "intent": "markdown_faq_can_ho_tro_gap_admin",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:10"
+    },
+    {
+      "case_id": "CFC-FAQ-007",
+      "faq_number": 7,
+      "source_row": 11,
+      "topic": "Địa chỉ công ty",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Địa chỉ ở đâu?",
+        "Công ty ở đâu?",
+        "Cò Bay ở đâu?",
+        "Địa chỉ công ty CFC Nhà máy ở đâu?"
+      ],
+      "expected_answer": "Dạ, địa chỉ Công ty ở: Trục chính KCN Trà Nóc 1, phường Thới An Đông, thành phố Cần Thơ ạ.",
+      "faq_id": "264eec02514da591c06466bb4544df8052f89ea201e6438b5ba6e46c84749994",
+      "intent": "markdown_faq_dia_chi_cong_ty",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:11"
+    },
+    {
+      "case_id": "CFC-FAQ-008",
+      "faq_number": 8,
+      "source_row": 12,
+      "topic": "Giới thiệu công ty",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Giới thiệu về công ty bạn đi Công ty bạn là công ty gì?",
+        "CFC Cò Bay là gì?",
+        "Cò Bay làm về gì?",
+        "Thông tin về CFC Cò Bay"
+      ],
+      "expected_answer": "Dạ, Cò Bay là thương hiệu phân bón thuộc Công ty Cổ phần Phân bón và Hóa chất Cần Thơ (thành lập năm 1977, hơn 45 năm kinh nghiệm), hiện cung cấp các dòng phân bón như NPK và phân Hữu cơ. Địa chỉ Công ty ở: Trục chính KCN Trà Nóc 1, phường Thới An Đông, thành phố Cần Thơ ạ.",
+      "faq_id": "cfcbea310cbb4c766cd9d533e2ef9cfc2eac0b2edc2a03edb6829a90a5280998",
+      "intent": "markdown_faq_gioi_thieu_cong_ty",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:12"
+    },
+    {
+      "case_id": "CFC-FAQ-009",
+      "faq_number": 9,
+      "source_row": 13,
+      "topic": "Phân NPK",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cò Bay có NPK không?",
+        "Bên mình có phân NPK không?",
+        "NPK Cò Bay là gì?",
+        "Có dòng NPK cho cây trồng không?",
+        "Phân NPK CFC có không?",
+        "Tôi muốn xem về NPK Muốn tìm hiểu phân NPK Cho mình xem dòng NPK Tư vấn NPK Cò Bay"
+      ],
+      "expected_answer": "Dạ Cò Bay hiện có dòng phân bón NPK chất lượng cao nha bạn. Bạn đang cần tư vấn cho cây trồng nào và khu vực nào để kỹ sư Cò Bay hỗ trợ phù hợp hơn ạ?",
+      "faq_id": "9ee4bc8fc50d2036cb7d62944c8913846e43a5331f5cf5e5af48be805af4149c",
+      "intent": "markdown_faq_phan_npk",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:13"
+    },
+    {
+      "case_id": "CFC-FAQ-010",
+      "faq_number": 10,
+      "source_row": 14,
+      "topic": "Phân hữu cơ",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cò Bay có phân hữu cơ không?",
+        "Có phân bón hữu cơ sinh học không?",
+        "Phân hữu cơ Cò Bay là gì?",
+        "Bên mình có hữu cơ không?",
+        "Tôi muốn xem về phân hữu cơ Muốn tìm hiểu hữu cơ Cò Bay Cho mình xem dòng phân hữu cơ Tư vấn phân hữu cơ"
+      ],
+      "expected_answer": "Dạ Cò Bay hiện có dòng phân bón Hữu cơ nha bạn. Bạn cho mình biết loại cây trồng và khu vực để bên mình tư vấn cách chọn sản phẩm phù hợp hơn ạ.",
+      "faq_id": "02edf33ac5c4bedd950b67d92fb241d7a73adf4dc62115e41f4e3f3bb4b52796",
+      "intent": "markdown_faq_phan_huu_co",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:14"
+    },
+    {
+      "case_id": "CFC-FAQ-011",
+      "faq_number": 11,
+      "source_row": 15,
+      "topic": "Giá phân bón",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Giá phân bón Cò Bay bao nhiêu?",
+        "Cho xin bảng giá CFC NPK Cò Bay giá bao nhiêu?",
+        "Phân hữu cơ giá sao?",
+        "Bao 25kg bao nhiêu tiền?",
+        "Giá đại lý thế nào?"
+      ],
+      "expected_answer": "Dạ bảng giá phân bón Cò Bay phụ thuộc vào từng dòng sản phẩm, quy cách đóng bao và khu vực phân phối. Bạn gửi giúp mình số điện thoại, khu vực và loại cây trồng cần bón, kỹ sư hoặc nhân viên Cò Bay sẽ kiểm tra và liên hệ báo giá chính xác nhất nha.",
+      "faq_id": "e85ec3a9745cd4193b0a66555cfb1afbc3de49a3a13be3bb9e98ea7b1d4f482f",
+      "intent": "markdown_faq_gia_phan_bon",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:15"
+    },
+    {
+      "case_id": "CFC-FAQ-012",
+      "faq_number": 12,
+      "source_row": 16,
+      "topic": "Tìm đại lý / nhà phân phối gần nhất",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Ở khu vực tôi có đại lý Cò Bay không?",
+        "Có nhà phân phối gần tôi không?",
+        "Mua phân Cò Bay ở tỉnh tôi ở đâu?",
+        "Tôi muốn tìm đại lý gần nhất Có npp ở Cần Thơ không?"
+      ],
+      "expected_answer": "Dạ bạn gửi giúp mình số điện thoại và khu vực/tỉnh thành cụ thể. Admin sẽ chuyển thông tin để nhà phân phối hoặc nhân viên phụ trách khu vực liên hệ hướng dẫn điểm mua gần bạn nhất ạ.",
+      "faq_id": "ae2f514012187d2c66f614f77b2a8582246e5d31587b1f088fc2e3f3d38196e2",
+      "intent": "markdown_faq_tim_dai_ly_nha_phan_phoi_gan_nhat",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:16"
+    },
+    {
+      "case_id": "CFC-FAQ-013",
+      "faq_number": 13,
+      "source_row": 17,
+      "topic": "Đặt mua phân bón",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Tôi muốn đặt phân Cò Bay Cho mình mua phân bón Cò Bay Mình muốn đặt NPK Đặt phân hữu cơ như thế nào?",
+        "Tôi muốn mua 2 bao phân"
+      ],
+      "expected_answer": "Dạ Cò Bay đã ghi nhận nhu cầu mua phân bón của bạn. Bạn gửi thêm số điện thoại, khu vực và loại cây trồng cần bón để bên mình kiểm tra đúng sản phẩm và hỗ trợ đặt hàng nha.",
+      "faq_id": "605b407917b9312dc09d2d60334132bf7236f8c394718069a1a71f9cfbbacc9b",
+      "intent": "markdown_faq_dat_mua_phan_bon",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:17"
+    },
+    {
+      "case_id": "CFC-FAQ-014",
+      "faq_number": 14,
+      "source_row": 18,
+      "topic": "Giao phân về tỉnh / khu vực",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Ship phân bón về tỉnh được không?",
+        "Có giao phân về khu vực tôi không?",
+        "Giao hàng tận nơi được không?",
+        "Tôi ở Cần Thơ nhận hàng sao?",
+        "Nhận tại nhà phân phối gần tôi được không?"
+      ],
+      "expected_answer": "Dạ hiện bên mình hỗ trợ giao nhận thông qua 2 hình thức: nhận trực tiếp tại Công ty hoặc nhận tại nhà phân phối gần bạn nhất. Bạn gửi khu vực/tỉnh thành để bên mình kiểm tra hình thức nhận hàng phù hợp nha.",
+      "faq_id": "bfb53c6210fd5ef2fed4f752aff15ba6b4fdfe932da5b452b3005770e69cec00",
+      "intent": "markdown_faq_giao_phan_ve_tinh_khu_vuc",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:18"
+    },
+    {
+      "case_id": "CFC-FAQ-015",
+      "faq_number": 15,
+      "source_row": 19,
+      "topic": "Liều lượng / cách dùng / phối trộn",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Bón bao nhiêu kg cho 1 công lúa?",
+        "Liều lượng bón phân Cò Bay thế nào?",
+        "Pha phân Cò Bay ra sao?",
+        "Dùng NPK Cò Bay như thế nào?",
+        "Trộn phân này với thuốc sâu được không?"
+      ],
+      "expected_answer": "Dạ phần liều lượng, cách bón hoặc phối trộn cần kỹ sư nông nghiệp kiểm tra theo cây trồng, giai đoạn và khu vực canh tác. Bạn gửi giúp mình loại cây trồng, diện tích/khu vực và số điện thoại để kỹ sư Cò Bay tư vấn an toàn, đúng nhu cầu ạ.",
+      "faq_id": "ed04f9876fce1ee8d05308215ddd5c85d630effc844a1ccdecd36c20fc1e96cc",
+      "intent": "markdown_faq_lieu_luong_cach_dung_phoi_tron",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:19"
+    },
+    {
+      "case_id": "CFC-FAQ-016",
+      "faq_number": 16,
+      "source_row": 20,
+      "topic": "Tư vấn phân theo cây trồng",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Tư vấn phân bón cho cây trồng giúp mình Cây lúa nên dùng phân nào?",
+        "Cây ăn trái dùng phân gì?",
+        "Rau màu dùng phân nào?",
+        "Tôi cần kỹ sư tư vấn Tôi muốn tư vấn phân cho cây trồng Tư vấn phân cho lúa giúp mình Tư vấn phân cho cây ăn trái Tìm hiểu phân phù hợp cho cây trồng"
+      ],
+      "expected_answer": "Dạ mình sẵn sàng hỗ trợ ạ. Bạn cho biết loại cây trồng, giai đoạn cây hiện tại và khu vực/tỉnh thành để kỹ sư Cò Bay tư vấn dòng phân bón phù hợp hơn nha.",
+      "faq_id": "2446ce0c618e4e76d1426f59d993bcf0674ef2b617bc7dd66c526b64f4a8d2af",
+      "intent": "markdown_faq_tu_van_phan_theo_cay_trong",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:20"
+    },
+    {
+      "case_id": "CFC-FAQ-017",
+      "faq_number": 17,
+      "source_row": 21,
+      "topic": "Sản phẩm ngoài phân bón (nước giặt, nước rửa chén, lau sàn...)",
+      "status": "MISSING_ANSWER",
+      "questions": [
+        "Bên Cò Bay có bán nước giặt ZeO không?",
+        "Cò Bay có bán nước rửa chén không?",
+        "Cò Bay có lau sàn PANO không?",
+        "Có bán nước tẩy toilet không?"
+      ],
+      "expected_answer": null,
+      "faq_id": null,
+      "intent": null,
+      "category": null,
+      "risk_level": null,
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:21"
+    },
+    {
+      "case_id": "CFC-FAQ-018",
+      "faq_number": 18,
+      "source_row": 22,
+      "topic": "Hỏi lại yêu cầu đã gửi",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Đã gửi thông tin rồi có ai liên hệ chưa?",
+        "Sao chưa thấy gọi lại?",
+        "Kiểm tra giúp mình yêu cầu trước đó Tôi đã nhắn số điện thoại rồi"
+      ],
+      "expected_answer": "Dạ mình đã ghi nhận tin nhắn của bạn. Nếu bạn đã gửi số điện thoại và khu vực, admin đang chuyển thông tin để kỹ sư hoặc nhân viên Cò Bay liên hệ lại sớm nhất ạ.",
+      "faq_id": "9207cdf7af3a51e7754245a7ea1f3502ef770a4a62b6769526ff7762b041b604",
+      "intent": "markdown_faq_hoi_lai_yeu_cau_da_gui",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:22"
+    },
+    {
+      "case_id": "CFC-FAQ-019",
+      "faq_number": 19,
+      "source_row": 23,
+      "topic": "Website Cò Bay",
+      "status": "MISSING_ANSWER",
+      "questions": [
+        "Website của Cò Bay là gì?",
+        "Cho mình link web Cò Bay Website phân bón CFC"
+      ],
+      "expected_answer": null,
+      "faq_id": null,
+      "intent": null,
+      "category": null,
+      "risk_level": null,
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:23"
+    },
+    {
+      "case_id": "CFC-FAQ-020",
+      "faq_number": 20,
+      "source_row": 24,
+      "topic": "Sầu riêng nhú đọt + trái non",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cây sầu riêng đang nhú mũi giáo rải dòng nào để mập đọt mà không rụng trái non?",
+        "Sầu riêng đang nhú đọt bón phân gì Bón phân gì cho đọt sầu riêng mập khỏe không rụng trái sầu riêng đi đọt kèm trái non bón gì"
+      ],
+      "expected_answer": "Dạ chào bạn! Khi sầu riêng đang nhú 'mũi giáo' đồng thời đang mang trái non, bạn nên ưu tiên bón dòng Hữu cơ sinh học Cobanic kết hợp NPK cân bằng hàm lượng đạm vừa phải (như NPK Cò Bay 20-20-15 TE hoặc 16-16-16) với liều nhẹ, chia làm nhiều lần bón. Tránh rải đạm đơn hoặc NPK đạm cao vì sẽ gây phóng đọt mạnh, cạnh tranh dinh dưỡng làm rụng trái non. Bạn để lại SĐT và tuổi cây/số lượng trái để kỹ sư Cò Bay tư vấn công thức chuẩn xác nhất nhé ạ!",
+      "faq_id": "51c35c631b0d8ff60aa9075fe8bda664cc6d12d69ecb79f1d5fd0d74f954f6d1",
+      "intent": "markdown_faq_sau_rieng_nhu_dot_trai_non",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:24"
+    },
+    {
+      "case_id": "CFC-FAQ-021",
+      "faq_number": 21,
+      "source_row": 25,
+      "topic": "Chống rụng hoa, dai cuống",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cây đang ra bông dùng loại phân nào để dai cuống chống rụng sinh lý?",
+        "Phân bón dai cuống cho cây đang ra hoa bón gì chống rụng bông sầu riêng mít bưởi"
+      ],
+      "expected_answer": "Dạ trong giai đoạn cây đang ra bông, để dai cuống và chống rụng hoa sinh lý, bạn nên bổ sung phân bón giàu Canxi, Bo và Kẽm kết hợp NPK Cò Bay hàm lượng Lân và Kali cao (như NPK Cò Bay 15-15-15 hoặc phân bón lá vi lượng chuyên hoa). Tuyệt đối hạn chế bón phân có hàm lượng Đạm cao lúc này để tránh cây xả bông non. Bạn nhắn lại loại cây trồng và thời tiết vườn đang mưa hay nắng để kỹ sư hướng dẫn liều phun/bón phù hợp nha!",
+      "faq_id": "a95230455be77b14c46271315a15ca35f84237fa04a0cd9a4699199b3c531e0c",
+      "intent": "markdown_faq_chong_rung_hoa_dai_cuong",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:25"
+    },
+    {
+      "case_id": "CFC-FAQ-022",
+      "faq_number": 22,
+      "source_row": 26,
+      "topic": "Giai đoạn xả nhụy, hãm đọt",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Giai đoạn xả nhụy nên bón gì để đậu trái đều mà hãm được đọt không cho phóng tược?",
+        "Sau xả nhụy bón phân gì cho đậu trái"
+      ],
+      "expected_answer": "Dạ giai đoạn xả nhụy là thời điểm cực kỳ nhạy cảm! Để giúp đậu trái đều và chặn cây phóng đọt non, bạn nên giữ ẩm vừa phải, ngưng rải phân gốc đạm cao, ưu tiên phun qua lá các dòng Bo, Canxi hữu cơ kết hợp Kali trắng để dằn đọt. Khi trái đã chạy gai xanh ổn định mới bắt đầu nhử nhẹ NPK Cò Bay cân đối. Bạn gửi SĐT và hình ảnh đọt/bông qua tin nhắn, kỹ sư Cò Bay sẽ hỗ trợ kiểm tra trực tiếp cho vườn mình nhé ạ!",
+      "faq_id": "28fbba443d743088476621f2fca8dd79d7eff2753fde39d9ae66da30f87dd5ba",
+      "intent": "markdown_faq_giai_doan_xa_nhuy_ham_dot",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:26"
+    },
+    {
+      "case_id": "CFC-FAQ-023",
+      "faq_number": 23,
+      "source_row": 27,
+      "topic": "Nuôi trái non, chống méo trái",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Trái non mới đậu rải NPK dòng nào để trái lớn nhanh như thổi mà không bị méo trái?",
+        "Phân bón nuôi trái non chống méo"
+      ],
+      "expected_answer": "Dạ khi trái non đã định hình (bằng quả trứng gà), để trái lớn nhanh, tròn đều và không bị giật hộc/méo trái, bạn nên dùng dòng NPK Cò Bay 20-20-15 TE hoặc NPK Cò Bay Ba Số Đều (15-15-15 / 16-16-16 TE) kết hợp bổ sung Trung - Vi lượng (Canxi, Magie). Nên chia nhỏ lượng bón định kỳ 10-12 ngày/lần. Bạn cho mình biết vườn đang trồng cây gì (sầu riêng, mít hay bưởi) để bên mình lên quy trình bón chuẩn nhé!",
+      "faq_id": "cd9c9982a8e4d791a27cf0b23add66333bd800abf4ae29466c28344f45e8ea34",
+      "intent": "markdown_faq_nuoi_trai_non_chong_meo_trai",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:27"
+    },
+    {
+      "case_id": "CFC-FAQ-024",
+      "faq_number": 24,
+      "source_row": 28,
+      "topic": "Vàng lá, rễ đen, thối rễ",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Vườn đang bị vàng lá rễ đen thui không ra rễ tơ tưới kích rễ loại nào cho cây tỉnh lại nhanh?",
+        "Cây bị vàng lá thối rễ tưới phân gì rễ bị nghẹn rễ thối phục hồi sao"
+      ],
+      "expected_answer": "Dạ tình trạng rễ đen thui, không ra rễ tơ thường do đất bị chua (pH thấp) kết hợp nấm rễ tấn công. Quy trình cứu rễ chuẩn của Cò Bay gồm 3 bước: 1. Rải Lân nung chảy hoặc vôi để nâng pH đất lên > 5.5. 2. Xử lý nấm bệnh bằng hoạt chất trừ nấm hoặc vi sinh đối kháng Trichoderma/Bacillus. 3. Sau 5-7 ngày tưới Axit Humic/Fulvic hoặc Hữu cơ lỏng Cobanic để kích rễ tơ bung mới. Tuyệt đối KHÔNG rải phân hóa học NPK nồng độ cao lúc này vì sẽ làm cháy rễ non. Bạn để lại SĐT kỹ sư Cò Bay sẽ gọi hỗ trợ phác đồ trị bệnh nhé!",
+      "faq_id": "bfc2880f1afc6ff6ba27742905a5199270d3eab5c8ea37f1774337bb81d6c4b1",
+      "intent": "markdown_faq_vang_la_re_den_thoi_re",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:28"
+    },
+    {
+      "case_id": "CFC-FAQ-025",
+      "faq_number": 25,
+      "source_row": 29,
+      "topic": "Kali nuôi trái trước thu hoạch",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Sắp thu hoạch rồi đánh dòng Kali nào cho lên màu đẹp nặng ký nặng zem chắc hạt mà không cháy múi?",
+        "Bón phân gì trước thu hoạch cho ngọt trái đẹp màu"
+      ],
+      "expected_answer": "Dạ trước khi thu hoạch 20-30 ngày, để trái lên màu cơm vàng đẹp, đậm vị, ngọt nước, chắc hạt (nặng zem) mà không gây cháy múi, bạn nên dùng dòng NPK Cò Bay chuyên nuôi trái chín có hàm lượng Kali Sunphat (Kali trắng) cao như NPK Cò Bay 15-5-20 TE, 16-6-18 TE hoặc Kali hữu cơ. Dòng Kali Sunphat giúp tinh bột chuyển hóa thành đường nhanh, không làm tích nước hay nhạt cơm. Bạn gửi loại nông sản đang canh tác để chuyên viên Cò Bay gửi định mức bón chuẩn nha!",
+      "faq_id": "d57c2bbcaf59923ecc462a6758b1a29c60825b48a190cca4e198f8a6b9a9e3bd",
+      "intent": "markdown_faq_kali_nuoi_trai_truoc_thu_hoach",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:29"
+    },
+    {
+      "case_id": "CFC-FAQ-026",
+      "faq_number": 26,
+      "source_row": 30,
+      "topic": "Chống sượng cơm, cháy múi, tích nước",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Làm sao để bón phân mà trái sầu riêng không bị sượng cơm cháy múi hay tích nước lúc mưa dầm?",
+        "Chống sượng cơm cháy múi sầu riêng mùa mưa"
+      ],
+      "expected_answer": "Dạ hiện tượng sượng cơm, cháy múi và tích nước mùa mưa dầm thường do 3 nguyên nhân: thừa Đạm, thiếu Canxi - Bo - Magie và dư nước làm cây đi đọt non. Cách khắc phục: 1. Cắt giảm hoàn toàn Đạm từ 30 ngày trước cắt trái. 2. Bón NPK Cò Bay giàu Kali Sunphat (K2SO4) và bổ sung Canxi Bo định kỳ. 3. Làm rãnh thoát nước gốc thật tốt, không để đọng vũng. Bạn để lại SĐT và khu vực vườn, kỹ sư Cò Bay sẽ gửi cẩm nang phòng ngừa sượng cơm chi tiết cho bạn nhé!",
+      "faq_id": "dbba15f46b2d66b29a4f2b8ae6ba5993101f1815fc5a3d432d51ea4a8cd06017",
+      "intent": "markdown_faq_chong_suong_com_chay_mui_tich_nuoc",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:30"
+    },
+    {
+      "case_id": "CFC-FAQ-027",
+      "faq_number": 27,
+      "source_row": 31,
+      "topic": "Phục hồi cây sau thu hoạch",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cây mới thu hoạch xong xơ xác quá rải hữu cơ nào kết hợp với đạm để bung đọt nhanh phục hồi lẹ cho vụ sau?",
+        "Phân bón phục hồi cây sau thu hoạch"
+      ],
+      "expected_answer": "Dạ sau thu hoạch cây bị kiệt sức, bạn cần tiến hành tỉa cành rửa vườn và phục hồi theo công thức: Bón gốc Hữu cơ Cobanic 30% (từ 3 - 5 kg/gốc tùy tuổi cây) kết hợp tưới kích rễ Humic, sau đó bón nhử NPK Cò Bay 20-20-15 TE hoặc 16-16-8 TE để kích đọt bung đồng loạt, lá dày bóng. Bộ đôi Hữu cơ Cobanic + NPK Cò Bay sẽ giúp đất tơi xốp và cây tích lũy dinh dưỡng dồi dào cho mùa hoa tới. Bạn cho mình biết diện tích vườn để tính toán số bao phân cần dùng nha!",
+      "faq_id": "3a5eaf803888f54d39b089a2a6a5708d972c95d60664a5df159d1054d9514895",
+      "intent": "markdown_faq_phuc_hoi_cay_sau_thu_hoach",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:31"
+    },
+    {
+      "case_id": "CFC-FAQ-028",
+      "faq_number": 28,
+      "source_row": 32,
+      "topic": "Làm bông, tạo mầm hoa",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Sắp tới làm bông giờ bón Lân và Kali loại nào để ép cây phân hóa mầm hoa mạnh nhất?",
+        "Phân bón làm bông tạo mầm hoa"
+      ],
+      "expected_answer": "Dạ để ép cây tạo mầm hoa khỏe và ra hoa đồng loạt, công thức chuẩn là: 1. Dưới gốc: Bón Lân nung chảy kết hợp Kali Sunphat hoặc NPK Cò Bay công thức Lân cao (như NPK 10-50-10 hoặc 9-25-17). 2. Trên lá: Phun hoạt chất chặn đọt kết hợp MKP (Lân + Kali cao) để lá nhanh già lụa và hình thành mầm hoa. 3. Siết nước tạo khô hạn cho đến khi mầm hoa nhú rõ. Bạn gửi SĐT và loại cây đang làm bông, kỹ sư nông nghiệp Cò Bay sẽ lên lịch trình cắt nước và bón phân cụ thể theo ngày cho bạn nhé!",
+      "faq_id": "7cb33566a20e2f5a41bf75d0a96b0982f5a5b8bbded6efb9b9a547400d783383",
+      "intent": "markdown_faq_lam_bong_tao_mam_hoa",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:32"
+    },
+    {
+      "case_id": "CFC-FAQ-029",
+      "faq_number": 29,
+      "source_row": 33,
+      "topic": "Kali trắng và Kali đỏ",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cây đang nuôi trái lớn bón Kali trắng Kali Sunphat hay Kali đỏ thì êm hơn cho chất lượng trái xuất khẩu?",
+        "Nên bón kali trắng hay kali đỏ nuôi trái"
+      ],
+      "expected_answer": "Dạ với các dòng cây ăn trái nhạy cảm với gốc Clo (như sầu riêng, bưởi da xanh, mãng cầu, thuốc lá, tiêu) hoặc nông sản định hướng xuất khẩu, bạn **nên ưu tiên dùng Kali trắng (Kali Sunphat - K2SO4)**. Ưu điểm của Kali trắng: Không chứa gốc Clo gây sượng múi/cháy mép lá, giúp múi dẻo quánh, vỏ mỏng, ngọt thanh tự nhiên. Kali đỏ (KCl) chỉ phù hợp cho cây trồng chịu mặn tốt như lúa, ngô, mía hoặc dùng vào đầu giai đoạn nuôi trái với chi phí tiết kiệm hơn. Cò Bay có đầy đủ cả dòng NPK nền Kali trắng cao cấp, bạn nhắn lại nhu cầu để bên mình báo điểm đại lý gần nhất nha!",
+      "faq_id": "6dad4d765e7a522751de68d871f0034c8c42a74816c7c1fc68d7c55a2c8e7882",
+      "intent": "markdown_faq_kali_trang_va_kali_do",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:33"
+    },
+    {
+      "case_id": "CFC-FAQ-030",
+      "faq_number": 30,
+      "source_row": 34,
+      "topic": "Giá DAP, Urê và xu hướng giá",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Bao DAP Urê hôm nay giá bao nhiêu rồi tuần tới có nhích lên hay tuột xuống không?",
+        "Giá phân bón tuần này tăng hay giảm"
+      ],
+      "expected_answer": "Dạ giá phân bón (DAP, Urê, NPK) biến động theo ngày theo giá nguyên liệu thế giới và chính sách vận chuyển từng khu vực. Để nhận thông báo bảng giá cập nhật sớm nhất hôm nay và dự báo xu hướng tuần tới từ Cò Bay, bạn vui lòng để lại số điện thoại và tỉnh/huyện đang canh tác. Chuyên viên kinh doanh Cò Bay khu vực sẽ liên hệ gửi báo giá đại lý/nhà vườn chi tiết cho bạn nha!",
+      "faq_id": "2ab454d12184022bf216b3828f958a6e76530a4da9f625a4175fb9c83905062e",
+      "intent": "markdown_faq_gia_dap_ure_va_xu_huong_gia",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:34"
+    },
+    {
+      "case_id": "CFC-FAQ-031",
+      "faq_number": 31,
+      "source_row": 35,
+      "topic": "So sánh với phân nhập khẩu",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Loại phân Cò Bay này xài có êm bằng hàng ngoại cũ tui hay dùng không giá rẻ hơn nhiều không?",
+        "Phân Cò Bay chất lượng so với phân nhập khẩu thế nào"
+      ],
+      "expected_answer": "Dạ phân bón CFC Cò Bay được sản xuất trên dây chuyền công nghệ Tháp Cao hiện đại, với nguồn nguyên liệu chọn lọc tương đương chuẩn quốc tế nhưng giá thành tiết kiệm hơn 15 - 25% do không phải chịu thuế nhập khẩu và chi phí vận chuyển biển cao. Đặc biệt, công thức phân Cò Bay được nghiên cứu chuyên biệt cho đất và khí hậu Việt Nam (chống chua đất, giữ dinh dưỡng mùa mưa dầm), giúp cây xanh bền, rễ mập mà không bị bốc nhanh rồi sụp cây. Bạn có thể bón thử nghiệm trên một liếp vườn để đối chứng hiệu quả thực tế nhé!",
+      "faq_id": "9ee46e8adc9d0ca4ba14375847498247063525adf89f21a9f78409546a2a8c02",
+      "intent": "markdown_faq_so_sanh_voi_phan_nhap_khau",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:35"
+    },
+    {
+      "case_id": "CFC-FAQ-032",
+      "faq_number": 32,
+      "source_row": 36,
+      "topic": "Định mức hữu cơ tiết kiệm chi phí",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Mua dòng hữu cơ vi sinh này tốn kém quá một gốc rải mấy ký là vừa túi tiền?",
+        "Định mức rải phân hữu cơ tiết kiệm chi phí"
+      ],
+      "expected_answer": "Dạ để bón phân Hữu cơ Cobanic vừa khỏe cây vừa tiết kiệm chi phí tối đa, bạn nên áp dụng nguyên tắc: - Cây kiến thiết cơ bản (1-3 năm): 1 - 2 kg/gốc/đợt (mỗi năm 3-4 đợt). - Cây kinh doanh (nuôi trái): 3 - 5 kg/gốc sau khi thu hoạch để phục hồi bộ rễ. Mẹo tiết kiệm: Rải phân kết hợp cuốc xới nhẹ quanh tán và lấp lớp đất mỏng/lá khô để tránh nắng gắt làm bay hơi chất hữu cơ. Bạn nhắn loại cây và số lượng gốc trong vườn, bên mình sẽ tính toán số bao phân tối ưu ngân sách nhất cho bạn nha!",
+      "faq_id": "676243bd50d9fa045919fd38aa5bf432f6d27973805f31ef8331b4a15607bede",
+      "intent": "markdown_faq_dinh_muc_huu_co_tiet_kiem_chi_phi",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:36"
+    },
+    {
+      "case_id": "CFC-FAQ-033",
+      "faq_number": 33,
+      "source_row": 37,
+      "topic": "Công nợ, ghi sổ cuối vụ",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Có cho ghi sổ không tới cuối vụ bán trái xong tui ra thanh toán một lượt nhé?",
+        "Chính sách mua phân bón nợ cuối vụ"
+      ],
+      "expected_answer": "Dạ chính sách công nợ (ghi sổ cuối vụ) sẽ do các Đại lý và Nhà phân phối Cò Bay tại địa phương trực tiếp xem xét và hỗ trợ cho bà con thân thiết. Công ty Cổ phần Phân bón & Hóa chất Cần Thơ (CFC) luôn có các chương trình trợ giá và liên kết đại lý để tạo điều kiện thuận lợi nhất cho nhà nông. Bạn để lại số điện thoại và địa bàn xã/huyện, admin sẽ kết nối bạn với đại lý Cò Bay gần nhất để trao đổi chính sách thanh toán linh hoạt nhé ạ!",
+      "faq_id": "9972e7de3d494bdf96fa38828b27862756f0819decce3f1836e5c471da974872",
+      "intent": "markdown_faq_cong_no_ghi_so_cuoi_vu",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:37"
+    },
+    {
+      "case_id": "CFC-FAQ-034",
+      "faq_number": 34,
+      "source_row": 38,
+      "topic": "NPK Tháp Cao (phức hợp) khác phân trộn",
+      "status": "ANSWERABLE",
+      "questions": [
+        "NPK này là hàng tháp cao phức hợp hay hàng trộn thủ công rải xuống có tan hết không?",
+        "Phân bón tháp cao Cò Bay là gì"
+      ],
+      "expected_answer": "Dạ các dòng NPK chủ lực của Cò Bay được sản xuất bằng **Công nghệ Tháp Cao (Phức hợp)** tiên tiến nhất hiện nay! Khác biệt hoàn toàn với phân trộn 3 màu thủ công: 1. Từng hạt phân đều chứa đầy đủ N-P-K và vi lượng đồng nhất từ vỏ đến lõi, không bị phân lớp khi vận chuyển. 2. Hạt phân tròn bóng, độ tan cực kỳ nhanh và tan hoàn toàn 100% khi gặp ẩm, giúp rễ cây hấp thụ trọn vẹn không để lại cặn bã chai đất. Bạn có thể lấy vài hạt phân Cò Bay hòa vào ly nước sẽ thấy phân tan nhanh trong 1-2 phút nhé ạ!",
+      "faq_id": "2b27510cc2f137f8d3bfb376fe37a3fd2758ca985be3886faf7ae50a71933132",
+      "intent": "markdown_faq_npk_thap_cao_phuc_hop_khac_phan_tron",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:38"
+    },
+    {
+      "case_id": "CFC-FAQ-035",
+      "faq_number": 35,
+      "source_row": 39,
+      "topic": "Cách thử phân bón thật giả",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cách thử phân bón thật giả tại nhà mẹo thử urê kali npk thật giả thử hòa tan urê vào nước có lạnh tay không"
+      ],
+      "expected_answer": "Dạ Cò Bay chia sẻ với bạn 3 mẹo kiểm tra phân bón thật - giả cực chuẩn ngay tại nhà: 1. **Thử Nước (Urê & Kali):** Urê thật tan rất nhanh và làm nước **lạnh buốt tay**. Kali đỏ thật tan hoàn toàn trong nước, nước có màu hồng/đỏ nhạt nhưng **không để lại lớp cặn bột gạch dày** ở đáy ly. 2. **Thử Lửa (Đạm & NPK):** Đặt hạt phân lên miếng sắt nung nóng, phân thật sẽ nóng chảy, sủi bọt và bốc mùi khai nồng (Amoniac). Phân giả pha bột đá sẽ không tan, cháy đen hoặc nổ lách tách. 3. **Cảm Quan Hạt Tháp Cao:** Hạt phân Cò Bay bẻ đôi ra có màu sắc và cấu trúc đồng nhất từ trong ra ngoài, hạt cứng, không bị nhuộm màu bên ngoài. Bà con nên mua tại đại lý ủy quyền của Cò Bay để đảm bảo 100% hàng chính hãng nha!",
+      "faq_id": "479dcac003e9f9e0d9e6c2cd8f3d74d5f34279dbd7eb6173f4ce5ad26c19e24d",
+      "intent": "markdown_faq_cach_thu_phan_bon_that_gia",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:39"
+    },
+    {
+      "case_id": "CFC-FAQ-036",
+      "faq_number": 36,
+      "source_row": 40,
+      "topic": "Phân bị ẩm, vón cục; bảo quản",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Sao bao phân này mở ra thấy chảy nước bết dính vậy có bị rút ruột hàm lượng không?",
+        "Phân bón bị vón cục chảy nước có xài được không"
+      ],
+      "expected_answer": "Dạ hiện tượng phân bón bị ẩm hoặc bết dính nhẹ thường do đặc tính hút ẩm tự nhiên của Đạm (Urê) và Kali khi tiếp xúc với không khí ẩm, hoàn toàn **không bị rút ruột hay giảm hàm lượng dinh dưỡng**. Cách bảo quản chuẩn: - Để bao phân trên pallet gỗ cách mặt đất 15-20cm, cách tường 20cm. - Bao đã mở miệng nên buộc thật kín bằng dây sau khi lấy phân. - Tránh để phân tiếp xúc trực tiếp với ánh nắng gắt hoặc nơi ẩm ướt. Nếu hạt phân bị vón cục, bạn chỉ cần bóp nhẹ là phân tơi ra và rải bình thường nhé ạ!",
+      "faq_id": "96a1ee9b1e237a5c0d37e7eccc0f95778e2f3de5b9cf61afbbf73b095ee9b974",
+      "intent": "markdown_faq_phan_bi_am_von_cuc_bao_quan",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:40"
+    },
+    {
+      "case_id": "CFC-FAQ-037",
+      "faq_number": 37,
+      "source_row": 41,
+      "topic": "Đất phèn mặn",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Đất vườn đang bị phèn mặn rải Lân nung chảy hay Canxi để hạ phèn trước khi bón NPK?",
+        "Cách hạ phèn rửa mặn cho đất vườn"
+      ],
+      "expected_answer": "Dạ khi đất bị nhiễm phèn hoặc hạn mặn, rễ cây bị bó và ngộ độc kim loại, bón NPK ngay sẽ làm rễ cháy nhanh hơn! Quy trình xử lý đất phèn mặn chuẩn: 1. **Hạ phèn:** Rải **Lân nung chảy** kết hợp Vôi/Canxi (từ 300 - 500 kg/ha) để cố định độc chất nhôm sắt, nâng pH đất lên mức an toàn (5.5 - 6.5). 2. **Rửa mặn & Dưỡng rễ:** Tưới Axit Humic hoặc bón Hữu cơ Cobanic để tạo phức chelate đẩy muối mặn ra khỏi vùng rễ và kích rễ tơ tái sinh. 3. Khi cây nhú rễ tơ mới bắt đầu bón lại NPK Cò Bay với lượng nhẹ. Bạn để lại SĐT và đo giúp mình độ mặn/độ pH hiện tại, kỹ sư Cò Bay sẽ hỗ trợ hướng dẫn chi tiết nhé!",
+      "faq_id": "69d96449780bfc689baa7d16b34cc3cec53239a093eb7b2f3247fb4b70643c58",
+      "intent": "markdown_faq_dat_phen_man",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:41"
+    },
+    {
+      "case_id": "CFC-FAQ-038",
+      "faq_number": 38,
+      "source_row": 42,
+      "topic": "Bón phân mùa mưa dầm",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Trời đang mưa dầm rải phân có sợ bị rửa trôi hết không có loại nào chậm tan không?",
+        "Bón phân mùa mưa dầm chống rửa trôi"
+      ],
+      "expected_answer": "Dạ mùa mưa dầm nguy cơ thất thoát phân bón do rửa trôi và xói mòn rất lớn (lên tới 40 - 50%)! Bí quyết bón phân mùa mưa của Cò Bay: 1. **Chia nhỏ cữ bón:** Thay vì bón 1 lần nhiều phân, hãy chia làm 2-3 đợt bón cách nhau 10 ngày. 2. **Dùng Hữu cơ lót nền:** Rải Hữu cơ Cobanic giúp tăng dung tích hấp thu của đất, giữ hạt phân NPK lại quanh vùng rễ không bị trôi tuột xuống mương. 3. **Công nghệ Tháp cao Cò Bay:** Tan đều và ngấm sâu vào đất theo rễ, không bị bốc hơi. Bạn nhắn diện tích vườn để bên mình tính toán lịch rải phân đón mưa an toàn nhé!",
+      "faq_id": "4772218a539267270250330c77236160bca8a0d933975bbe9486f79a2cd950fe",
+      "intent": "markdown_faq_bon_phan_mua_mua_dam",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:42"
+    },
+    {
+      "case_id": "CFC-FAQ-039",
+      "faq_number": 39,
+      "source_row": 43,
+      "topic": "Cải tạo đất chai cứng, bạc màu",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Đất đỏ bazan xài lâu năm bị chai cứng bón phân gì cho đất tơi xốp giữ nước tốt mùa khô?",
+        "Cải tạo đất chai cứng đất bạc màu"
+      ],
+      "expected_answer": "Dạ đất đỏ bazan hoặc đất vườn canh tác lâu năm bị chai cứng là do mất đi lớp mùn hữu cơ và vi sinh vật bản địa. Giải pháp cải tạo đất bền vững của Cò Bay: 1. Bổ sung **Hữu cơ vi sinh Cobanic** định kỳ (3 - 5 tấn/ha/năm) để tái tạo kết cấu xốp như bọt biển cho đất, giúp giữ ẩm cực tốt qua 6 tháng mùa khô Tây Nguyên. 2. Tưới bổ sung Humic Acid để giải phóng các hạt sét bị nén chặt và mở rộng đường cho rễ cây thở. 3. Giữ thảm cỏ vườn (cắt cỏ để lại thân mục) thay vì xịt thuốc diệt cỏ làm trơ trọi đất. Bạn nhắn lại vị trí vườn (Tây Nguyên hay Miền Đông/Miền Tây) để kỹ sư Cò Bay tư vấn định mức cải tạo đất nhé!",
+      "faq_id": "9a37dda334adaa2efacc106b35f527fba3997b1c5d42102c5a8d73729a5a1ab8",
+      "intent": "markdown_faq_cai_tao_dat_chai_cung_bac_mau",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:43"
+    },
+    {
+      "case_id": "CFC-FAQ-040",
+      "faq_number": 40,
+      "source_row": 44,
+      "topic": "Thiếu vi lượng TE, vàng lá gân xanh",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Cây bị vàng lá gân xanh có phải do thiếu vi lượng TE không?",
+        "Dấu hiệu cây thiếu vi lượng TE"
+      ],
+      "expected_answer": "Dạ hiện tượng 'vàng lá gân xanh' (thịt lá chuyển vàng nhưng gân lá vẫn giữ màu xanh) là dấu hiệu điển hình của việc cây bị **thiếu Trung - Vi lượng (Magiê, Kẽm, Sắt, Mangan, Bo)**. Cách xử lý nhanh: 1. Phun qua lá dung dịch vi lượng Chelate tổng hợp để lá hấp thụ tức thì sau 3-5 ngày. 2. Dưới gốc: Chuyển sang dùng các dòng **NPK Cò Bay có ký hiệu TE** (như NPK Cò Bay 20-20-15 TE, 16-16-8 TE) được tích hợp sẵn vi lượng dạng khoáng dễ tiêu, giúp cây quang hợp mạnh mẽ và lá xanh dày trở lại. Bạn chụp ảnh lá gửi qua tin nhắn để chuyên viên Cò Bay chẩn đoán chính xác loại vi lượng đang thiếu nha!",
+      "faq_id": "ee2270e21478b15d2881b0ef9005ab62a6c65de190aff6c983ce7677d1603b67",
+      "intent": "markdown_faq_thieu_vi_luong_te_vang_la_gan_xanh",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:44"
+    },
+    {
+      "case_id": "CFC-FAQ-041",
+      "faq_number": 41,
+      "source_row": 45,
+      "topic": "Pha phân bón lá với thuốc BVTV",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Pha phân bón lá chung với thuốc sâu thuốc rầy xịt một lần có bị kết tủa đục nước không?",
+        "Trộn phân bón lá với thuốc bảo vệ thực vật được không"
+      ],
+      "expected_answer": "Dạ bạn hoàn toàn có thể phối trộn phân bón lá với thuốc trừ sâu rầy để tiết kiệm công phun xịt, nhưng cần tuân thủ **Quy tắc thử nghiệm 3 phút**: 1. Múc 1 ca nước nhỏ, cho thuốc và phân bón lá vào khuấy đều. Nếu nước đồng nhất, không sủi bọt lạ, không kết tủa hay vón cục đóng cặn đáy ca thì phối trộn an toàn. 2. **Thứ tự pha phuy 200L:** Thuốc dạng bột (WP) -> Thuốc dạng sữa/nhũ dầu (EC/SC) -> Phân bón lá hòa tan cuối cùng. 3. **Lưu ý:** Không pha chung phân bón giàu Canxi, Đồng (Gốc đồng) với các loại thuốc gốc Lân hoặc Lưu huỳnh vì sẽ tạo cặn làm cháy lá và nghẹt béc xịt. Bạn nhắn tên loại phân thuốc đang muốn pha để kỹ sư kiểm tra tính tương thích cho an toàn nhé!",
+      "faq_id": "42627a656f12dee735c4e336b2bb0dc6fdd48fe53a39e39916d4ea1c8c1977e0",
+      "intent": "markdown_faq_pha_phan_bon_la_voi_thuoc_bvtv",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:45"
+    },
+    {
+      "case_id": "CFC-FAQ-042",
+      "faq_number": 42,
+      "source_row": 46,
+      "topic": "Trộn NPK với phân hữu cơ",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Trộn NPK chung với phân hữu cơ rải một lượt luôn cho đỡ tốn công được không?",
+        "Có nên trộn phân hóa học với phân hữu cơ rải chung"
+      ],
+      "expected_answer": "Dạ bạn **HOÀN TOÀN CÓ THỂ** trộn NPK Cò Bay chung với Hữu cơ Cobanic để rải cùng một lần giúp tiết kiệm công lao động! Lợi ích: Chất hữu cơ sẽ bao bọc các hạt NPK, giảm thất thoát do bốc hơi và giữ phân tan từ từ quanh vùng rễ. **Nguyên tắc quan trọng:** - Trộn xong nên mang đi rải ngay trong ngày, không để phân đã trộn qua đêm vì phân sẽ hút ẩm và vón cục. - Nếu là dòng **Hữu cơ vi sinh vật sống** (chứa nấm đối kháng Trichoderma), không nên trộn với lượng NPK quá đậm đặc vì nồng độ muối khoáng cao có thể làm giảm mật độ vi sinh. Bạn cho mình biết công thức phân dự kiến trộn để kỹ sư Cò Bay góp ý tỷ lệ chuẩn nha!",
+      "faq_id": "c3adc5987f413bda3ce9577d63e818821c4bd2d65c2b0714621868973c7eb714",
+      "intent": "markdown_faq_tron_npk_voi_phan_huu_co",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:46"
+    },
+    {
+      "case_id": "CFC-FAQ-043",
+      "faq_number": 43,
+      "source_row": 47,
+      "topic": "Phân tưới nhỏ giọt (Fertigation)",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Phân Cò Bay có hòa tan 100% để tưới qua hệ thống nhỏ giọt mà không nghẹt béc không?",
+        "Phân bón tưới hệ thống nhỏ giọt tưới béc cfc"
+      ],
+      "expected_answer": "Dạ Cò Bay có các dòng sản phẩm NPK Tháp Cao hòa tan nhanh và dòng phân bón tưới nhỏ giọt chuyên dụng (Fertigation)! Đặc điểm: Độ tinh khiết cực cao, tan 100% trong nước, không chứa tạp chất không tan hoặc cặn bã, giúp nước phân lưu thông mượt mà qua hệ thống dây nhỏ giọt và đầu béc bù áp mà không sợ nghẹt béc. Bạn để lại SĐT và loại cây/quy mô hệ thống tưới tự động, bên mình sẽ gửi danh mục các dòng phân tưới nhỏ giọt phù hợp nhất nhé!",
+      "faq_id": "47b4fdacff6de483843f50ca17102bc051bb237a89b6d0da5124054b1a4e7fba",
+      "intent": "markdown_faq_phan_tuoi_nho_giot_fertigation",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:47"
+    },
+    {
+      "case_id": "CFC-FAQ-044",
+      "faq_number": 44,
+      "source_row": 48,
+      "topic": "Hữu cơ trước, hóa học sau",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Hữu cơ đi trước Hóa học theo sau là sao cách nhau bao nhiêu ngày là chuẩn?",
+        "Quy tắc bón hữu cơ trước hóa học sau"
+      ],
+      "expected_answer": "Dạ 'Hữu cơ đi trước, Hóa học theo sau' là quy tắc vàng trong canh tác nông nghiệp thông minh: 1. **Bón Hữu cơ trước (Ngày 1):** Bón Hữu cơ Cobanic để 'nuôi đất', kích hoạt hệ vi sinh vật và kích thích rễ non bung ra tạo mạng lưới rễ cám dày đặc. 2. **Bón NPK theo sau (Cách 7 - 10 ngày):** Khi rễ tơ đã sẵn sàng, bạn bón NPK Cò Bay vào. Lúc này rễ cây sẽ hấp thụ phân hóa học đạt hiệu suất tối đa (80-90%), tránh tình trạng rải NPK trên nền đất trơ làm cháy rễ và thất thoát phân bón. Bạn nhắn loại cây và giai đoạn để Cò Bay lên bảng lịch bón phân chuẩn từng tuần nha!",
+      "faq_id": "56ec78890a79309947806574612fad151a8692157e741dba2228ea2742078a72",
+      "intent": "markdown_faq_huu_co_truoc_hoa_hoc_sau",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:48"
+    },
+    {
+      "case_id": "CFC-FAQ-045",
+      "faq_number": 45,
+      "source_row": 49,
+      "topic": "Dấu hiệu vi sinh hoạt động trong đất",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Làm sao biết mấy con vi sinh đang hoạt động dưới gốc có dấu hiệu gì nhìn thấy được không?",
+        "5 dấu hiệu vi sinh hoạt động tốt trong đất"
+      ],
+      "expected_answer": "Dạ Cò Bay chia sẻ với bạn **5 dấu hiệu nhận biết mắt thường** cho thấy vi sinh vật đang hoạt động cực tốt quanh gốc sau khi bón Hữu cơ Cobanic: 1. **Tơ nấm trắng:** Xuất hiện các mảng tơ nấm trắng mỏng chằng chịt như mạng nhện dưới lớp lá mục/phân hữu cơ (đây là nấm có lợi phân hủy xenlulozo). 2. **Đùn phân trùn:** Đất xuất hiện nhiều ụ phân trùn đất đùn lên, đất tơi xốp rõ rệt. 3. **Mùi đất ngọt thơm:** Đất có mùi mùn ngai ngái dễ chịu sau mưa, không còn mùi chua nồng hay hôi thối. 4. **Kết cấu xốp mềm:** Đất chuyển màu nâu sẫm, xốp như miếng bọt biển, bóp nhẹ là vỡ vụn không đóng váng. 5. **Rễ tơ trắng muốt:** Lớp rễ cám mập mạp mọc trồi lên tầng mặt để ăn dinh dưỡng. Vườn bạn đã có những dấu hiệu nào trong 5 dấu hiệu trên chưa ạ?",
+      "faq_id": "d97a2a28237ee87228d5bda7868d008eac2e6a523851af21c4f07158078aceda",
+      "intent": "markdown_faq_dau_hieu_vi_sinh_hoat_dong_trong_dat",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:49"
+    },
+    {
+      "case_id": "CFC-FAQ-046",
+      "faq_number": 46,
+      "source_row": 50,
+      "topic": "Phân chuồng tươi có cần ủ hoai không",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Phân bò phân gà tươi bón trực tiếp có được không hay bắt buộc phải ủ hoai?",
+        "Bón phân chuồng tươi có hại cây không"
+      ],
+      "expected_answer": "Dạ bạn **TUYỆT ĐỐI KHÔNG NÊN** bón phân chuồng tươi (phân bò, phân gà tươi) trực tiếp vào gốc cây! Tác hại nghiêm trọng của phân tươi: 1. Sinh nhiệt độ cao (quá trình tự ủ dưới gốc) làm **cháy rễ non**. 2. Mang theo mầm bệnh tuyến trùng, nấm Phytophthora gây vàng lá thối rễ và hạt cỏ dại. 3. Tạo môi trường cho ấu trùng sùng đất và ruồi đục rễ phát triển. **Khuyến nghị:** Hãy ủ hoai bằng nấm Trichoderma từ 45-60 ngày hoặc sử dụng trực tiếp dòng **Hữu cơ sinh học Cobanic 30%** của Cò Bay đã được xử lý thanh trùng, khử mùi và bổ sung vi sinh có lợi sẵn, rải vừa an toàn vừa tiện lợi nhé ạ!",
+      "faq_id": "11510c4505195a16a8a67c494597cb48b19bc17ba676db5b2d0470ce4ce150c7",
+      "intent": "markdown_faq_phan_chuong_tuoi_co_can_u_hoai_khong",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:50"
+    },
+    {
+      "case_id": "CFC-FAQ-047",
+      "faq_number": 47,
+      "source_row": 51,
+      "topic": "Vi sinh và thuốc trị nấm hóa học",
+      "status": "ANSWERABLE",
+      "questions": [
+        "Vừa bón vi sinh xong mà đổ thuốc nấm hóa học xuống thì có phí tiền không?",
+        "Khoảng cách giữa bón vi sinh và tưới thuốc trị nấm"
+      ],
+      "expected_answer": "Dạ nếu vừa bón phân vi sinh xong mà tưới ngay thuốc trừ nấm hóa học (như Mancozeb, Ridomil, Hexaconazole...) thì thuốc sẽ **tiêu diệt toàn bộ vi sinh vật có lợi**, làm lãng phí 100% tiền mua phân vi sinh! **Quy tắc chuẩn:** - Nếu cây đang bị bệnh rễ nặng: Xử lý thuốc nấm hóa học trước để chặn đứng mầm bệnh. - Sau **7 - 10 ngày** khi thuốc hóa học đã phân hủy hết độc lực, mới tiến hành tưới bổ sung vi sinh đối kháng và Hữu cơ Cobanic để phục hồi đất. Bạn để lại SĐT và tình trạng bệnh của vườn, kỹ sư Cò Bay sẽ hỗ trợ hướng dẫn quy trình luân phiên an toàn nha!",
+      "faq_id": "6db74ecca2719f08c993183967a2c9b25d0ab9eecd0fa546af044426c8f360df",
+      "intent": "markdown_faq_vi_sinh_va_thuoc_tri_nam_hoa_hoc",
+      "category": "faq",
+      "risk_level": "MEDIUM",
+      "source_locator": "CFC_Co_Bay_FAQ.md:FAQ:51"
+    }
+  ]
+}
