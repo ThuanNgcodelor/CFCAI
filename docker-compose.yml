@@ -26,7 +26,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_URL: redis://redis:6379/0
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_BASE_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
       CFC_PAGE_ID: ${CFC_PAGE_ID:-}
@@ -71,6 +71,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${APP_DEBUG:-false}
@@ -84,7 +86,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_URL: redis://redis:6379/0
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_BASE_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
       OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
@@ -128,7 +130,7 @@ services:
     container_name: cfc_zeo_redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-6385}:6379"
     volumes:
       - redis_data:/data
     healthcheck:

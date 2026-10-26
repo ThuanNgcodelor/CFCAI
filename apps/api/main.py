@@ -1,8 +1,11 @@
 import json
 import logging
 
+# pyrefly: ignore[missing-import]
 from fastapi import FastAPI, Header, HTTPException, Request
+# pyrefly: ignore[missing-import]
 from fastapi.responses import JSONResponse, PlainTextResponse
+# pyrefly: ignore[missing-import]
 from pydantic import BaseModel
 
 from src.chatbot.core.settings import settings
@@ -183,6 +186,7 @@ async def sync_misa_cache(x_internal_token: str | None = Header(None)):
         raise HTTPException(status_code=403, detail="Invalid internal token")
 
     try:
+        # pyrefly: ignore[missing-import]
         import redis.asyncio as redis
 
         redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)
