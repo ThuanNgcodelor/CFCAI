@@ -12,7 +12,7 @@
 - [ ] **Phase 2: Message Aggregation & Handoff State Guard (IMPLEMENTED/STAGING PASS — còn live Meta takeover validation và Phase 4 slot analyzer)**
 - [x] **Phase 3: Excel Catalog & FAQ Staging Pipeline (COMPLETED — versioned staging/publish/rollback gate pass)**
 - [x] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction) (COMPLETED — deterministic safety + Qwen structured JSON + live eval pass)**
-- [ ] **Phase 5: Business Workflows & Final Send Outbox Guard**
+- [x] **Phase 5: Business Workflows & Final Send Outbox Guard (COMPLETED — workflows, output policy validator & outbox guard pass)**
 - [ ] **Phase 6: Approved Knowledge Retrieval & FAQ RAG (PARTIAL — approved Postgres/keyword retrieval có; semantic RAG/citation chưa có)**
 - [ ] **Phase 7: Operations Console & Emergency Controls (Kill Switch) (PARTIAL — Redis shared pause/resume có; auth/RBAC/audit chưa có)**
 - [ ] **Phase 8: Security Hardening, Regression Verification & Production Go-Live**
@@ -166,12 +166,13 @@ pipeline keyword/FAQ hiện tại.
 
 ### Phase 5 — Business Workflows
 
-- [ ] `PRICE_INQUIRY`: thu product + quantity + area, tạo handoff, không tự báo giá.
-- [ ] `PRODUCT_INQUIRY`: exact SKU/formula trước, alias sau, hỏi lại khi nhiều kết quả.
-- [ ] `DEALER_LOOKUP`: lấy province/district từ state, exact address match; distance chỉ dùng khi có GPS.
-- [ ] `AGRI_ADVICE`: yêu cầu crop/stage/problem; không dùng một FAQ dài cho mọi trường hợp.
-- [ ] Response composer biến record CRM thành câu trả lời tự nhiên 1–3 câu, không gửi raw record.
-- **Gate:** `tests/integration/test_workflows.py` và transcript regression pass.
+- [x] `PRICE_INQUIRY`: thu product + quantity + area, tạo handoff, không tự báo giá.
+- [x] `PRODUCT_INQUIRY`: exact SKU/formula trước, alias sau, hỏi lại khi nhiều kết quả.
+- [x] `DEALER_LOOKUP`: lấy province/district từ state, exact address match; distance chỉ dùng khi có GPS.
+- [x] `AGRI_ADVICE`: yêu cầu crop/stage/problem; không dùng một FAQ dài cho mọi trường hợp.
+- [x] Response composer biến record CRM thành câu trả lời tự nhiên 1–3 câu, không gửi raw record.
+- **Gate:** `tests/integration/test_workflows.py`, `tests/unit/test_safe_pipeline.py`, `tests/unit/test_output_policy_validator.py` (ĐÃ PASS 45/45 test).
+
 
 ### Phase 6 — Retrieval Quality
 
@@ -300,12 +301,12 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ---
 
 ### Phase 5: Business Workflows & Final Send Outbox Guard
-- [ ] Triển khai workflow `PRICE_INQUIRY`: **TUYỆT ĐỐI KHÔNG TỰ BÁO GIÁ**. Tạo handoff task cho nhân viên kinh doanh, bot chỉ lịch sự xác nhận và hỏi thêm số lượng/khu vực nếu cần (T01, T03, T05).
-- [ ] Triển khai workflow `DEALER_LOOKUP`: Hỏi khu vực để tra cứu đại lý chính thức (T04).
-- [ ] Triển khai workflow `PRODUCT_INQUIRY`: Cung cấp thông số kỹ thuật chuẩn từ catalog đã duyệt, không bịa đặt liều dùng.
-- [ ] Delivery Outbox Worker: Quét bảng `outbox_messages` bằng `FOR UPDATE SKIP LOCKED`.
-- [ ] **Final Send Guard:** Kiểm tra lại ownership và batch version trong cùng transaction trước khi gọi Meta Send API.
-- **Lệnh nghiệm thu:** `pytest tests/integration/test_workflows.py`
+- [x] Triển khai workflow `PRICE_INQUIRY`: **TUYỆT ĐỐI KHÔNG TỰ BÁO GIÁ**. Tạo handoff task cho nhân viên kinh doanh, bot chỉ lịch sự xác nhận và hỏi thêm số lượng/khu vực nếu cần (T01, T03, T05).
+- [x] Triển khai workflow `DEALER_LOOKUP`: Hỏi khu vực để tra cứu đại lý chính thức (T04).
+- [x] Triển khai workflow `PRODUCT_INQUIRY`: Cung cấp thông số kỹ thuật chuẩn từ catalog đã duyệt, không bịa đặt liều dùng.
+- [x] Delivery Outbox Worker: Quét bảng `outbox_messages` bằng `FOR UPDATE SKIP LOCKED`.
+- [x] **Final Send Guard:** Kiểm tra lại ownership và batch version trong cùng transaction trước khi gọi Meta Send API.
+- **Lệnh nghiệm thu:** `pytest tests/integration/test_workflows.py tests/unit/test_safe_pipeline.py tests/unit/test_output_policy_validator.py` (ĐÃ PASS 45/45 TEST)
 
 ---
 

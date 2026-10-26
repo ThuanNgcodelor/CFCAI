@@ -230,3 +230,12 @@ class SupportContactDirectory:
                 f"☎️ {selection.hotline.title}: {selection.hotline.display_phone}"
             )
         return "\n".join(lines)
+
+    def allowed_phones(self, page_id: PageCode) -> set[str]:
+        page = self._pages.get(page_id.value)
+        if page is None:
+            return set()
+        phones = {contact.phone for contact in page.contacts.values()}
+        if page.hotline:
+            phones.add(page.hotline.phone)
+        return phones

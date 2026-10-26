@@ -620,3 +620,50 @@ def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
 
     unaccented_matches = store.search(PageCode.CFC, "Tay Ninh", limit=1, record_prefix=("dealer:",))
     assert len(unaccented_matches) == 1
+
+
+def test_dealer_lookup_never_leaks_snapshot_crm_or_internal_terms():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.DEALER_LOOKUP, {"location": "Nam Cực"}),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+    outbox_id = pipeline.process(_make_event("Tìm đại lý ở Nam Cực"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "snapshot crm" not in reply.lower()
+    assert "crm" not in reply.lower()
+    assert "chưa có điểm bán" in reply
+
+
+def test_greeting_response_uses_anh_chi_and_never_ba_con():
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(outbox)
+    outbox_id = pipeline.process(_make_event("Xin chào"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "bà con" not in reply.lower()
+    assert "anh/chị" in reply.lower()
+
+
+def test_output_policy_blocks_unauthorized_phone_and_unresolved_placeholders():
+    class RogueGenerator:
+        def generate(self, payload):
+            return "Dạ anh/chị gọi số 0999888777 gặp {{unknown_person}} nhé!"
+
+    composer = ResponseComposer(generator=RogueGenerator())
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.PRICE_INQUIRY),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, composer=composer)
+    outbox_id = pipeline.process(_make_event("Cho xin giá 1 bao"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "0999888777" not in reply
+    assert "{{" not in reply
+    assert "báo giá" in reply

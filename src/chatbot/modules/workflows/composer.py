@@ -11,6 +11,7 @@ import re
 import unicodedata
 from typing import Any, Protocol
 
+from src.chatbot.modules.workflows.policy_validator import OutputPolicyValidator
 from src.chatbot.modules.workflows.support_contacts import SupportContactDirectory
 from src.chatbot.shared.enums import PageCode, WorkflowType
 
@@ -146,18 +147,21 @@ class ResponseComposer:
         slots: dict[str, Any],
         fallback: str,
         deadline_text: str,
+        page_id: PageCode = PageCode.CFC,
+        workflow: WorkflowType = WorkflowType.FAQ_ANSWER,
+        allowed_phones: set[str] | None = None,
     ) -> str:
-        """Accept model prose only when it is grounded in the supplied slots."""
-        if cls.has_unresolved_placeholders(text):
-            return cls.validate_no_price(fallback, deadline_text)
-        sanitized = cls.sanitize_placeholders(text, deadline_text)
-        if not sanitized:
-            return cls.validate_no_price(fallback, deadline_text)
-        if not slots.get("phone") and cls._claims_customer_phone(sanitized):
-            return cls.validate_no_price(fallback, deadline_text)
-        if cls._contains_unapproved_phone(sanitized, slots):
-            return cls.validate_no_price(fallback, deadline_text)
-        return cls.validate_no_price(sanitized, deadline_text)
+        """Accept model prose only when it is grounded in the supplied slots and passes policy."""
+        result = OutputPolicyValidator.validate(
+            text,
+            page_id=page_id,
+            workflow=workflow,
+            slots=slots,
+            allowed_phones=allowed_phones,
+            deadline_text=deadline_text,
+            fallback=fallback,
+        )
+        return result.text
 
     def _append_support_contact(
         self,
@@ -497,7 +501,7 @@ class ResponseComposer:
             check_text = "Mình đã kiểm tra lại" if previously_no_confirmed_match else "Mình đã kiểm tra"
             area_text = f" khu vực {location}" if location else " khu vực mình cung cấp"
             response = (
-                f"Dạ {check_text}{area_text}, nhưng snapshot CRM hiện chưa có điểm bán được xác nhận tại đây "
+                f"Dạ {check_text}{area_text}, nhưng hiện tại hệ thống chưa có điểm bán được xác nhận tại đây "
                 "nên em không muốn chỉ nhầm địa chỉ. Anh/chị có thể cho em thêm xã/ấp cụ thể "
                 "hoặc nhắn “gặp nhân viên” nếu cần kiểm tra thủ công ạ."
             )
@@ -558,8 +562,8 @@ class ResponseComposer:
             return "Dạ ZeO Homecare kính chào quý khách! ZeO có thể hỗ trợ gì cho mình hôm nay ạ?"
 
         return (
-            "🌱 Phân bón Cò Bay kính chào bà con! "
-            "Bà con cần tư vấn cách sử dụng hoặc tìm đại lý mua sản phẩm, Cò Bay rất sẵn lòng hỗ trợ ạ!"
+            "🌱 Phân bón Cò Bay kính chào anh/chị ạ! "
+            "Anh/chị cần tư vấn cách sử dụng hoặc tìm điểm bán mua sản phẩm, Cò Bay rất sẵn lòng hỗ trợ ạ!"
         )
 
     def compose_order_response(

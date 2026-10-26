@@ -19,6 +19,7 @@ from src.chatbot.modules.orchestration.input_analyzer import (
     workflow_for_intent,
 )
 from src.chatbot.modules.workflows.composer import ResponseComposer
+from src.chatbot.modules.workflows.policy_validator import OutputPolicyValidator
 from src.chatbot.modules.workflows.sla import calculate_contact_deadline
 from src.chatbot.shared.enums import IntentType, Ownership, PageCode, WorkflowType
 from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
@@ -451,11 +452,22 @@ class SafeMessagePipeline:
                 else:
                     answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
 
-        # Final safety validation (Zero-price check)
-        answer = self.composer.validate_no_price(
+        # Final safety validation (Policy guard: zero-price, no jargon, persona, placeholders)
+        allowed_phones: set[str] = set()
+        if self.composer and self.composer.contact_directory:
+            allowed_phones.update(
+                self.composer.contact_directory.allowed_phones(event.page_id)
+            )
+        validation = OutputPolicyValidator.validate(
             answer,
-            deadline_text,
+            page_id=event.page_id,
+            workflow=workflow,
+            slots=effective_slots,
+            allowed_phones=allowed_phones,
+            deadline_text=deadline_text,
+            fallback=answer,
         )
+        answer = validation.text
 
         delivery_batch_version = batch_version
         if delivery_batch_version is None:
