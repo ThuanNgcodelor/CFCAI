@@ -60,7 +60,7 @@ def test_real_transcript_intents(
         assert result.requires_human_handoff
 
 
-def test_short_followup_keeps_open_price_workflow() -> None:
+def test_explicit_agronomy_action_switches_from_open_price_workflow() -> None:
     analyzer = _analyzer(
         IntentAnalysisResult(primary_intent=IntentType.AGRI_ADVICE, confidence=0.8)
     )
@@ -74,10 +74,50 @@ def test_short_followup_keeps_open_price_workflow() -> None:
             "message_ids": ["mid-1"],
         },
     )
+    assert result.primary_intent == IntentType.AGRI_ADVICE
+    assert result.intent_transition == IntentTransition.SWITCH
+    assert result.extracted_slots["crop"] == "mít"
+    assert "product_mentions" not in result.extracted_slots
+    assert not result.requires_human_handoff
+
+
+def test_location_name_containing_price_word_is_not_a_price_intent() -> None:
+    analyzer = _analyzer(
+        IntentAnalysisResult(primary_intent=IntentType.GENERAL_FAQ, confidence=0.8)
+    )
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "Rạch Giá",
+        {
+            "current_workflow": "DEALER_LOOKUP",
+            "current_intent": "DEALER_LOOKUP",
+            "current_slots": {},
+        },
+    )
+    assert result.primary_intent == IntentType.DEALER_LOOKUP
+    assert result.intent_transition == IntentTransition.CONTINUE
+    assert result.extracted_slots["location"] == "Rạch Giá"
+    assert result.extracted_slots["province"] == "An Giang"
+
+
+def test_quantity_only_followup_continues_open_price_workflow() -> None:
+    analyzer = _analyzer(
+        IntentAnalysisResult(primary_intent=IntentType.UNKNOWN, confidence=0.4)
+    )
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "30 tấn",
+        {
+            "current_workflow": "PRICE_HANDOFF",
+            "current_intent": "PRICE_INQUIRY",
+            "current_slots": {"product_mentions": ["Cobanic 30"]},
+        },
+    )
     assert result.primary_intent == IntentType.PRICE_INQUIRY_DETAIL
     assert result.intent_transition == IntentTransition.CONTINUE
+    assert result.extracted_slots["quantity"] == "30"
+    assert result.extracted_slots["unit"] == "tấn"
     assert result.extracted_slots["product_mentions"] == ["Cobanic 30"]
-    assert result.requires_human_handoff
 
 
 def test_contact_request_is_forced_before_model_guess() -> None:

@@ -32,6 +32,7 @@ services:
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}
       ADMINISTRATIVE_AREAS_PATH: ${ADMINISTRATIVE_AREAS_PATH:-config/normalization/administrative_areas.json}
       MARKDOWN_CATALOG_MAPPING_PATH: ${MARKDOWN_CATALOG_MAPPING_PATH:-config/data_sources/markdown_mapping.json}
+      DATA_SOURCE_MANIFEST_PATH: ${DATA_SOURCE_MANIFEST_PATH:-data/sources/manifest.yaml}
       SUPPORT_CONTACTS_PATH: ${SUPPORT_CONTACTS_PATH:-config/business/support_contacts.json}
       CFC_PAGE_ID: ${CFC_PAGE_ID:-}
       CFC_VERIFY_TOKEN: ${CFC_VERIFY_TOKEN:-}
@@ -48,13 +49,14 @@ services:
       AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
       AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
       AMIS_PILOT_APPROVE_ALL: ${AMIS_PILOT_APPROVE_ALL:-false}
+      AMIS_SYNC_FRESHNESS_SECONDS: ${AMIS_SYNC_FRESHNESS_SECONDS:-5400}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./src:/app/src
       - ./apps:/app/apps
       - ./config:/app/config
-      - ./CFC_Co_Bay_FAQ.md:/app/CFC_Co_Bay_FAQ.md:ro
+      - ./data:/app/data:ro
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
@@ -118,6 +120,78 @@ services:
       AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
       AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
       AMIS_SYNC_INTERNAL_TOKEN: ${AMIS_SYNC_INTERNAL_TOKEN:-}
+
+  data-loader:
+    profiles: ["data"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "-m", "apps.tools.data_loader"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-cfc_zeo_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cfc_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cfc_secret_password}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-cfc_admin}:${POSTGRES_PASSWORD:-cfc_secret_password}@postgres:5432/${POSTGRES_DB:-cfc_zeo_db}
+      DATA_SOURCE_MANIFEST_PATH: ${DATA_SOURCE_MANIFEST_PATH:-data/sources/manifest.yaml}
+    volumes:
+      - ./src:/app/src
+      - ./apps:/app/apps
+      - ./config:/app/config:ro
+      - ./data:/app/data:ro
+      - ./migrations:/app/migrations:ro
+
+  crm-warmer:
+    profiles: ["data"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "-m", "apps.tools.crm_warmer"]
+    command: ["sync"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      AMIS_BASE_URL: ${AMIS_BASE_URL:-https://crmconnect.misa.vn/api/v2}
+      AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
+      AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
+      AMIS_PILOT_APPROVE_ALL: ${AMIS_PILOT_APPROVE_ALL:-false}
+      AMIS_SYNC_LOCK_SECONDS: ${AMIS_SYNC_LOCK_SECONDS:-900}
+      AMIS_SNAPSHOT_RETENTION_SECONDS: ${AMIS_SNAPSHOT_RETENTION_SECONDS:-604800}
+      AMIS_SYNC_FRESHNESS_SECONDS: ${AMIS_SYNC_FRESHNESS_SECONDS:-5400}
+    volumes:
+      - ./src:/app/src
+      - ./apps:/app/apps
+
+  crm-scheduler:
+    profiles: ["scheduler"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "-m", "apps.tools.crm_warmer"]
+    command: ["run"]
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      AMIS_BASE_URL: ${AMIS_BASE_URL:-https://crmconnect.misa.vn/api/v2}
+      AMIS_CLIENT_ID: ${AMIS_CLIENT_ID:-JavisCFCChatbot}
+      AMIS_CLIENT_SECRET: ${AMIS_CLIENT_SECRET:-}
+      AMIS_PILOT_APPROVE_ALL: ${AMIS_PILOT_APPROVE_ALL:-false}
+      AMIS_SYNC_INTERVAL_SECONDS: ${AMIS_SYNC_INTERVAL_SECONDS:-3600}
+      AMIS_SYNC_LOCK_SECONDS: ${AMIS_SYNC_LOCK_SECONDS:-900}
+      AMIS_SNAPSHOT_RETENTION_SECONDS: ${AMIS_SNAPSHOT_RETENTION_SECONDS:-604800}
+      AMIS_SYNC_FRESHNESS_SECONDS: ${AMIS_SYNC_FRESHNESS_SECONDS:-5400}
+    volumes:
+      - ./src:/app/src
+      - ./apps:/app/apps
 
   postgres:
     image: pgvector/pgvector:pg16

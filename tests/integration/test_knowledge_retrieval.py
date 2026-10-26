@@ -6,6 +6,7 @@ import pytest
 from src.chatbot.modules.knowledge.retriever import (
     ApprovedKnowledgeStore,
     KnowledgeRecord,
+    KnowledgeSearchResult,
     PostgresKnowledgeStore,
 )
 from src.chatbot.shared.enums import PageCode
@@ -36,6 +37,55 @@ def test_retrieval_never_returns_quarantined_records() -> None:
         ]
     )
     assert store.search(PageCode.CFC, "secret") == []
+
+
+def test_retrieval_never_returns_inactive_or_internal_records() -> None:
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord(
+                "inactive", PageCode.CFC, "Alias inactive", "hidden", "APPROVED",
+                is_active=False,
+            ),
+            KnowledgeRecord(
+                "internal", PageCode.CFC, "Alias internal", "hidden", "APPROVED",
+                audience="internal",
+            ),
+        ]
+    )
+    assert store.search(PageCode.CFC, "Alias inactive") == []
+    assert store.search(PageCode.CFC, "Alias internal") == []
+
+
+@pytest.mark.parametrize("query", ["giá", "sản phẩm", "gần nhất", "Giang"])
+def test_common_terms_do_not_select_an_arbitrary_record(query: str) -> None:
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord(
+                "faq:one", PageCode.CFC, "Giá sản phẩm gần nhất An Giang",
+                "Nội dung một", "APPROVED",
+            ),
+            KnowledgeRecord(
+                "faq:two", PageCode.CFC, "Sản phẩm tại Kiên Giang",
+                "Nội dung hai", "APPROVED",
+            ),
+        ]
+    )
+    assert store.search(PageCode.CFC, query, record_prefix="faq:") == []
+
+
+def test_ambiguous_lexical_match_is_explicit_and_returns_no_answer() -> None:
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord("faq:one", PageCode.CFC, "bón cây mít", "A", "APPROVED"),
+            KnowledgeRecord("faq:two", PageCode.CFC, "bón cây xoài", "B", "APPROVED"),
+        ]
+    )
+    decision = store.search_with_confidence(
+        PageCode.CFC, "cách bón cây", record_prefix="faq:"
+    )
+    assert isinstance(decision, KnowledgeSearchResult)
+    assert decision.status == "AMBIGUOUS"
+    assert decision.records == ()
 
 
 def test_postgres_knowledge_store_is_page_scoped() -> None:

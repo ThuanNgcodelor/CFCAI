@@ -17,7 +17,7 @@ from src.chatbot.modules.integrations.markdown.importer import (
     _clean_markdown_text,
 )
 
-DEFAULT_SOURCE = ROOT / "CFC_Co_Bay_FAQ.md"
+DEFAULT_SOURCE = ROOT / "data/sources/cfc/faq/CFC_Co_Bay_FAQ.md"
 DEFAULT_MAPPING = ROOT / "config/data_sources/markdown_mapping.json"
 DEFAULT_OUTPUT = ROOT / "tests/fixtures/cfc_faq_cases.json"
 SOURCE_ID = "cfc-co-bay-faq"
@@ -38,6 +38,7 @@ def build_case_catalog(
     importer = MarkdownCatalogImporter(mapping_path)
     _, source = importer._source(SOURCE_ID)
     columns = importer._column_aliases(source)
+    governance = importer._governance(source)
     document = source_path.read_text(encoding="utf-8")
     headers, rows = importer._find_table(document, columns)
 
@@ -55,6 +56,7 @@ def build_case_catalog(
         if not number_text.isdigit():
             raise ValueError(f"FAQ row {source_row} has invalid number {number_text!r}")
         faq_number = int(number_text)
+        policy = governance.get(str(faq_number), {})
         topic = _plain_markdown(importer._value(row, headers, columns.get("topic", ())))
         question_text = importer._value(row, headers, columns["question_examples"])
         questions = importer._question_examples(question_text)
@@ -80,9 +82,27 @@ def build_case_catalog(
                 "questions": questions,
                 "expected_answer": None if missing_answer else staged["answer"],
                 "faq_id": None if missing_answer else staged["faq_id"],
-                "intent": None if missing_answer else staged["intent"],
-                "category": None if missing_answer else staged["category"],
-                "risk_level": None if missing_answer else staged["risk_level"],
+                "intent": policy.get("intent") if missing_answer else staged["intent"],
+                "category": policy.get("category") if missing_answer else staged["category"],
+                "response_mode": (
+                    policy.get("response_mode")
+                    if missing_answer
+                    else staged["response_mode"]
+                ),
+                "risk_level": (
+                    policy.get("risk_level") if missing_answer else staged["risk_level"]
+                ),
+                "profile_slots": (
+                    policy.get("profile_slots", [])
+                    if missing_answer
+                    else staged["profile_slots"]
+                ),
+                "source_active": (
+                    bool(policy.get("source_active", False))
+                    if missing_answer
+                    else staged["source_active"]
+                ),
+                "review_status": policy.get("review_status", "UNSPECIFIED"),
                 "source_locator": f"{source_path.name}:FAQ:{source_row}",
             }
         )
@@ -90,7 +110,7 @@ def build_case_catalog(
     answerable = [case for case in cases if case["status"] == "ANSWERABLE"]
     missing = [case for case in cases if case["status"] == "MISSING_ANSWER"]
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "source_file": source_path.name,
         "source_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
         "mapping_file": str(mapping_path.relative_to(ROOT)),

@@ -8,6 +8,7 @@ import math
 import re
 import unicodedata
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, ClassVar, Protocol
 
 from src.chatbot.core.settings import settings
@@ -32,6 +33,19 @@ class KnowledgeRecord:
     learning_tags: tuple[str, ...] = ()
     profile_slots: tuple[str, ...] = ()
     source_locator: str | None = None
+    audience: str = "customer"
+    is_active: bool = True
+
+
+@dataclass(frozen=True)
+class KnowledgeSearchResult:
+    """Auditable retrieval outcome; ambiguous results are never used as answers."""
+
+    status: str
+    records: tuple[KnowledgeRecord, ...] = ()
+    top_score: float = 0.0
+    margin: float | None = None
+    strategy: str = "faq"
 
 
 @dataclass(frozen=True)
@@ -82,12 +96,131 @@ class KnowledgeSearchStore(Protocol):
 def _fold_search_text(text: str) -> str:
     folded = unicodedata.normalize("NFD", text.casefold())
     folded = "".join(char for char in folded if unicodedata.category(char) != "Mn")
-    return folded.replace("đ", "d")
+    folded = folded.replace("đ", "d")
+    return re.sub(r"[^a-z0-9]+", " ", folded).strip()
+
+
+class KnowledgeRanker:
+    """Configuration-backed exact-alias and lexical ranker by data domain."""
+
+    def __init__(self, config_path: str | Path = "config/retrieval/ranking.json") -> None:
+        payload = json.loads(Path(config_path).read_text(encoding="utf-8"))
+        self._ignored_queries = {
+            _fold_search_text(value)
+            for value in payload.get("ignored_query_terms", [])
+            if _fold_search_text(value)
+        }
+        self._ignored = {
+            value for value in self._ignored_queries if " " not in value
+        }
+        self._strategies = payload.get("strategies", {})
+        self._prefix_domains = payload.get("prefix_domains", {})
+
+    def _domain(
+        self,
+        record_prefix: str | tuple[str, ...] | None,
+        categories: tuple[str, ...] | None,
+    ) -> str:
+        prefixes = (record_prefix,) if isinstance(record_prefix, str) else record_prefix or ()
+        for prefix in prefixes:
+            for configured_prefix, domain in self._prefix_domains.items():
+                if prefix.startswith(configured_prefix):
+                    return str(domain)
+        if categories and any(category.casefold() in {"agronomy", "soil_weather"} for category in categories):
+            return "agronomy"
+        return "faq"
+
+    def _tokens(self, text: str) -> set[str]:
+        return {
+            token
+            for token in _fold_search_text(text).split()
+            if len(token) > 1 and token not in self._ignored
+        }
+
+    @staticmethod
+    def _aliases(record: KnowledgeRecord) -> tuple[str, ...]:
+        return tuple(
+            normalized
+            for value in record.title.split("|")
+            if (normalized := _fold_search_text(value))
+        )
+
+    def rank(
+        self,
+        records: list[KnowledgeRecord],
+        query: str,
+        *,
+        limit: int,
+        record_prefix: str | tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
+        domain = self._domain(record_prefix, categories)
+        policy = self._strategies.get(domain, self._strategies["faq"])
+        normalized_query = _fold_search_text(query)
+        query_tokens = self._tokens(query)
+        if (
+            not normalized_query
+            or normalized_query in self._ignored_queries
+            or not query_tokens
+        ):
+            return KnowledgeSearchResult("NO_MATCH", strategy=domain)
+
+        exact_score = float(policy.get("exact_alias_score", 1.0))
+        alias_weight = float(policy.get("alias_weight", 0.8))
+        content_weight = float(policy.get("content_weight", 0.2))
+        scored: list[tuple[float, bool, KnowledgeRecord]] = []
+        for record in records:
+            aliases = self._aliases(record)
+            exact = normalized_query in aliases
+            if exact:
+                scored.append((exact_score, True, record))
+                continue
+
+            alias_score = 0.0
+            for alias in aliases:
+                alias_tokens = self._tokens(alias)
+                overlap = query_tokens & alias_tokens
+                if not overlap:
+                    continue
+                recall = len(overlap) / len(query_tokens)
+                precision = len(overlap) / len(alias_tokens)
+                alias_score = max(alias_score, alias_weight * (0.7 * recall + 0.3 * precision))
+            content_tokens = self._tokens(record.content)
+            content_score = content_weight * len(query_tokens & content_tokens) / len(query_tokens)
+            score = max(alias_score, content_score)
+            if score > 0:
+                scored.append((score, False, record))
+
+        scored.sort(key=lambda item: (-item[0], item[2].record_id))
+        if not scored:
+            return KnowledgeSearchResult("NO_MATCH", strategy=domain)
+        top_score, top_exact, _ = scored[0]
+        second_score = scored[1][0] if len(scored) > 1 else None
+        margin = top_score - second_score if second_score is not None else None
+        minimum = float(policy.get("minimum_score", 0.2))
+        minimum_margin = float(policy.get("minimum_margin", 0.08))
+        if top_score < minimum:
+            return KnowledgeSearchResult("NO_MATCH", top_score=top_score, margin=margin, strategy=domain)
+        if not top_exact and margin is not None and margin < minimum_margin:
+            return KnowledgeSearchResult("AMBIGUOUS", top_score=top_score, margin=margin, strategy=domain)
+        return KnowledgeSearchResult(
+            "CONFIDENT",
+            tuple(item[2] for item in scored[:limit]),
+            top_score,
+            margin,
+            domain,
+        )
 
 
 class ApprovedKnowledgeStore:
-    def __init__(self, records: list[KnowledgeRecord] | None = None) -> None:
+    def __init__(
+        self,
+        records: list[KnowledgeRecord] | None = None,
+        *,
+        ranker: KnowledgeRanker | None = None,
+    ) -> None:
         self._records = records or []
+        self._ranker = ranker or KnowledgeRanker()
 
     def add(self, record: KnowledgeRecord) -> None:
         self._records.append(record)
@@ -101,12 +234,30 @@ class ApprovedKnowledgeStore:
         intents: tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
-        tokens = {_fold_search_text(token) for token in query.split() if len(token) > 1}
+        return list(self.search_with_confidence(
+            page_id, query, limit=limit, record_prefix=record_prefix,
+            intents=intents, categories=categories,
+        ).records)
+
+    def search_with_confidence(
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
         normalized_intents = {item.casefold() for item in intents or ()}
         normalized_categories = {item.casefold() for item in categories or ()}
-        matches = []
+        eligible = []
         for record in self._records:
-            if record.page_id != page_id or record.status != "APPROVED":
+            if (
+                record.page_id != page_id
+                or record.status != "APPROVED"
+                or record.audience != "customer"
+                or not record.is_active
+            ):
                 continue
             if record_prefix and not record.record_id.startswith(record_prefix):
                 continue
@@ -114,12 +265,14 @@ class ApprovedKnowledgeStore:
                 continue
             if normalized_categories and (record.category or "").casefold() not in normalized_categories:
                 continue
-            haystack = _fold_search_text(f"{record.title} {record.content}")
-            score = sum(token in haystack for token in tokens)
-            if score:
-                matches.append((score, record))
-        matches.sort(key=lambda item: (-item[0], item[1].record_id))
-        return [record for _, record in matches[:limit]]
+            eligible.append(record)
+        return self._ranker.rank(
+            eligible,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            categories=categories,
+        )
 
 
 class PostgresKnowledgeStore:
@@ -142,11 +295,17 @@ class PostgresKnowledgeStore:
     ALTER TABLE knowledge_records ADD COLUMN IF NOT EXISTS profile_slots JSONB NOT NULL DEFAULT '[]'::jsonb;
     """
 
-    def __init__(self, database_url: str | None = None) -> None:
+    def __init__(
+        self,
+        database_url: str | None = None,
+        *,
+        ranker: KnowledgeRanker | None = None,
+    ) -> None:
         self._dsn = (database_url or settings.get_database_url()).replace(
             "postgresql+asyncpg://", "postgresql://", 1
         )
         self._ready = False
+        self._ranker = ranker or KnowledgeRanker()
 
     def _connect(self):
         import psycopg2  # type: ignore[import-untyped]
@@ -163,15 +322,19 @@ class PostgresKnowledgeStore:
         self._ensure_schema()
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                """INSERT INTO knowledge_records(record_id,page_id,title,content,status)
-                VALUES (%s,%s,%s,%s,%s) ON CONFLICT(record_id) DO UPDATE SET
-                title=EXCLUDED.title, content=EXCLUDED.content, status=EXCLUDED.status""",
+                """INSERT INTO knowledge_records(
+                    record_id,page_id,title,content,status,audience,is_active
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(record_id) DO UPDATE SET
+                title=EXCLUDED.title, content=EXCLUDED.content, status=EXCLUDED.status,
+                audience=EXCLUDED.audience, is_active=EXCLUDED.is_active""",
                 (
                     record.record_id,
                     record.page_id.value,
                     record.title,
                     record.content,
                     record.status,
+                    record.audience,
+                    record.is_active,
                 ),
             )
 
@@ -206,9 +369,6 @@ class PostgresKnowledgeStore:
         prefix_values = None
         if record_prefix:
             prefix_values = (record_prefix,) if isinstance(record_prefix, str) else record_prefix
-        tokens = [_fold_search_text(token) for token in query.split() if len(token) > 1]
-        if not tokens:
-            return []
         with self._connect() as connection, connection.cursor() as cursor:
             sql = "SELECT record_id,page_id,title,content,status,intent,category,response_mode,risk_level,learning_tags,profile_slots,source_locator FROM knowledge_records WHERE page_id=%s AND status='APPROVED' AND audience='customer' AND is_active=true"
             params: list[object] = [page_id.value]
@@ -230,14 +390,13 @@ class PostgresKnowledgeStore:
                 )
                 for row in cursor.fetchall()
             ]
-        scored = []
-        for record in records:
-            haystack = _fold_search_text(f"{record.title} {record.content}")
-            score = sum(token in haystack for token in tokens)
-            if score:
-                scored.append((score, record))
-        scored.sort(key=lambda item: (-item[0], item[1].record_id))
-        return [record for _, record in scored[:limit]]
+        return list(self._ranker.rank(
+            records,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            categories=categories,
+        ).records)
 
 
 class RedisCrmProductStore:

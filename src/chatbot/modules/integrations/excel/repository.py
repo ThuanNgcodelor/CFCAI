@@ -17,6 +17,68 @@ class CatalogPublishRepository:
 
         return psycopg2.connect(self._dsn)
 
+    @staticmethod
+    def _audit(
+        cursor,
+        *,
+        action: str,
+        actor: str,
+        page_id: PageCode | None = None,
+        batch_id: str | None = None,
+        source_id: str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        cursor.execute(
+            """INSERT INTO data_ingestion_audit(
+            page_id,batch_id,source_id,action,actor,details)
+            VALUES (%s,%s,%s,%s,%s,%s::jsonb)""",
+            (
+                page_id.value if page_id else None,
+                batch_id,
+                source_id,
+                action,
+                actor,
+                json.dumps(details or {}, ensure_ascii=False),
+            ),
+        )
+
+    def find_batch(
+        self, page_id: PageCode, source_checksum: str, mapping_version: int
+    ) -> dict[str, Any] | None:
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT batch_id,status,record_count,conflict_count,source_file,
+                          created_at,approved_at,published_at
+                FROM import_batches
+                WHERE page_id=%s AND source_checksum=%s AND mapping_version=%s""",
+                (page_id.value, source_checksum, mapping_version),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            columns = [description[0] for description in cursor.description]
+            return dict(zip(columns, row, strict=True))
+
+    def list_batches(
+        self, page_id: PageCode | None = None, *, limit: int = 50
+    ) -> list[dict[str, Any]]:
+        if not 1 <= limit <= 500:
+            raise ValueError("limit must be 1..500")
+        with self._connect() as connection, connection.cursor() as cursor:
+            sql = """SELECT batch_id,page_id,source_file,source_checksum,
+                     mapping_version,status,record_count,conflict_count,
+                     created_at,approved_at,published_at
+                     FROM import_batches"""
+            params: list[object] = []
+            if page_id:
+                sql += " WHERE page_id=%s"
+                params.append(page_id.value)
+            sql += " ORDER BY created_at DESC LIMIT %s"
+            params.append(limit)
+            cursor.execute(sql, tuple(params))
+            columns = [description[0] for description in cursor.description]
+            return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
+
     def stage(
         self,
         report: dict[str, Any],
@@ -57,12 +119,23 @@ class CatalogPublishRepository:
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s,%s,%s)
                     ON CONFLICT(import_batch_id,source_sheet,source_row) DO NOTHING""",
                     (
-                        item["faq_id"], item["page_id"], batch_id, item["source_file"],
-                        item["source_sheet"], item["source_row"], item["intent"],
-                        item["category"], json.dumps(item["question_examples"], ensure_ascii=False),
-                        item["answer"], item["audience"], item["response_mode"],
-                        item["risk_level"], json.dumps(item.get("learning_tags", []), ensure_ascii=False),
-                        json.dumps(item.get("profile_slots", []), ensure_ascii=False), item["source_active"], item["content_hash"],
+                        item["faq_id"],
+                        item["page_id"],
+                        batch_id,
+                        item["source_file"],
+                        item["source_sheet"],
+                        item["source_row"],
+                        item["intent"],
+                        item["category"],
+                        json.dumps(item["question_examples"], ensure_ascii=False),
+                        item["answer"],
+                        item["audience"],
+                        item["response_mode"],
+                        item["risk_level"],
+                        json.dumps(item.get("learning_tags", []), ensure_ascii=False),
+                        json.dumps(item.get("profile_slots", []), ensure_ascii=False),
+                        item["source_active"],
+                        item["content_hash"],
                         item["status"],
                     ),
                 )
@@ -75,17 +148,42 @@ class CatalogPublishRepository:
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,%s,%s,%s)
                     ON CONFLICT(import_batch_id,source_sheet,source_row) DO NOTHING""",
                     (
-                        item["catalog_id"], item["page_id"], batch_id, item["source_file"],
-                        item["source_sheet"], item["source_row"], item["sku"], item["name"],
-                        item["brand"], item["category"], json.dumps(item["specs"], ensure_ascii=False),
+                        item["catalog_id"],
+                        item["page_id"],
+                        batch_id,
+                        item["source_file"],
+                        item["source_sheet"],
+                        item["source_row"],
+                        item["sku"],
+                        item["name"],
+                        item["brand"],
+                        item["category"],
+                        json.dumps(item["specs"], ensure_ascii=False),
                         json.dumps(item["keywords"], ensure_ascii=False),
-                        json.dumps(item["internal_data"], ensure_ascii=False), item["source_active"],
-                        item["content_hash"], item["status"],
+                        json.dumps(item["internal_data"], ensure_ascii=False),
+                        item["source_active"],
+                        item["content_hash"],
+                        item["status"],
                     ),
                 )
+            self._audit(
+                cursor,
+                action="STAGE",
+                actor=str(report.get("actor") or "system"),
+                page_id=PageCode(str(report["page_id"])),
+                batch_id=batch_id,
+                source_id=str(report.get("source_id") or ""),
+                details={
+                    "source_file": report["file"],
+                    "record_count": len(faqs) + len(products),
+                    "conflict_count": report["conflict_count"],
+                },
+            )
         return batch_id
 
-    def approve_batch(self, page_id: PageCode, batch_id: str) -> int:
+    def approve_batch(
+        self, page_id: PageCode, batch_id: str, *, actor: str = "system"
+    ) -> int:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """SELECT status,conflict_count FROM import_batches
@@ -114,9 +212,19 @@ class CatalogPublishRepository:
                 WHERE batch_id=%s AND page_id=%s""",
                 (batch_id, page_id.value),
             )
+            self._audit(
+                cursor,
+                action="APPROVE_BATCH",
+                actor=actor,
+                page_id=page_id,
+                batch_id=batch_id,
+                details={"approved_count": approved},
+            )
         return approved
 
-    def reject_batch(self, page_id: PageCode, batch_id: str) -> int:
+    def reject_batch(
+        self, page_id: PageCode, batch_id: str, *, actor: str = "system"
+    ) -> int:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """SELECT 1 FROM import_batches
@@ -141,6 +249,14 @@ class CatalogPublishRepository:
                 """UPDATE import_batches SET status='REJECTED'
                 WHERE batch_id=%s AND page_id=%s""",
                 (batch_id, page_id.value),
+            )
+            self._audit(
+                cursor,
+                action="REJECT_BATCH",
+                actor=actor,
+                page_id=page_id,
+                batch_id=batch_id,
+                details={"rejected_count": rejected},
             )
         return rejected
 
@@ -217,7 +333,9 @@ class CatalogPublishRepository:
             columns = [description[0] for description in cursor.description]
             return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
 
-    def publish_batch(self, page_id: PageCode, batch_id: str) -> int:
+    def publish_batch(
+        self, page_id: PageCode, batch_id: str, *, actor: str = "system"
+    ) -> int:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """SELECT status FROM import_batches
@@ -247,9 +365,19 @@ class CatalogPublishRepository:
                 WHERE batch_id=%s AND page_id=%s""",
                 (batch_id, page_id.value),
             )
+            self._audit(
+                cursor,
+                action="PUBLISH",
+                actor=actor,
+                page_id=page_id,
+                batch_id=batch_id,
+                details={"version": version},
+            )
         return version
 
-    def rollback(self, page_id: PageCode, target_version: int) -> str:
+    def rollback(
+        self, page_id: PageCode, target_version: int, *, actor: str = "system"
+    ) -> str:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """SELECT import_batch_id FROM catalog_publications
@@ -270,6 +398,14 @@ class CatalogPublishRepository:
                 (page_id.value, target_version),
             )
             self._replace_read_model(cursor, page_id, batch_id)
+            self._audit(
+                cursor,
+                action="ROLLBACK",
+                actor=actor,
+                page_id=page_id,
+                batch_id=batch_id,
+                details={"target_version": target_version},
+            )
         return batch_id
 
     @staticmethod

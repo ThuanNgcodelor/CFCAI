@@ -1,0 +1,26 @@
+version: 1
+sources:
+  - id: cfc-faq
+    page_id: CFC
+    kind: markdown_faq
+    path: data/sources/cfc/faq/CFC_Co_Bay_FAQ.md
+    mapping: config/data_sources/markdown_mapping.json
+    importer_source: cfc-co-bay-faq
+    auto_stage: true
+    auto_publish: false
+
+  - id: cfc-excel
+    page_id: CFC
+    kind: excel_catalog
+    path: data/sources/cfc/catalog/CfcCoBayN8n.xlsx
+    mapping: config/data_sources/excel_mapping.yaml
+    auto_stage: true
+    auto_publish: false
+
+  - id: zeo-excel
+    page_id: ZEO
+    kind: excel_catalog
+    path: data/sources/zeo/catalog/ZeoN8n.xlsx
+    mapping: config/data_sources/excel_mapping.yaml
+    auto_stage: true
+    auto_publish: false

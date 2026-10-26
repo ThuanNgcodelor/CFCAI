@@ -1,12 +1,24 @@
 # Updating knowledge and dealer-location data
 
-`CFC_Co_Bay_FAQ.md` is a source document, not a file that the chatbot reads on
+`data/sources/cfc/faq/CFC_Co_Bay_FAQ.md` is a source document, not a file that the chatbot reads on
 every customer message.  Keeping it outside the runtime prompt prevents an
 unreviewed edit from becoming an immediate customer-facing claim.
 
 ## Markdown FAQ lifecycle
 
-1. Edit `CFC_Co_Bay_FAQ.md`. Keep one FAQ per Markdown table row and retain a
+All file-backed sources are registered in `data/sources/manifest.yaml`. The
+runtime never scans that directory while answering a customer. Use the loader
+to validate and stage only changed checksums:
+
+```bash
+docker compose --profile data run --rm data-loader validate --all
+docker compose --profile data run --rm data-loader stage --changed --actor <admin>
+```
+
+Both commands fail closed. Staging creates a `QUARANTINED` batch and cannot
+approve or publish it automatically.
+
+1. Edit `data/sources/cfc/faq/CFC_Co_Bay_FAQ.md`. Keep one FAQ per Markdown table row and retain a
    question column plus an answer column.
 2. If the table headers or file path change, update
    `config/data_sources/markdown_mapping.json`; this maps source columns and

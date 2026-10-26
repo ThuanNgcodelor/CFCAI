@@ -276,7 +276,7 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ---
 
 ### Phase 3: Excel Catalog & FAQ Staging Pipeline
-- [x] Viết FastExcelReader thuần Python đọc 2 file: `docs/CfcCoBayN8n.xlsx` và `docs/ZeoN8n.xlsx`.
+- [x] Viết FastExcelReader thuần Python đọc 2 file cấu hình tại `data/sources/cfc/catalog/CfcCoBayN8n.xlsx` và `data/sources/zeo/catalog/ZeoN8n.xlsx`.
 - [x] Phân tích và map các sheets:
   - `CFC`: Sheet `FAQ`, `KnowledgeSnapshot`, `LearningQueue`.
   - `ZEO`: Sheet `FAQ`, `Shopee`, `Web`, `Lazada`.

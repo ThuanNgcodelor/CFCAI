@@ -6,7 +6,7 @@ from src.chatbot.shared.enums import CatalogStatus
 
 
 def test_fast_excel_reader_cfc():
-    cfc_path = "docs/CfcCoBayN8n.xlsx"
+    cfc_path = "data/sources/cfc/catalog/CfcCoBayN8n.xlsx"
     assert Path(cfc_path).exists()
 
     sheets = FastExcelReader.read_sheets(cfc_path)
@@ -19,7 +19,7 @@ def test_fast_excel_reader_cfc():
 
 
 def test_fast_excel_reader_zeo():
-    zeo_path = "docs/ZeoN8n.xlsx"
+    zeo_path = "data/sources/zeo/catalog/ZeoN8n.xlsx"
     assert Path(zeo_path).exists()
 
     sheets = FastExcelReader.read_sheets(zeo_path)
@@ -31,8 +31,8 @@ def test_fast_excel_reader_zeo():
 def test_excel_importer_staging_and_quarantine():
     # INV-5: All new records must default to QUARANTINED
     importer = ExcelCatalogImporter()
-    cfc_res = importer.import_cfc_file("docs/CfcCoBayN8n.xlsx")
-    zeo_res = importer.import_zeo_file("docs/ZeoN8n.xlsx")
+    cfc_res = importer.import_cfc_file("data/sources/cfc/catalog/CfcCoBayN8n.xlsx")
+    zeo_res = importer.import_zeo_file("data/sources/zeo/catalog/ZeoN8n.xlsx")
 
     assert cfc_res["imported_faq_count"] > 0
     assert zeo_res["imported_product_count"] > 0

@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import json
-import os
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
@@ -61,7 +61,7 @@ def _signature(body: bytes, secret: str) -> str:
 
 def test_webhook_verifies_page_secret_and_deduplicates() -> None:
     client = _client()
-    body = _payload("page-cfc", mid=f"mid-integration-{os.getpid()}")
+    body = _payload("page-cfc", mid=f"mid-integration-{uuid.uuid4().hex}")
     headers = {"X-Hub-Signature-256": _signature(body, "cfc-secret")}
 
     first = client.post("/webhook", content=body, headers=headers)

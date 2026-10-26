@@ -3,7 +3,7 @@
   "sources": [
     {
       "page_id": "CFC",
-      "path": "docs/CfcCoBayN8n.xlsx",
+      "path": "data/sources/cfc/catalog/CfcCoBayN8n.xlsx",
       "sheets": {
         "FAQ": {
           "record_type": "faq",
@@ -25,7 +25,7 @@
     },
     {
       "page_id": "ZEO",
-      "path": "docs/ZeoN8n.xlsx",
+      "path": "data/sources/zeo/catalog/ZeoN8n.xlsx",
       "sheets": {
         "FAQ": {
           "record_type": "faq",

@@ -45,6 +45,7 @@ class VietnameseNormalizer:
         self.contextual_continuation: dict[str, dict[str, Any]] = config.get(
             "contextual_continuation", {}
         )
+        self.cross_workflow_slots = tuple(config.get("cross_workflow_slots", []))
         self.location_aliases: dict[str, str] = {}
         fallback_provinces: list[AdministrativeArea] = []
         for entry in config.get("locations", []):
@@ -133,6 +134,24 @@ class VietnameseNormalizer:
         """Resolve user or model location text through the configured gazetteer."""
         return self.area_resolver.resolve(value, parent_province=parent_province)
 
+    def without_location_alias(
+        self, text: str, area: AdministrativeArea | None
+    ) -> str:
+        """Mask the resolved place name before checking lexical intent markers."""
+        if area is None:
+            return text
+        result = text
+        aliases = sorted(area.aliases or (area.canonical,), key=len, reverse=True)
+        for alias in aliases:
+            normalized_alias = self.normalize(alias)
+            result = re.sub(
+                rf"(?<!\w){re.escape(normalized_alias)}(?!\w)",
+                " ",
+                result,
+                flags=re.IGNORECASE,
+            )
+        return re.sub(r"\s+", " ", result).strip()
+
     def continuation_intent(
         self,
         current_intent: object,
@@ -173,6 +192,14 @@ class VietnameseNormalizer:
             crop = re.sub(r"\s+", " ", crop_match.group(1)).strip(" -:")
             crop = re.sub(r"^(?:đang|bị|mình|nhà)\s+", "", crop, flags=re.IGNORECASE)
             if crop and crop.casefold() not in {"gì", "gi", "nào", "nao", "trồng"}:
+                slots["crop"] = crop
+        elif action_crop_match := re.search(
+            r"\b(?:bón|rải|phun|tưới)\s+(?:cho\s+)?(?:cây\s+)?([^,.!?;\n]{1,40})",
+            text,
+            re.IGNORECASE,
+        ):
+            crop = re.sub(r"\s+", " ", action_crop_match.group(1)).strip(" -:")
+            if crop:
                 slots["crop"] = crop
         stage_match = re.search(
             r"\b(?:giai|giải)\s*đoạn\s+([^,.!?;\n]{1,60})",
@@ -235,8 +262,19 @@ class HybridInputAnalyzer:
         forced_intent: IntentType | None = None
         transition = IntentTransition.START
         current_intent = context.get("current_intent")
+        deterministic_slots = self.normalizer.deterministic_slots(normalized)
+        resolved_area = self.normalizer.resolve_location(normalized)
+        marker_text = self.normalizer.without_location_alias(normalized, resolved_area)
+        is_open_price_context = current_intent in {
+            IntentType.PRICE_INQUIRY.value,
+            IntentType.PRICE_INQUIRY_DETAIL.value,
+        }
+        is_open_dealer_context = current_intent in {
+            IntentType.DEALER_LOOKUP.value,
+            WorkflowType.DEALER_LOOKUP.value,
+        }
 
-        if self.normalizer.contains("price_markers", normalized):
+        if self.normalizer.contains("price_markers", marker_text):
             forced_intent = IntentType.PRICE_INQUIRY
             transition = (
                 IntentTransition.CONTINUE
@@ -246,6 +284,9 @@ class HybridInputAnalyzer:
                 }
                 else IntentTransition.SWITCH if current_intent else IntentTransition.START
             )
+        elif self.normalizer.contains("human_markers", normalized):
+            forced_intent = IntentType.HUMAN_REQUEST
+            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
         elif self.normalizer.contains("contact_markers", normalized):
             if current_intent in {
                 IntentType.PRICE_INQUIRY.value,
@@ -260,9 +301,6 @@ class HybridInputAnalyzer:
                     if current_intent
                     else IntentTransition.START
                 )
-        elif self.normalizer.contains("human_markers", normalized):
-            forced_intent = IntentType.HUMAN_REQUEST
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
         elif self.normalizer.contains("dealer_markers", normalized):
             forced_intent = IntentType.DEALER_LOOKUP
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
@@ -278,24 +316,18 @@ class HybridInputAnalyzer:
         # explicitly asks for usage guidance.
         if (
             forced_intent is None
-            and self.normalizer.contains("explicit_advice_markers", normalized)
+            and (
+                self.normalizer.contains("explicit_advice_markers", normalized)
+                or self.normalizer.contains("advice_action_markers", normalized)
+            )
         ):
             forced_intent = IntentType.AGRI_ADVICE
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
 
-        is_open_price_context = current_intent in {
-            IntentType.PRICE_INQUIRY.value,
-            IntentType.PRICE_INQUIRY_DETAIL.value,
-        }
-
-        deterministic_slots = self.normalizer.deterministic_slots(normalized)
         if (
             forced_intent is None
             and (deterministic_slots.get("location") or deterministic_slots.get("phone"))
-            and current_intent in {
-                IntentType.DEALER_LOOKUP.value,
-                WorkflowType.DEALER_LOOKUP.value,
-            }
+            and is_open_dealer_context
         ):
             forced_intent = IntentType.DEALER_LOOKUP
             transition = IntentTransition.CONTINUE
@@ -315,10 +347,16 @@ class HybridInputAnalyzer:
                 fallback_intent = IntentType.UNKNOWN
                 fallback_trans = IntentTransition.UNCLEAR
 
+            fallback_slots = dict(deterministic_slots)
+            if fallback_trans == IntentTransition.CONTINUE:
+                fallback_slots = {
+                    **context.get("current_slots", {}),
+                    **fallback_slots,
+                }
             return IntentAnalysisResult(
                 primary_intent=fallback_intent,
                 intent_transition=fallback_trans,
-                extracted_slots=deterministic_slots,
+                extracted_slots=fallback_slots,
                 quantity=deterministic_slots.get("quantity"),
                 unit=deterministic_slots.get("unit"),
                 needs_clarification=forced_intent is None,
@@ -342,9 +380,36 @@ class HybridInputAnalyzer:
                 result.primary_intent = continuation_intent
                 result.intent_transition = IntentTransition.CONTINUE
 
+        if forced_intent:
+            result.primary_intent = forced_intent
+            result.intent_transition = transition
+        elif is_open_price_context:
+            if result.primary_intent in {
+                IntentType.DEALER_LOOKUP,
+                IntentType.ORDER_TRACKING,
+                IntentType.PRODUCT_INQUIRY,
+                IntentType.HUMAN_REQUEST,
+                IntentType.CONTACT_REQUEST,
+                IntentType.AGRI_ADVICE,
+            }:
+                result.intent_transition = IntentTransition.SWITCH
+            elif result.primary_intent in {IntentType.UNKNOWN, IntentType.GENERAL_FAQ}:
+                result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
+                result.intent_transition = IntentTransition.CONTINUE
+
+        slot_sources = [result.extracted_slots, deterministic_slots]
+        if result.intent_transition != IntentTransition.SWITCH:
+            slot_sources.insert(0, context.get("current_slots", {}))
+        else:
+            transferable = {
+                key: value
+                for key, value in context.get("current_slots", {}).items()
+                if key in self.normalizer.cross_workflow_slots
+            }
+            slot_sources.insert(0, transferable)
         merged_slots = {
             key: value
-            for source in (context.get("current_slots", {}), result.extracted_slots, deterministic_slots)
+            for source in slot_sources
             for key, value in source.items()
             if value is not None and value != ""
         }
@@ -376,27 +441,6 @@ class HybridInputAnalyzer:
         if result.detected_skus:
             merged_slots["detected_skus"] = result.detected_skus
         result.extracted_slots = merged_slots
-
-        if forced_intent:
-            result.primary_intent = forced_intent
-            result.intent_transition = transition
-        elif is_open_price_context:
-            # If model identified a distinct switch to a new domain workflow, honor the switch
-            if result.primary_intent in {
-                IntentType.DEALER_LOOKUP,
-                IntentType.ORDER_TRACKING,
-                IntentType.PRODUCT_INQUIRY,
-                IntentType.HUMAN_REQUEST,
-                IntentType.CONTACT_REQUEST,
-            }:
-                result.intent_transition = IntentTransition.SWITCH
-            elif result.primary_intent == IntentType.AGRI_ADVICE and not self.normalizer.contains("explicit_advice_markers", normalized):
-                # Short follow-ups like "rải mít" in a price workflow are context details, not standalone advice
-                result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
-                result.intent_transition = IntentTransition.CONTINUE
-            elif result.primary_intent in {IntentType.UNKNOWN, IntentType.GENERAL_FAQ}:
-                result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
-                result.intent_transition = IntentTransition.CONTINUE
 
         if result.primary_intent in {
             IntentType.PRICE_INQUIRY,

@@ -13,6 +13,20 @@
         "Huyện Thới Lai",
         "Huyen Thoi Lai"
       ]
+    },
+    {
+      "id": "vn-an-giang-rach-gia",
+      "canonical": "Rạch Giá",
+      "level": "ward",
+      "parent_province": "An Giang",
+      "aliases": [
+        "Rạch Giá",
+        "Rach Gia",
+        "Phường Rạch Giá",
+        "Phuong Rach Gia",
+        "TP Rạch Giá",
+        "Thành phố Rạch Giá"
+      ]
     }
   ]
 }

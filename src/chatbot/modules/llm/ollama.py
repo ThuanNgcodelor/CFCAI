@@ -117,6 +117,18 @@ class OllamaIntentClient:
                 ):
                     parsed["primary_intent"] = parsed["current_intent"]
                 result = IntentAnalysisResult.model_validate(parsed)
+                expected_evidence = {
+                    str(message_id)
+                    for message_id in (context or {}).get("message_ids", [])
+                    if str(message_id)
+                }
+                actual_evidence = set(result.evidence_message_ids)
+                if expected_evidence and (
+                    not actual_evidence or not actual_evidence <= expected_evidence
+                ):
+                    raise ValueError(
+                        "structured intent evidence must reference input message_ids"
+                    )
                 if result.primary_intent == IntentType.PRICE_INQUIRY:
                     result.requires_human_handoff = True
                 result.clarification_needed = result.needs_clarification

@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import psycopg2
 import pytest
@@ -41,7 +42,7 @@ def test_postgres_inbox_deduplicates_by_page_and_event() -> None:
     event = normalize_messenger_payload(payload)[0]
     # Keep the integration test repeatable without deleting user data: use a
     # unique event key per run and assert only the first insert wins.
-    event.event_id = f"{event.event_id}-{os.getpid()}"
+    event.event_id = f"{event.event_id}-{uuid.uuid4().hex}"
     assert store.record_event(event) is True
     assert store.record_event(event) is False
     assert any(

@@ -208,9 +208,18 @@ async def get_misa_sync_status():
     """
     Returns latest AMIS sync summary and counts.
     """
-    if not amis_warmer.latest_result:
-        return {"status": "pending", "message": "No sync run completed yet."}
-    return amis_warmer.latest_result.model_dump()
+    import redis.asyncio as redis
+
+    redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)
+    try:
+        persisted = await amis_warmer.read_status(redis_client)
+    finally:
+        await redis_client.aclose()
+    if persisted:
+        return persisted
+    if amis_warmer.latest_result:
+        return amis_warmer.latest_result.model_dump()
+    return {"status": "pending", "message": "No sync run completed yet."}
 
 
 @app.get("/admin/dealers")
@@ -218,10 +227,17 @@ async def get_eligible_dealers():
     """
     Returns eligible dealers (KH001, KH002) for dealer lookup.
     """
-    return {
-        "count": len(amis_warmer.get_dealers()),
-        "dealers": amis_warmer.get_dealers(),
-    }
+    import json
+
+    import redis.asyncio as redis
+
+    redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)
+    try:
+        raw = await redis_client.get("cfc:dealers:locations")
+    finally:
+        await redis_client.aclose()
+    dealers = json.loads(raw) if raw else amis_warmer.get_dealers()
+    return {"count": len(dealers), "dealers": dealers}
 
 
 # ==============================================================================
@@ -232,7 +248,7 @@ async def get_eligible_dealers():
 @app.post("/admin/catalog/import-excel")
 async def import_excel_catalog():
     """
-    Triggers staging import from docs/CfcCoBayN8n.xlsx and docs/ZeoN8n.xlsx.
+    Triggers staging import from the configured CFC and ZEO Excel sources.
     """
     repository = CatalogPublishRepository(settings.get_database_url())
     importer = ExcelCatalogImporter(repository=repository)

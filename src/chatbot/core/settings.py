@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     INTENT_NORMALIZATION_PATH: str = "config/normalization/vi_intent.json"
     ADMINISTRATIVE_AREAS_PATH: str = "config/normalization/administrative_areas.json"
     MARKDOWN_CATALOG_MAPPING_PATH: str = "config/data_sources/markdown_mapping.json"
+    DATA_SOURCE_MANIFEST_PATH: str = "data/sources/manifest.yaml"
     SUPPORT_CONTACTS_PATH: str = "config/business/support_contacts.json"
 
     # Meta Messenger - CFC
@@ -57,6 +58,10 @@ class Settings(BaseSettings):
     AMIS_CLIENT_SECRET: str = ""
     AMIS_SYNC_INTERNAL_TOKEN: str = ""
     AMIS_PILOT_APPROVE_ALL: bool = False
+    AMIS_SYNC_INTERVAL_SECONDS: int = 3600
+    AMIS_SYNC_LOCK_SECONDS: int = 900
+    AMIS_SNAPSHOT_RETENTION_SECONDS: int = 604800
+    AMIS_SYNC_FRESHNESS_SECONDS: int = 5400
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

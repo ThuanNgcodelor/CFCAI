@@ -1,6 +1,6 @@
 # CFC Cò Bay — FAQ editable
 
-> Nguồn: `docs/CfcCoBayN8n.xlsx`, sheet `FAQ`.
+> Nguồn: `data/sources/cfc/catalog/CfcCoBayN8n.xlsx`, sheet `FAQ`.
 > Mỗi dòng dưới đây là **một câu hỏi** và **một câu trả lời**. Có thể chỉnh sửa trực tiếp cột `answer`.
 > Các câu trong `question_examples` được tách theo dấu `;`.
 

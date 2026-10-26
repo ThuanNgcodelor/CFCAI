@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 # pyrefly: ignore[missing-import]
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.chatbot.shared.enums import (
     IntentTransition,
@@ -43,6 +43,8 @@ class MessageBatch(BaseModel):
 
 
 class IntentAnalysisResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     schema_version: int = 1
     primary_intent: IntentType
     intent_transition: IntentTransition = IntentTransition.START

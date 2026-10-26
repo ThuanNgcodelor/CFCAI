@@ -1,12 +1,14 @@
 {
-  "mapping_version": 1,
+  "mapping_version": 2,
   "sources": [
     {
       "id": "cfc-co-bay-faq",
       "page_id": "CFC",
-      "path": "CFC_Co_Bay_FAQ.md",
+      "path": "data/sources/cfc/faq/CFC_Co_Bay_FAQ.md",
+      "governance_path": "config/data_sources/cfc_faq_governance.json",
       "source_sheet": "FAQ",
       "columns": {
+        "record_key": ["#", "ID", "Record ID"],
         "topic": ["Chủ đề", "Topic", "Category"],
         "question_examples": ["Câu hỏi mẫu", "Question examples", "question_examples", "Question"],
         "answer": ["Câu trả lời", "Answer", "answer", "Response"],

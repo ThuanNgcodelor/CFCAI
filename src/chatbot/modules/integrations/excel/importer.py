@@ -38,7 +38,9 @@ def _list(value: Any) -> list[str]:
 
 
 def _content_hash(payload: dict[str, Any]) -> str:
-    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    canonical = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -67,18 +69,33 @@ class ExcelCatalogImporter:
 
     def _source_for_page(self, page_id: PageCode) -> tuple[int, dict[str, Any]]:
         mapping = self._mapping()
-        matches = [item for item in mapping["sources"] if item.get("page_id") == page_id.value]
+        matches = [
+            item for item in mapping["sources"] if item.get("page_id") == page_id.value
+        ]
         if len(matches) != 1:
-            raise ValueError(f"Expected exactly one Excel source for page {page_id.value}")
+            raise ValueError(
+                f"Expected exactly one Excel source for page {page_id.value}"
+            )
         return int(mapping.get("mapping_version", 1)), matches[0]
 
-    def import_page(self, page_id: PageCode, file_path: str | None = None) -> dict[str, Any]:
+    def import_page(
+        self,
+        page_id: PageCode,
+        file_path: str | None = None,
+        *,
+        actor: str = "system",
+        source_id: str | None = None,
+    ) -> dict[str, Any]:
         mapping_version, source = self._source_for_page(page_id)
         path = Path(file_path or source["path"])
         sheets = self.reader.read_sheets(str(path))
         checksum = hashlib.sha256(path.read_bytes()).hexdigest()
         batch_id = _content_hash(
-            {"page_id": page_id.value, "checksum": checksum, "mapping_version": mapping_version}
+            {
+                "page_id": page_id.value,
+                "checksum": checksum,
+                "mapping_version": mapping_version,
+            }
         )
         faqs: list[dict[str, Any]] = []
         products: list[dict[str, Any]] = []
@@ -148,7 +165,9 @@ class ExcelCatalogImporter:
                         {
                             **provenance,
                             **content,
-                            "catalog_id": _content_hash({**provenance, "type": "product"}),
+                            "catalog_id": _content_hash(
+                                {**provenance, "type": "product"}
+                            ),
                             "internal_data": internal_data,
                             "content_hash": _content_hash(content),
                             "status": CatalogStatus.QUARANTINED.value,
@@ -156,13 +175,18 @@ class ExcelCatalogImporter:
                         }
                     )
                 else:
-                    raise ValueError(f"Unsupported record_type {record_type!r} in {sheet_name}")
+                    raise ValueError(
+                        f"Unsupported record_type {record_type!r} in {sheet_name}"
+                    )
 
         by_sku: dict[str, list[dict[str, Any]]] = {}
         for product in products:
             by_sku.setdefault(product["sku"].casefold(), []).append(product)
         for sku_records in by_sku.values():
-            signatures = {(item["name"].casefold(), json.dumps(item["specs"], sort_keys=True)) for item in sku_records}
+            signatures = {
+                (item["name"].casefold(), json.dumps(item["specs"], sort_keys=True))
+                for item in sku_records
+            }
             if len(signatures) <= 1:
                 continue
             for item in sku_records:
@@ -189,6 +213,8 @@ class ExcelCatalogImporter:
             "imported_faq_count": len(faqs),
             "imported_product_count": len(products),
             "conflict_count": len(conflicts),
+            "actor": actor,
+            "source_id": source_id or f"{page_id.value.casefold()}-excel",
         }
         if self.repository:
             self.repository.stage(report, faqs, products)
@@ -202,7 +228,10 @@ class ExcelCatalogImporter:
 
     def import_all(self) -> list[dict[str, Any]]:
         mapping = self._mapping()
-        return [self.import_page(PageCode(source["page_id"])) for source in mapping["sources"]]
+        return [
+            self.import_page(PageCode(source["page_id"]))
+            for source in mapping["sources"]
+        ]
 
     def persist_staging(self) -> dict[str, int]:
         if self.repository is None:

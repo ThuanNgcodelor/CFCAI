@@ -37,13 +37,17 @@ def _list(value: Any) -> list[str]:
 
 
 def _content_hash(payload: dict[str, Any]) -> str:
-    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    canonical = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _fold(value: str) -> str:
     normalized = unicodedata.normalize("NFD", value.casefold())
-    normalized = "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+    normalized = "".join(
+        char for char in normalized if unicodedata.category(char) != "Mn"
+    )
     return re.sub(r"\s+", " ", normalized.replace("đ", "d")).strip()
 
 
@@ -107,7 +111,9 @@ class MarkdownCatalogImporter:
         if not self.mapping_path.exists():
             raise FileNotFoundError(f"Markdown mapping not found: {self.mapping_path}")
         mapping = json.loads(self.mapping_path.read_text(encoding="utf-8"))
-        if not isinstance(mapping, dict) or not isinstance(mapping.get("sources"), list):
+        if not isinstance(mapping, dict) or not isinstance(
+            mapping.get("sources"), list
+        ):
             raise TypeError("Markdown mapping must contain a sources list")
         return mapping
 
@@ -117,10 +123,35 @@ class MarkdownCatalogImporter:
 
     def _source(self, source_id: str) -> tuple[int, dict[str, Any]]:
         mapping = self._mapping()
-        matches = [source for source in mapping["sources"] if self._source_id(source) == source_id]
+        matches = [
+            source
+            for source in mapping["sources"]
+            if self._source_id(source) == source_id
+        ]
         if len(matches) != 1:
-            raise ValueError(f"Expected exactly one Markdown source named {source_id!r}")
+            raise ValueError(
+                f"Expected exactly one Markdown source named {source_id!r}"
+            )
         return int(mapping.get("mapping_version", 1)), matches[0]
+
+    @staticmethod
+    def _governance(source: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        configured_path = _text(source.get("governance_path"))
+        if not configured_path:
+            return {}
+        path = Path(configured_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Markdown governance file not found: {path}")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        records = payload.get("records") if isinstance(payload, dict) else None
+        if not isinstance(records, dict):
+            raise TypeError("Markdown governance must contain a records object")
+        normalized: dict[str, dict[str, Any]] = {}
+        for key, value in records.items():
+            if not isinstance(value, dict):
+                raise TypeError(f"Governance record {key!r} must be an object")
+            normalized[str(key).strip()] = value
+        return normalized
 
     @staticmethod
     def _column_aliases(source: dict[str, Any]) -> dict[str, tuple[str, ...]]:
@@ -170,7 +201,9 @@ class MarkdownCatalogImporter:
                     break
                 rows.append((row_index + 1, cells[: len(header)]))
             return normalized_headers, rows
-        raise ValueError("No Markdown table matched the configured question/answer headers")
+        raise ValueError(
+            "No Markdown table matched the configured question/answer headers"
+        )
 
     @staticmethod
     def _value(row: list[str], headers: list[str], aliases: tuple[str, ...]) -> str:
@@ -195,6 +228,8 @@ class MarkdownCatalogImporter:
         self,
         source_id: str,
         file_path: str | Path | None = None,
+        *,
+        actor: str = "system",
     ) -> dict[str, Any]:
         mapping_version, source = self._source(source_id)
         page_id = PageCode(_text(source.get("page_id")))
@@ -213,6 +248,19 @@ class MarkdownCatalogImporter:
         )
         columns = self._column_aliases(source)
         headers, rows = self._find_table(document, columns)
+        governance = self._governance(source)
+        row_keys = {
+            self._value(row, headers, columns.get("record_key", ())) or str(source_row)
+            for source_row, row in rows
+        }
+        if governance:
+            missing = sorted(row_keys - governance.keys())
+            extra = sorted(governance.keys() - row_keys)
+            if missing or extra:
+                raise ValueError(
+                    "Markdown governance coverage mismatch: "
+                    f"missing={missing or 'none'}, extra={extra or 'none'}"
+                )
         defaults = source.get("defaults", {})
         if not isinstance(defaults, dict):
             raise TypeError("Markdown source defaults must be an object")
@@ -227,18 +275,28 @@ class MarkdownCatalogImporter:
         intent_prefix = _slug(_text(defaults.get("intent_prefix")) or "markdown_faq")
 
         for source_row, row in rows:
+            record_key = self._value(
+                row, headers, columns.get("record_key", ())
+            ) or str(source_row)
+            policy = governance.get(record_key, {})
             answer = self._value(row, headers, columns.get("answer", ()))
             question_examples = self._question_examples(
                 self._value(row, headers, columns.get("question_examples", ()))
             )
-            if not answer or not question_examples or any(
-                pattern in _fold(answer) for pattern in skip_patterns
+            if (
+                not answer
+                or not question_examples
+                or any(pattern in _fold(answer) for pattern in skip_patterns)
             ):
                 skipped_count += 1
                 continue
             topic = self._value(row, headers, columns.get("topic", ()))
             mapped_intent = self._value(row, headers, columns.get("intent", ()))
-            intent = mapped_intent or f"{intent_prefix}_{_slug(topic) or source_row}"
+            intent = (
+                _text(policy.get("intent"))
+                or mapped_intent
+                or f"{intent_prefix}_{_slug(topic) or source_row}"
+            )
             provenance = {
                 "page_id": page_id.value,
                 "source_file": path.name,
@@ -248,31 +306,47 @@ class MarkdownCatalogImporter:
             }
             content = {
                 "intent": intent,
-                "category": self._value(row, headers, columns.get("category", ()))
+                "category": _text(policy.get("category"))
+                or self._value(row, headers, columns.get("category", ()))
                 or _text(defaults.get("category")),
                 "question_examples": question_examples,
                 "answer": answer,
                 "audience": self._value(row, headers, columns.get("audience", ()))
                 or _text(defaults.get("audience"))
                 or "customer",
-                "response_mode": self._value(
-                    row, headers, columns.get("response_mode", ())
-                )
+                "response_mode": _text(policy.get("response_mode"))
+                or self._value(row, headers, columns.get("response_mode", ()))
                 or _text(defaults.get("response_mode")),
-                "risk_level": self._value(row, headers, columns.get("risk_level", ()))
+                "risk_level": _text(policy.get("risk_level"))
+                or self._value(row, headers, columns.get("risk_level", ()))
                 or _text(defaults.get("risk_level")),
-                "learning_tags": _list(
-                    self._value(row, headers, columns.get("learning_tags", ()))
-                    or defaults.get("learning_tags")
+                "learning_tags": list(
+                    policy.get("learning_tags")
+                    or _list(
+                        self._value(row, headers, columns.get("learning_tags", ()))
+                        or defaults.get("learning_tags")
+                    )
+                )
+                + (
+                    [f"review_status:{_text(policy.get('review_status')).casefold()}"]
+                    if _text(policy.get("review_status"))
+                    else []
                 ),
-                "profile_slots": _list(
-                    self._value(row, headers, columns.get("profile_slots", ()))
-                    or defaults.get("profile_slots")
+                "profile_slots": list(
+                    policy.get("profile_slots")
+                    or _list(
+                        self._value(row, headers, columns.get("profile_slots", ()))
+                        or defaults.get("profile_slots")
+                    )
                 ),
-                "source_active": _boolean(
-                    self._value(row, headers, columns.get("source_active", ()))
-                    or defaults.get("source_active"),
-                    default=True,
+                "source_active": (
+                    bool(policy["source_active"])
+                    if "source_active" in policy
+                    else _boolean(
+                        self._value(row, headers, columns.get("source_active", ()))
+                        or defaults.get("source_active"),
+                        default=True,
+                    )
                 ),
             }
             faqs.append(
@@ -298,6 +372,7 @@ class MarkdownCatalogImporter:
             "imported_faq_count": len(faqs),
             "skipped_row_count": skipped_count,
             "conflict_count": 0,
+            "actor": actor,
         }
         if self.repository:
             self.repository.stage(report, faqs, [])
@@ -305,4 +380,6 @@ class MarkdownCatalogImporter:
 
     def import_all(self) -> list[dict[str, Any]]:
         mapping = self._mapping()
-        return [self.import_source(self._source_id(source)) for source in mapping["sources"]]
+        return [
+            self.import_source(self._source_id(source)) for source in mapping["sources"]
+        ]

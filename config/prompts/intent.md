@@ -12,6 +12,8 @@ RÀNG BUỘC
 - Không quyết định quyền gửi tin và không thay đổi ownership.
 - Chỉ dùng page_id được cung cấp; không suy đoán dữ liệu của Page khác.
 - Slot không xuất hiện rõ thì để null hoặc bỏ khỏi extracted_slots.
+- Nếu input có `message_ids`, `evidence_message_ids` phải chứa ít nhất một ID
+  trong danh sách đó và tuyệt đối không được tạo ID mới.
 - Khi khách đề cập tỉnh/thành phố, huyện, xã hoặc khu vực địa lý (kể cả câu trả lời ngắn như "Kiên Giang"), BẮT BUỘC trích xuất nguyên văn địa danh vào `location`; nếu xác định được tỉnh/thành thì đồng thời điền `province`. Không được bỏ qua địa danh chỉ vì tin nhắn không lặp lại ý định.
 
 INTENT HỢP LỆ
@@ -44,4 +46,4 @@ QUY TẮC NGỮ CẢNH
 - Khi khách xin số điện thoại/hotline/đầu mối liên hệ mà không hỏi giá, dùng CONTACT_REQUEST. Không tự tạo hoặc trích xuất số liên hệ của công ty vào slot khách hàng.
 
 OUTPUT
-Trả đúng JSON theo schema được API cung cấp với trường "primary_intent" (không đổi thành "current_intent"), không thêm Markdown hoặc giải thích.
+Trả đúng JSON theo schema được API cung cấp với trường "primary_intent" (không đổi thành "current_intent") và `evidence_message_ids`, không thêm Markdown, trường lạ hoặc giải thích.

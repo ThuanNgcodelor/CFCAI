@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "ignored_query_terms": [
+    "giá",
+    "sản phẩm",
+    "gần nhất",
+    "giang"
+  ],
+  "prefix_domains": {
+    "faq:": "faq",
+    "product:": "product",
+    "crm-product:": "product",
+    "agronomy:": "agronomy",
+    "dealer:": "dealer"
+  },
+  "strategies": {
+    "faq": {
+      "exact_alias_score": 1.0,
+      "alias_weight": 0.82,
+      "content_weight": 0.22,
+      "minimum_score": 0.2,
+      "minimum_margin": 0.08
+    },
+    "product": {
+      "exact_alias_score": 1.0,
+      "alias_weight": 0.9,
+      "content_weight": 0.15,
+      "minimum_score": 0.3,
+      "minimum_margin": 0.1
+    },
+    "agronomy": {
+      "exact_alias_score": 1.0,
+      "alias_weight": 0.85,
+      "content_weight": 0.2,
+      "minimum_score": 0.3,
+      "minimum_margin": 0.1
+    },
+    "dealer": {
+      "exact_alias_score": 1.0,
+      "alias_weight": 1.0,
+      "content_weight": 0.0,
+      "minimum_score": 0.5,
+      "minimum_margin": 0.15
+    }
+  }
+}

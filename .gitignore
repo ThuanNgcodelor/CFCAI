@@ -45,4 +45,6 @@ htmlcov/
 
 # Databases & Local Data
 *.sqlite3
-data/
+data/*
+!data/sources/
+!data/sources/**

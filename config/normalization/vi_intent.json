@@ -58,6 +58,12 @@
       "rải thế nào",
       "dùng thế nào"
     ],
+    "advice_action_markers": [
+      "bón cho",
+      "rải",
+      "phun cho",
+      "tưới cho"
+    ],
     "dealer_markers": [
       "đại lý",
       "dai ly",
@@ -140,6 +146,16 @@
     "chai",
     "lít",
     "lit"
+  ],
+  "cross_workflow_slots": [
+    "phone",
+    "location",
+    "province",
+    "parent_province",
+    "district",
+    "ward",
+    "admin_area_id",
+    "admin_level"
   ],
   "knowledge_filters": {
     "AGRICULTURE_ADVICE": {

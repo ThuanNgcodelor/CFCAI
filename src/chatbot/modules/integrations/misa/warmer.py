@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import uuid
 from datetime import UTC, datetime
 from typing import Any
 
@@ -33,8 +34,64 @@ class AmisCacheWarmer:
         s = json.dumps(data, sort_keys=True, ensure_ascii=False)
         return hashlib.sha256(s.encode("utf-8")).hexdigest()[:16]
 
+    @staticmethod
+    async def read_status(redis_client) -> dict[str, Any] | None:
+        raw = await redis_client.get("cfc:sync:status")
+        if not raw:
+            return None
+        parsed = json.loads(raw)
+        if not isinstance(parsed, dict):
+            return None
+        synced_at = parsed.get("synced_at")
+        try:
+            synced = datetime.fromisoformat(str(synced_at))
+            age_seconds = max(0, int((datetime.now(UTC) - synced).total_seconds()))
+        except (TypeError, ValueError):
+            age_seconds = None
+        parsed["age_seconds"] = age_seconds
+        parsed["stale"] = (
+            age_seconds is None or age_seconds > settings.AMIS_SYNC_FRESHNESS_SECONDS
+        )
+        return parsed
+
+    @staticmethod
+    async def _release_lock(redis_client, token: str) -> None:
+        await redis_client.eval(
+            """
+            if redis.call('get', KEYS[1]) == ARGV[1] then
+                return redis.call('del', KEYS[1])
+            end
+            return 0
+            """,
+            1,
+            "cfc:sync:lock",
+            token,
+        )
+
     async def warm_cache(self, redis_client=None) -> AmisSyncResult:
         logger.info("[AMIS Warmer] Starting sync cycle from MISA AMIS CRM...")
+
+        lock_token: str | None = None
+        if redis_client:
+            lock_token = uuid.uuid4().hex
+            acquired = await redis_client.set(
+                "cfc:sync:lock",
+                lock_token,
+                nx=True,
+                ex=settings.AMIS_SYNC_LOCK_SECONDS,
+            )
+            if not acquired:
+                raise RuntimeError(
+                    "[AMIS Warmer] Another sync cycle is already running."
+                )
+
+        try:
+            return await self._warm_locked(redis_client)
+        finally:
+            if redis_client and lock_token:
+                await self._release_lock(redis_client, lock_token)
+
+    async def _warm_locked(self, redis_client=None) -> AmisSyncResult:
 
         # 1. Fetch Customers
         raw_customers = await self.client.fetch_all_pages("Customers", max_pages=50)
@@ -143,22 +200,10 @@ class AmisCacheWarmer:
             if phone:
                 orders_by_phone.setdefault(phone, []).append(summary)
 
-        # 6. Save in memory and/or write to Redis
+        # 6. Build the result before atomically switching the Redis snapshot.
         self._in_memory_dealers = locations_data
         self._in_memory_products = products_data
         self._in_memory_orders = orders_by_phone
-
-        if redis_client:
-            await redis_client.set("cfc:dealers:locations", json.dumps(locations_data))
-            await redis_client.set("cfc:products:catalog", json.dumps(products_data))
-            await redis_client.set("cfc:sync:last_hash", loc_hash)
-
-            pipe = redis_client.pipeline()
-            for phone, ord_list in orders_by_phone.items():
-                pipe.set(f"cfc:orders:phone:{phone}", json.dumps(ord_list))
-            for code, ord_item in orders_by_code.items():
-                pipe.set(f"cfc:orders:code:{code}", json.dumps(ord_item))
-            await pipe.execute()
 
         now_iso = datetime.now(UTC).isoformat()
         result = AmisSyncResult(
@@ -174,6 +219,52 @@ class AmisCacheWarmer:
             locations_snapshot_hash=loc_hash,
             products_snapshot_hash=prod_hash,
         )
+
+        if redis_client:
+            sync_id = f"{loc_hash}-{prod_hash}"
+            dealers_json = json.dumps(locations_data, ensure_ascii=False)
+            products_json = json.dumps(products_data, ensure_ascii=False)
+            status_json = result.model_dump_json()
+            new_order_keys = {
+                *(f"cfc:orders:phone:{phone}" for phone in orders_by_phone),
+                *(f"cfc:orders:code:{code}" for code in orders_by_code),
+            }
+            old_order_index_raw = await redis_client.get("cfc:orders:index")
+            old_order_keys = set(json.loads(old_order_index_raw or "[]"))
+
+            pipe = redis_client.pipeline(transaction=True)
+            pipe.set(
+                f"cfc:snapshots:{sync_id}:dealers",
+                dealers_json,
+                ex=settings.AMIS_SNAPSHOT_RETENTION_SECONDS,
+            )
+            pipe.set(
+                f"cfc:snapshots:{sync_id}:products",
+                products_json,
+                ex=settings.AMIS_SNAPSHOT_RETENTION_SECONDS,
+            )
+            # Compatibility read keys are switched in the same Redis transaction.
+            pipe.set("cfc:dealers:locations", dealers_json)
+            pipe.set("cfc:products:catalog", products_json)
+            pipe.set("cfc:sync:current", sync_id)
+            pipe.set("cfc:sync:last_hash", loc_hash)
+            pipe.set("cfc:sync:products_hash", prod_hash)
+            pipe.set("cfc:sync:status", status_json)
+            pipe.set("cfc:orders:index", json.dumps(sorted(new_order_keys)))
+            obsolete = sorted(old_order_keys - new_order_keys)
+            if obsolete:
+                pipe.delete(*obsolete)
+            for phone, ord_list in orders_by_phone.items():
+                pipe.set(
+                    f"cfc:orders:phone:{phone}",
+                    json.dumps(ord_list, ensure_ascii=False),
+                )
+            for code, ord_item in orders_by_code.items():
+                pipe.set(
+                    f"cfc:orders:code:{code}",
+                    json.dumps(ord_item, ensure_ascii=False),
+                )
+            await pipe.execute()
         self.latest_result = result
         logger.info(
             f"[AMIS Warmer] Sync complete: {result.location_count} dealers, {result.product_count} products, {result.order_lookup_count} orders."
