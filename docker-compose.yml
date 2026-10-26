@@ -12,6 +12,7 @@ services:
       redis:
         condition: service_healthy
     environment:
+      PYTHONUNBUFFERED: "1"
       ENVIRONMENT: ${ENVIRONMENT:-development}
       # Do not inherit a host DEBUG=release/non-boolean value into Pydantic.
       DEBUG: ${APP_DEBUG:-false}
@@ -46,6 +47,10 @@ services:
       AMIS_PILOT_APPROVE_ALL: ${AMIS_PILOT_APPROVE_ALL:-false}
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./src:/app/src
+      - ./apps:/app/apps
+      - ./config:/app/config
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
@@ -73,7 +78,12 @@ services:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./src:/app/src
+      - ./apps:/app/apps
+      - ./config:/app/config
     environment:
+      PYTHONUNBUFFERED: "1"
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${APP_DEBUG:-false}
       POSTGRES_HOST: postgres
@@ -86,7 +96,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_URL: redis://redis:6379/0
-      OLLAMA_BASE_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11434}
+      OLLAMA_BASE_URL: ${OLLAMA_DOCKER_URL:-http://host.docker.internal:11435}
       OLLAMA_MODEL_TAG: ${OLLAMA_MODEL_TAG:-qwen2.5:7b}
       OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
       OLLAMA_MAX_ATTEMPTS: ${OLLAMA_MAX_ATTEMPTS:-2}

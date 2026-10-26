@@ -1,14 +1,60 @@
 {
   "aliases": {
     "hc": "hữu cơ",
+    "hcvs": "hữu cơ vi sinh",
     "sp": "sản phẩm",
     "đl": "đại lý",
-    "sdt": "số điện thoại"
+    "sdt": "số điện thoại",
+    "cabonic": "cobanic",
+    "cò bay": "cfc"
   },
   "safety": {
-    "price_markers": ["giá", "báo giá", "xin giá", "bao nhiêu tiền", "chi phí", "price"],
-    "human_markers": ["gặp nhân viên", "người thật", "nhân viên tư vấn", "admin hỗ trợ"],
-    "explicit_advice_markers": ["cách dùng", "hướng dẫn", "liều", "bón thế nào", "rải thế nào", "dùng thế nào"]
+    "price_markers": [
+      "giá",
+      "báo giá",
+      "bao gia",
+      "xin giá",
+      "bao nhiêu tiền",
+      "bao nhieu tien",
+      "bao nhiêu 1 bao",
+      "bao nhieu 1 bao",
+      "bao nhiêu 1bao",
+      "bao nhiêu một bao",
+      "bao nhieu mot bao",
+      "bao nhiêu",
+      "bao nhieu",
+      "mấy tiền",
+      "may tien",
+      "chi phí",
+      "price"
+    ],
+    "human_markers": [
+      "gặp nhân viên",
+      "gap nhan vien",
+      "người thật",
+      "nguoi that",
+      "nhân viên tư vấn",
+      "admin hỗ trợ",
+      "cho gặp nhân viên"
+    ],
+    "explicit_advice_markers": [
+      "cách dùng",
+      "hướng dẫn",
+      "liều",
+      "bón thế nào",
+      "rải thế nào",
+      "dùng thế nào"
+    ]
   },
-  "quantity_units": ["kg", "g", "tấn", "t", "bao", "gói", "chai", "lít", "lit"]
+  "quantity_units": [
+    "kg",
+    "g",
+    "tấn",
+    "t",
+    "bao",
+    "gói",
+    "chai",
+    "lít",
+    "lit"
+  ]
 }

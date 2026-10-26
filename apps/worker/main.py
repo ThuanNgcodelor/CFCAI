@@ -18,13 +18,17 @@ from src.chatbot.modules.knowledge.retriever import (
     RedisCrmDealerStore,
     RedisCrmProductStore,
 )
-from src.chatbot.modules.llm.ollama import OllamaIntentClient
+from src.chatbot.modules.llm.ollama import (
+    OllamaIntentClient,
+    OllamaResponseGenerator,
+)
 from src.chatbot.modules.ops.controls import build_ops_control_store
 from src.chatbot.modules.orchestration.input_analyzer import (
     HybridInputAnalyzer,
     VietnameseNormalizer,
 )
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
+from src.chatbot.modules.workflows.composer import ResponseComposer
 
 logger = logging.getLogger("cfc.worker")
 
@@ -49,6 +53,12 @@ class WorkerRuntime:
             ollama_client,
             VietnameseNormalizer(settings.INTENT_NORMALIZATION_PATH),
         )
+        generator = OllamaResponseGenerator(
+            settings.OLLAMA_BASE_URL,
+            settings.OLLAMA_MODEL_TAG,
+            timeout_seconds=settings.OLLAMA_TIMEOUT_SECONDS,
+        )
+        composer = ResponseComposer(generator=generator)
         self.pipeline = SafeMessagePipeline(
             self.outbox,
             build_ops_control_store(),
@@ -63,6 +73,7 @@ class WorkerRuntime:
                 else None
             ),
             conversation_repository=conversation_repository,
+            composer=composer,
         )
         self.inbox = build_inbox_store()
         self.dispatcher = OutboxDispatcher(self.outbox)

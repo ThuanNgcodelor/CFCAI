@@ -112,3 +112,53 @@ class OllamaIntentClient:
             ) as exc:
                 last_error = exc
         raise OllamaUnderstandingError("Ollama structured understanding failed") from last_error
+
+
+class OllamaResponseGenerator:
+    """Uses Ollama to generate natural, polite conversational replies guided by retrieved facts."""
+
+    _SYSTEM_PROMPT = """Bạn là trợ lý tư vấn khách hàng của Phân bón Cò Bay (CFC).
+Phong cách: Nhiệt tình, lễ phép, xưng hô anh/chị/em thân mật (văn hóa bà con miền Tây, dùng icon 🌾, 🌱, 😊 phù hợp).
+Quy tắc bắt buộc:
+1. KHÔNG BAO GIỜ tự báo giá số tiền hay khoảng giá cụ thể. Giải thích giá tùy khu vực và số lượng, xin SĐT, tỉnh/huyện, loại cây, số lượng bao để bạn kinh doanh gọi báo giá đúng mốc hẹn.
+2. KHÔNG tự bịa số điện thoại cá nhân hay địa chỉ (chỉ dùng hotline 1900 5307 hoặc xin SĐT của khách để kinh doanh gọi lại).
+3. Chỉ tư vấn sản phẩm và công dụng dựa trên THÔNG TIN SẢN PHẨM và BÀI QUẢNG CÁO được cung cấp trong dữ liệu. Không tự bịa thông số kỹ thuật chưa có.
+4. Trả lời ngắn gọn 1-3 câu, súc tích, tự nhiên, dễ đọc trên điện thoại.
+Xuất JSON dạng: {"reply": "câu trả lời"}"""
+
+    def __init__(
+        self,
+        base_url: str,
+        model: str,
+        timeout_seconds: float = 15.0,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.timeout_seconds = timeout_seconds
+
+    def generate(self, context_payload: dict[str, Any]) -> str | None:
+        request_payload = {
+            "model": self.model,
+            "stream": False,
+            "format": "json",
+            "options": {"temperature": 0.2, "num_predict": 256},
+            "messages": [
+                {"role": "system", "content": self._SYSTEM_PROMPT},
+                {"role": "user", "content": json.dumps(context_payload, ensure_ascii=False)},
+            ],
+        }
+        try:
+            req = urllib.request.Request(
+                f"{self.base_url}/api/chat",
+                data=json.dumps(request_payload, ensure_ascii=False).encode("utf-8"),
+                headers={"Content-Type": "application/json; charset=utf-8"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            content = data.get("message", {}).get("content", "")
+            parsed = json.loads(content)
+            reply = parsed.get("reply", "").strip()
+            return reply if reply else None
+        except Exception:
+            return None

@@ -53,12 +53,40 @@ def normalize_messenger_payload(payload: dict[str, Any]) -> list[InboxEvent]:
             sender_id = str(sender.get("id", ""))
             recipient_id = str(recipient.get("id", ""))
 
-            # Handle standard text or media message
+            # Handle standard text, media, postback, or ad referral message
             message_obj = messaging_event.get("message")
-            if not message_obj:
+            postback_obj = messaging_event.get("postback")
+            if not message_obj and not postback_obj:
                 continue
 
-            mid = str(message_obj.get("mid", f"mid_{sender_id}_{entry.get('time')}"))
+            ref_raw = (
+                messaging_event.get("referral")
+                or (message_obj.get("referral") if message_obj else None)
+                or (postback_obj.get("referral") if postback_obj else None)
+            )
+            referral = None
+            if ref_raw:
+                ads_ctx = ref_raw.get("ads_context_data") or {}
+                referral = {
+                    "source": ref_raw.get("source", ""),
+                    "ref": ref_raw.get("ref", ""),
+                    "ad_id": ref_raw.get("ad_id", ""),
+                    "ad_title": ads_ctx.get("ad_title", "") if isinstance(ads_ctx, dict) else "",
+                    "video_url": ads_ctx.get("video_url", "") if isinstance(ads_ctx, dict) else "",
+                    "photo_url": ads_ctx.get("photo_url", "") if isinstance(ads_ctx, dict) else "",
+                    "post_id": ads_ctx.get("post_id", "") if isinstance(ads_ctx, dict) else "",
+                }
+
+            text = None
+            attachments = []
+            if message_obj:
+                mid = str(message_obj.get("mid", f"mid_{sender_id}_{entry.get('time')}"))
+                text = message_obj.get("text")
+                attachments = message_obj.get("attachments", [])
+            else:
+                mid = str(postback_obj.get("mid", f"mid_pb_{sender_id}_{entry.get('time')}"))
+                text = postback_obj.get("title") or postback_obj.get("payload")
+
             ts_ms = messaging_event.get("timestamp") or entry.get("time") or 0
             ts_dt = (
                 datetime.fromtimestamp(ts_ms / 1000.0, tz=UTC)
@@ -71,8 +99,9 @@ def normalize_messenger_payload(payload: dict[str, Any]) -> list[InboxEvent]:
                 sender_id=sender_id,
                 recipient_id=recipient_id,
                 timestamp=ts_dt,
-                text=message_obj.get("text"),
-                attachments=message_obj.get("attachments", []),
+                text=text,
+                attachments=attachments,
+                referral=referral,
                 raw_payload=messaging_event,
             )
 

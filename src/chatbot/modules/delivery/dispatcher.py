@@ -28,10 +28,11 @@ class OutboxDispatcher:
         return True
 
     def dispatch_pending(self, limit: int = 10) -> int:
-        """Send only allowlisted pending messages; safe no-op unless explicitly enabled."""
-        if not settings.META_SEND_ENABLED or not settings.META_TEST_RECIPIENT_ID:
+        """Send pending messages; filtered by test recipient if configured."""
+        if not settings.META_SEND_ENABLED:
             return 0
-        messages = self.outbox.claim_pending(limit, settings.META_TEST_RECIPIENT_ID)
+        recipient_filter = settings.META_TEST_RECIPIENT_ID or None
+        messages = self.outbox.claim_pending(limit, recipient_filter)
         sent = 0
         for message in messages:
             try:

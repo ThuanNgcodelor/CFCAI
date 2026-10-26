@@ -40,3 +40,27 @@ def test_dispatcher_marks_sent_with_allowlist(monkeypatch) -> None:
     )
     assert OutboxDispatcher(store, Sender()).dispatch_one("CFC:psid", 1) is True
     assert next(iter(store.messages.values())).status.value == "SENT"
+
+
+def test_dispatcher_pending_without_allowlist(monkeypatch) -> None:
+    class Sender:
+        def send_text(self, page_id, recipient_id, text):
+            return "meta-message-id"
+
+    monkeypatch.setattr(settings, "META_SEND_ENABLED", True)
+    monkeypatch.setattr(settings, "META_TEST_RECIPIENT_ID", "")
+    store = InMemoryOutboxStore()
+    store.enqueue(
+        OutboxMessageSchema(
+            conversation_id="CFC:user-1",
+            page_id=PageCode.CFC,
+            recipient_id="user-1",
+            text="hello",
+            batch_version=1,
+        )
+    )
+    dispatcher = OutboxDispatcher(store, Sender())
+    sent = dispatcher.dispatch_pending()
+    assert sent == 1
+    assert next(iter(store.messages.values())).status.value == "SENT"
+

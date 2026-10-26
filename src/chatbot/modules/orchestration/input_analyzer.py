@@ -36,7 +36,11 @@ class VietnameseNormalizer:
         ) if units else None
 
     def normalize(self, text: str) -> str:
-        normalized = unicodedata.normalize("NFKC", text).casefold()
+        # Separate dots/underscores between alphanumeric characters (e.g. gia.bao.nhieu1bao -> gia bao nhieu1bao)
+        cleaned = re.sub(r"(?<=[a-zA-Z0-9À-ỹ])[._]+(?=[a-zA-Z0-9À-ỹ])", " ", text)
+        # Separate letters glued to numbers (e.g. nhieu1 -> nhieu 1, 1bao -> 1 bao)
+        cleaned = re.sub(r"(?<=[a-zA-ZÀ-ỹ])(?=\d)|(?<=\d)(?=[a-zA-ZÀ-ỹ])", " ", cleaned)
+        normalized = unicodedata.normalize("NFKC", cleaned).casefold()
         normalized = re.sub(r"\s+", " ", normalized).strip()
         for alias, replacement in self.aliases.items():
             normalized = re.sub(
@@ -59,6 +63,14 @@ class VietnameseNormalizer:
         formulas = re.findall(r"\b\d{1,3}(?:\s*[-.]\s*\d{1,3}){1,3}\b", text)
         if formulas:
             slots["detected_formulas"] = [re.sub(r"\s+", "", item) for item in formulas]
+        # Extract Vietnamese mobile/landline phone
+        phone_match = re.search(r"(?:\+?84|0)(?:[\s.\-]?\d){9,10}(?!\d)", text)
+        if phone_match:
+            digits = re.sub(r"\D", "", phone_match.group(0))
+            if digits.startswith("84"):
+                digits = "0" + digits[2:]
+            if re.match(r"^0[235789]\d{8}$|^02\d{9}$", digits):
+                slots["phone"] = digits
         return slots
 
 

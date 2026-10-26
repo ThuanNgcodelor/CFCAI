@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
+# pyrefly: ignore[missing-import]
 from pydantic import BaseModel, Field
 
 from src.chatbot.shared.enums import (
@@ -19,6 +20,7 @@ class NormalizedMessage(BaseModel):
     timestamp: datetime
     text: str | None = None
     attachments: list[dict[str, Any]] = Field(default_factory=list)
+    referral: dict[str, Any] | None = None
     raw_payload: dict[str, Any] = Field(default_factory=dict)
 
 
