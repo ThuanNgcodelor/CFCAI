@@ -31,6 +31,7 @@ class SafeMessagePipeline:
         knowledge_store: ApprovedKnowledgeStore | PostgresKnowledgeStore | CompositeKnowledgeStore | None = None,
         conversation_repository: PostgresConversationRepository | None = None,
         composer: ResponseComposer | None = None,
+        order_store: Any | None = None,
     ) -> None:
         self.outbox = outbox
         self.controls = controls or OpsControlStore()
@@ -38,6 +39,7 @@ class SafeMessagePipeline:
         self.knowledge_store = knowledge_store
         self.conversation_repository = conversation_repository
         self.composer = composer or ResponseComposer()
+        self.order_store = order_store
 
     @staticmethod
     def classify(text: str | None) -> IntentType:
@@ -50,6 +52,11 @@ class SafeMessagePipeline:
             return IntentType.PRICE_INQUIRY
         if any(w in cleaned for w in ("đại lý", "dai ly", "ở đâu", "o dau", "mua ở đâu", "mua o dau", "cửa hàng", "cua hang")):
             return IntentType.DEALER_LOOKUP
+        if (
+            any(w in cleaned for w in ("đơn hàng", "don hang", "mã đơn", "ma don", "tra cứu đơn", "tra cuu don", "kiểm tra đơn", "kiem tra don", "đơn tới đâu", "don toi dau", "hỏi đơn", "hoi don", "xem đơn", "xem don"))
+            or re.search(r"\b(?:đơn|don)\s+[a-z0-9_-]+", cleaned)
+        ):
+            return IntentType.ORDER_TRACKING
         if any(w in cleaned for w in ("phân bón", "phan bon", "hữu cơ", "huu co", "cobanic", "cabonic", "npk", "mua")):
             return IntentType.PRODUCT_INQUIRY
         if any(w in cleaned for w in ("người thật", "nguoi that", "nhân viên", "nhan vien", "tư vấn viên", "admin")):
@@ -83,6 +90,10 @@ class SafeMessagePipeline:
             if ad_title:
                 context["ad_title"] = ad_title
 
+        # Check for image attachments
+        attachments = event.message.attachments or []
+        has_images = any(att.get("type") == "image" for att in attachments)
+
         analysis = None
         if self.intent_analyzer and text:
             analysis = self.intent_analyzer.analyze(event.page_id, text, context)
@@ -93,16 +104,6 @@ class SafeMessagePipeline:
         effective_slots: dict[str, object] = dict(context.get("current_slots", {}))
         if analysis and analysis.extracted_slots:
             effective_slots.update(analysis.extracted_slots)
-
-        # Pre-fill crop slot from ad context if not yet extracted
-        if ad_title and not effective_slots.get("crop"):
-            lower_ad = ad_title.lower()
-            if "mít" in lower_ad:
-                effective_slots["crop"] = "Mít"
-            elif "sầu riêng" in lower_ad:
-                effective_slots["crop"] = "Sầu riêng"
-            elif "lúa" in lower_ad:
-                effective_slots["crop"] = "Lúa"
 
         effective_conversation_version = conversation_version
         if self.conversation_repository and batch_version is not None:
@@ -119,8 +120,17 @@ class SafeMessagePipeline:
         _, deadline_text = calculate_contact_deadline()
         answer = "Mình đã nhận được tin nhắn và sẽ phản hồi sớm."
 
+        # Case: Image inquiry (sent image with little/no text)
+        if has_images and not text.strip():
+            answer = self.composer.compose_image_inquiry_response(
+                event.page_id,
+                slots=effective_slots,
+                deadline_text=deadline_text,
+                customer_text=text,
+            )
+
         # Branch 1: Price Inquiries (INV-1: zero price hallucination)
-        if intent in {IntentType.PRICE_INQUIRY, IntentType.PRICE_INQUIRY_DETAIL}:
+        elif intent in {IntentType.PRICE_INQUIRY, IntentType.PRICE_INQUIRY_DETAIL}:
             answer = self.composer.compose_price_response(
                 event.page_id,
                 slots=effective_slots,
@@ -166,13 +176,15 @@ class SafeMessagePipeline:
         elif intent == IntentType.DEALER_LOOKUP:
             loc = str(effective_slots.get("location") or effective_slots.get("province") or effective_slots.get("district") or "")
             matches = []
-            if self.knowledge_store and (loc or text):
-                matches = self.knowledge_store.search(
-                    PageCode(event.page_id),
-                    loc or text,
-                    limit=1,
-                    record_prefix=("dealer:",),
-                )
+            if self.knowledge_store:
+                search_term = loc if loc else text
+                if search_term:
+                    matches = self.knowledge_store.search(
+                        PageCode(event.page_id),
+                        search_term,
+                        limit=1,
+                        record_prefix=("dealer:",),
+                    )
             answer = self.composer.compose_dealer_response(
                 event.page_id,
                 dealers=matches,
@@ -181,15 +193,81 @@ class SafeMessagePipeline:
                 customer_text=text,
             )
 
-        # Branch 5: General FAQ / Greetings / Special topics
+        # Branch 5: Order Tracking
+        elif intent == IntentType.ORDER_TRACKING:
+            import re
+            phone = effective_slots.get("phone")
+            if not phone and text:
+                phone_match = re.search(r"(?:\+?84|0)(?:[\s.\-]?\d){9,10}(?!\d)", text)
+                if phone_match:
+                    digits = re.sub(r"\D", "", phone_match.group(0))
+                    if digits.startswith("84"):
+                        digits = "0" + digits[2:]
+                    if re.match(r"^0[235789]\d{8}$|^02\d{9}$", digits):
+                        phone = digits
+
+            order_code = effective_slots.get("order_code")
+            if not order_code and text:
+                order_pat = re.compile(
+                    r"\b(?:đơn\s*hàng|đơn|mã\s*đơn|mã|don\s*hang|don|ma\s*don|ma)\s*[:#\-]?\s*([A-Za-z0-9_-]{3,20})\b",
+                    re.IGNORECASE,
+                )
+                m = order_pat.search(text)
+                if m:
+                    extracted = m.group(1).strip()
+                    if extracted != str(phone):
+                        order_code = extracted
+                if not order_code:
+                    standalone = re.search(r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text)
+                    if standalone and standalone.group(0) != str(phone):
+                        order_code = standalone.group(0)
+
+            orders = []
+            order = None
+            if self.order_store:
+                if order_code:
+                    order = self.order_store.find_by_code(str(order_code))
+                elif phone:
+                    orders = self.order_store.find_by_phone(str(phone))
+
+            answer = self.composer.compose_order_response(
+                event.page_id,
+                orders=orders,
+                order=order,
+                phone=str(phone) if phone else None,
+                order_code=str(order_code) if order_code else None,
+                deadline_text=deadline_text,
+                customer_text=text,
+            )
+
+        # Branch 6: General FAQ / Greetings / Special topics
         else:
             lower_text = text.lower()
-            if any(w in lower_text for w in ["tuyển dụng", "tuyen dung", "việc làm", "vị trí", "ứng tuyển", "xin việc"]):
+            is_career = False
+            is_homecare = False
+            is_greeting = False
+            if self.intent_analyzer:
+                is_career = self.intent_analyzer.normalizer.contains("career_markers", lower_text)
+                is_homecare = self.intent_analyzer.normalizer.contains("homecare_markers", lower_text)
+                is_greeting = self.intent_analyzer.normalizer.contains("greeting_markers", lower_text) and len(lower_text.split()) <= 4
+            else:
+                is_career = any(w in lower_text for w in ["tuyển dụng", "tuyen dung", "việc làm", "vị trí", "ứng tuyển", "xin việc"])
+                is_homecare = any(w in lower_text for w in ["nước giặt", "rửa chén", "zeo", "oplus", "pano", "bột giặt"])
+                is_greeting = any(lower_text.startswith(g) for g in ["chào", "xin chào", "hello", "hi", "alo"]) and len(lower_text.split()) <= 4
+
+            if is_career:
                 answer = self.composer.compose_career_response()
-            elif event.page_id == PageCode.CFC and any(w in lower_text for w in ["nước giặt", "rửa chén", "zeo", "oplus", "pano", "bột giặt"]):
+            elif event.page_id == PageCode.CFC and is_homecare:
                 answer = self.composer.compose_homecare_response()
-            elif any(lower_text.startswith(g) for g in ["chào", "xin chào", "hello", "hi", "alo"]) and len(lower_text.split()) <= 4:
+            elif is_greeting:
                 answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
+            elif has_images:
+                answer = self.composer.compose_image_inquiry_response(
+                    event.page_id,
+                    slots=effective_slots,
+                    deadline_text=deadline_text,
+                    customer_text=text,
+                )
             else:
                 matches = []
                 if self.knowledge_store and text:

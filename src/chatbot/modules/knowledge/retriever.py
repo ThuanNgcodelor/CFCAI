@@ -209,23 +209,27 @@ class RedisCrmDealerStore:
         import json
 
         normalized_query = query.lower()
-        location_terms = [
-            term for term in ("cần thơ", "kiên giang", "rạch giá", "hậu giang", "an giang")
-            if term in normalized_query
-        ]
-        tokens = [token for token in normalized_query.split() if len(token) > 2]
+        stop_words = {
+            "tôi", "cho", "mình", "tìm", "đại", "lý", "gần", "nhất", "ở", "tại",
+            "đâu", "nào", "xin", "hỏi", "mua", "muốn", "em", "anh", "chị", "ơi",
+            "điểm", "bán", "cửa", "hàng", "chỗ"
+        }
+        tokens = [token for token in normalized_query.split() if token not in stop_words and len(token) > 1]
+        if not tokens:
+            return []
+
+        phrase = " ".join(tokens)
         matches = []
         for item in json.loads(raw):
             name = str(item.get("name") or "")
             address = str(item.get("address") or "")
             haystack = f"{name} {address}".lower()
-            if location_terms:
-                score = sum(term in haystack for term in location_terms)
-                if score < len(location_terms):
-                    continue
-            else:
-                score = sum(token in haystack for token in tokens)
-            if score:
+            score = 0
+            if phrase in haystack:
+                score += 10
+            matched_tokens = sum(1 for token in tokens if token in haystack)
+            if matched_tokens:
+                score += matched_tokens
                 matches.append((score, KnowledgeRecord(
                     f"dealer:{item.get('code') or name}", page_id, name,
                     f"{name} — {address or 'chưa cập nhật địa chỉ'}",
@@ -233,6 +237,42 @@ class RedisCrmDealerStore:
                 )))
         matches.sort(key=lambda item: (-item[0], item[1].record_id))
         return [record for _, record in matches[:limit]]
+
+
+class RedisCrmOrderStore:
+    def __init__(self, redis_url: str | None = None) -> None:
+        import redis
+
+        self._redis = redis.Redis.from_url(
+            redis_url or settings.get_redis_url(), decode_responses=True
+        )
+
+    def find_by_phone(self, phone: str) -> list[dict[str, Any]]:
+        import json
+        import re
+
+        clean_phone = re.sub(r"\D", "", phone)
+        if clean_phone.startswith("84"):
+            clean_phone = "0" + clean_phone[2:]
+        raw = self._redis.get(f"cfc:orders:phone:{clean_phone}")
+        if raw:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+
+    def find_by_code(self, order_code: str) -> dict[str, Any] | None:
+        import json
+
+        clean_code = order_code.strip().upper()
+        raw = self._redis.get(f"cfc:orders:code:{clean_code}")
+        if raw:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return None
+        return None
 
 
 class CompositeKnowledgeStore:

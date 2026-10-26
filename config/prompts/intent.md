@@ -19,6 +19,7 @@ INTENT HỢP LỆ
 - DEALER_LOOKUP: tìm đại lý, nhà phân phối hoặc điểm mua theo khu vực.
 - PRODUCT_INQUIRY: hỏi/tìm một sản phẩm, mã SKU, công thức hoặc đặc tính sản phẩm.
 - AGRI_ADVICE: hỏi cách dùng, liều dùng, cây trồng, giai đoạn hoặc vấn đề nông nghiệp.
+- ORDER_TRACKING: hỏi thăm hoặc tra cứu tiến độ, vận chuyển, giao nhận của đơn hàng (thường kèm số điện thoại hoặc mã đơn).
 - SALES_LEAD: muốn mua nhưng chưa đủ rõ để thuộc luồng sản phẩm/giá.
 - HUMAN_REQUEST: yêu cầu gặp nhân viên/người thật.
 - GENERAL_FAQ: câu hỏi chung không thuộc các nhóm trên.

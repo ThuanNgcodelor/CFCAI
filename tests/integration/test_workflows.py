@@ -156,3 +156,151 @@ def test_workflow_dealer_lookup_asking_location():
     reply = outbox.messages[outbox_id].text
     assert "tỉnh/huyện" in reply
     assert "số điện thoại" in reply
+
+
+def test_workflow_dealer_lookup_with_google_maps_link():
+    class MockDealerStore:
+        def search(self, page_id, query, limit=1, record_prefix=None):
+            from src.chatbot.modules.knowledge.retriever import KnowledgeRecord
+            return [
+                KnowledgeRecord(
+                    record_id="dealer:DL001",
+                    page_id=page_id,
+                    title="Đại lý Nông Dược Huỳnh Hưng",
+                    content="Đại lý Nông Dược Huỳnh Hưng — Ấp 3, Xã An Hữu, Đồng Tháp",
+                    status="APPROVED",
+                )
+            ]
+
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.DEALER_LOOKUP, {"location": "Đồng Tháp"}),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=MockDealerStore())
+    event = _make_event("cho mình tìm đại lý ở Đồng Tháp")
+    outbox_id = pipeline.process(event)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "Huỳnh Hưng" in reply
+    assert "maps/search" in reply
+    assert "google.com/maps" in reply
+
+
+def test_workflow_image_inquiry_attachment_only():
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(outbox)
+    event = InboxEvent(
+        event_id="evt-img-1",
+        page_id=PageCode.CFC,
+        sender_id="customer-img",
+        message=NormalizedMessage(
+            mid="mid-img-1",
+            sender_id="customer-img",
+            recipient_id="page-cfc",
+            timestamp=datetime.datetime.now(datetime.UTC),
+            text="",
+            attachments=[{"type": "image", "payload": {"url": "https://example.com/leaf.jpg"}}],
+        ),
+    )
+    outbox_id = pipeline.process(event)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "hình ảnh" in reply
+    assert "kỹ sư nông nghiệp" in reply or "chuyên viên kỹ thuật" in reply
+
+
+def test_workflow_order_tracking_with_phone():
+    class MockOrderStore:
+        def find_by_phone(self, phone: str):
+            return [
+                {
+                    "order_id": "ord-1",
+                    "order_code": "SO-2026-999",
+                    "status": "Đang vận chuyển",
+                    "order_date": "2026-10-25",
+                }
+            ]
+
+        def find_by_code(self, code: str):
+            return None
+
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.ORDER_TRACKING, {"phone": "0918123456"}),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, order_store=MockOrderStore())
+    event = _make_event("Kiểm tra đơn hàng giúp anh, số 0918123456")
+    outbox_id = pipeline.process(event)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "SO-2026-999" in reply
+    assert "Đang vận chuyển" in reply
+
+
+def test_workflow_order_tracking_with_code():
+    class MockOrderStore:
+        def find_by_phone(self, phone: str):
+            return []
+
+        def find_by_code(self, code: str):
+            if code == "00003328":
+                return {
+                    "order_id": 13067,
+                    "order_code": "00003328",
+                    "status": "Đã thực hiện",
+                    "order_date": "2026-05-28",
+                }
+            return None
+
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.ORDER_TRACKING, {"order_code": "00003328"}),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, order_store=MockOrderStore())
+    event = _make_event("tra cứu đơn hàng 00003328")
+    outbox_id = pipeline.process(event)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "00003328" in reply
+    assert "Đã thực hiện" in reply
+
+
+def test_workflow_image_inquiry_on_zeo_page():
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(outbox)
+    event = InboxEvent(
+        event_id="evt-img-zeo-1",
+        page_id=PageCode.ZEO,
+        sender_id="customer-zeo",
+        message=NormalizedMessage(
+            mid="mid-img-zeo-1",
+            sender_id="customer-zeo",
+            recipient_id="page-zeo",
+            timestamp=datetime.datetime.now(datetime.UTC),
+            text="",
+            attachments=[{"type": "image", "payload": {"url": "https://example.com/soap.jpg"}}],
+        ),
+    )
+    outbox_id = pipeline.process(event)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "ZeO" in reply
+    assert "Cò Bay" not in reply
+
+
+def test_deterministic_slot_extraction_order_code_and_phone():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    slots1 = normalizer.deterministic_slots("tra cứu đơn hàng 00003328")
+    assert slots1.get("order_code") == "00003328"
+
+    slots2 = normalizer.deterministic_slots("đơn hàng DHPB06-320 của số 0972669456")
+    assert slots2.get("order_code") == "DHPB06-320"
+    assert slots2.get("phone") == "0972669456"
+
+

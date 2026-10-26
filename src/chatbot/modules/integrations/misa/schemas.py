@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class AmisCustomer(BaseModel):
+    id: Any | None = None
     account_id: str | None = None
     account_name: str | None = None
     account_code: str | None = None
@@ -14,7 +15,19 @@ class AmisCustomer(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     mobile: str | None = None
+    office_tel: str | None = None
     raw_data: dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def effective_phone(self) -> str | None:
+        p = self.office_tel or self.mobile or self.raw_data.get("office_tel") or self.raw_data.get("mobile") or self.raw_data.get("phone")
+        if p:
+            import re
+            clean = re.sub(r"\D", "", str(p))
+            if clean.startswith("84"):
+                clean = "0" + clean[2:]
+            return clean
+        return None
 
     @property
     def is_eligible_dealer(self) -> bool:
@@ -58,13 +71,32 @@ class AmisProduct(BaseModel):
 
 
 class AmisSaleOrder(BaseModel):
-    order_id: str | None = None
+    id: Any | None = None
+    order_id: Any | None = None
     order_code: str | None = None
+    sale_order_no: str | None = None
+    account_code: str | None = None
+    account_name: str | None = None
     customer_id: str | None = None
     status: str | None = None
+    delivery_status: str | None = None
     order_date: str | None = None
+    sale_order_date: str | None = None
+    book_date: str | None = None
+    phone: str | None = None
     total_amount: float | None = None
     raw_data: dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def effective_code(self) -> str:
+        return str(self.sale_order_no or self.order_code or self.raw_data.get("sale_order_no") or self.order_id or "").strip()
+
+    @property
+    def effective_date(self) -> str:
+        d = self.sale_order_date or self.book_date or self.order_date or self.raw_data.get("sale_order_date") or self.raw_data.get("book_date") or ""
+        if "T" in str(d):
+            return str(d).split("T")[0]
+        return str(d)
 
     @property
     def is_eligible(self) -> bool:

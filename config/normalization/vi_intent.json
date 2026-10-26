@@ -44,6 +44,61 @@
       "bón thế nào",
       "rải thế nào",
       "dùng thế nào"
+    ],
+    "dealer_markers": [
+      "đại lý",
+      "dai ly",
+      "điểm bán",
+      "diem ban",
+      "mua ở đâu",
+      "mua o dau",
+      "cửa hàng",
+      "cua hang",
+      "chỗ bán",
+      "cho ban",
+      "tìm đại lý",
+      "tim dai ly"
+    ],
+    "order_markers": [
+      "đơn hàng",
+      "don hang",
+      "mã đơn",
+      "ma don",
+      "tra cứu đơn",
+      "tra cuu don",
+      "kiểm tra đơn",
+      "kiem tra don",
+      "đơn tới đâu",
+      "don toi dau",
+      "giao tới đâu",
+      "giao toi dau",
+      "hàng tới đâu",
+      "hang toi dau"
+    ],
+    "career_markers": [
+      "tuyển dụng",
+      "tuyen dung",
+      "việc làm",
+      "vị trí",
+      "ứng tuyển",
+      "xin việc",
+      "hồ sơ xin việc"
+    ],
+    "homecare_markers": [
+      "nước giặt",
+      "rửa chén",
+      "zeo",
+      "oplus",
+      "pano",
+      "bột giặt",
+      "nước lau sàn"
+    ],
+    "greeting_markers": [
+      "chào",
+      "xin chào",
+      "hello",
+      "hi",
+      "alo"
     ]
   },
   "quantity_units": [

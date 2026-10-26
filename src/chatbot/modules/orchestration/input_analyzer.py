@@ -71,6 +71,22 @@ class VietnameseNormalizer:
                 digits = "0" + digits[2:]
             if re.match(r"^0[235789]\d{8}$|^02\d{9}$", digits):
                 slots["phone"] = digits
+
+        # Extract Order Code if present
+        order_pat = re.compile(
+            r"\b(?:đơn\s*hàng|đơn|mã\s*đơn|mã|don\s*hang|don|ma\s*don|ma)\s*[:#\-]?\s*([A-Za-z0-9_-]{3,20})\b",
+            re.IGNORECASE,
+        )
+        m = order_pat.search(text)
+        if m:
+            extracted = m.group(1).strip()
+            if extracted != slots.get("phone"):
+                slots["order_code"] = extracted
+        if not slots.get("order_code"):
+            standalone = re.search(r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text)
+            if standalone and standalone.group(0) != slots.get("phone"):
+                slots["order_code"] = standalone.group(0)
+
         return slots
 
 
@@ -104,21 +120,35 @@ class HybridInputAnalyzer:
         elif self.normalizer.contains("human_markers", normalized):
             forced_intent = IntentType.HUMAN_REQUEST
             transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
-        elif current_intent in {
+        elif self.normalizer.contains("dealer_markers", normalized):
+            forced_intent = IntentType.DEALER_LOOKUP
+            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+        elif self.normalizer.contains("order_markers", normalized):
+            forced_intent = IntentType.ORDER_TRACKING
+            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+
+        is_open_price_context = current_intent in {
             IntentType.PRICE_INQUIRY.value,
             IntentType.PRICE_INQUIRY_DETAIL.value,
-        } and not self.normalizer.contains("explicit_advice_markers", normalized):
-            forced_intent = IntentType.PRICE_INQUIRY_DETAIL
-            transition = IntentTransition.CONTINUE
+        }
 
         deterministic_slots = self.normalizer.deterministic_slots(normalized)
         try:
             result = self.client.analyze(page_id.value, normalized, context)
         except (OllamaUnderstandingError, OSError, ValueError, KeyError, TypeError):
-            fallback_intent = forced_intent or IntentType.UNKNOWN
+            if forced_intent:
+                fallback_intent = forced_intent
+                fallback_trans = transition
+            elif is_open_price_context and not self.normalizer.contains("explicit_advice_markers", normalized):
+                fallback_intent = IntentType.PRICE_INQUIRY_DETAIL
+                fallback_trans = IntentTransition.CONTINUE
+            else:
+                fallback_intent = IntentType.UNKNOWN
+                fallback_trans = IntentTransition.UNCLEAR
+
             return IntentAnalysisResult(
                 primary_intent=fallback_intent,
-                intent_transition=transition if forced_intent else IntentTransition.UNCLEAR,
+                intent_transition=fallback_trans,
                 extracted_slots=deterministic_slots,
                 quantity=deterministic_slots.get("quantity"),
                 unit=deterministic_slots.get("unit"),
@@ -156,6 +186,23 @@ class HybridInputAnalyzer:
         if forced_intent:
             result.primary_intent = forced_intent
             result.intent_transition = transition
+        elif is_open_price_context:
+            # If model identified a distinct switch to a new domain workflow, honor the switch
+            if result.primary_intent in {
+                IntentType.DEALER_LOOKUP,
+                IntentType.ORDER_TRACKING,
+                IntentType.PRODUCT_INQUIRY,
+                IntentType.HUMAN_REQUEST,
+            }:
+                result.intent_transition = IntentTransition.SWITCH
+            elif result.primary_intent == IntentType.AGRI_ADVICE and not self.normalizer.contains("explicit_advice_markers", normalized):
+                # Short follow-ups like "rải mít" in a price workflow are context details, not standalone advice
+                result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
+                result.intent_transition = IntentTransition.CONTINUE
+            elif result.primary_intent in {IntentType.UNKNOWN, IntentType.GENERAL_FAQ}:
+                result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
+                result.intent_transition = IntentTransition.CONTINUE
+
         if result.primary_intent in {
             IntentType.PRICE_INQUIRY,
             IntentType.PRICE_INQUIRY_DETAIL,
@@ -171,6 +218,7 @@ def workflow_for_intent(intent: IntentType) -> WorkflowType:
         IntentType.PRICE_INQUIRY_DETAIL: WorkflowType.PRICE_HANDOFF,
         IntentType.DEALER_LOOKUP: WorkflowType.DEALER_LOOKUP,
         IntentType.PRODUCT_INQUIRY: WorkflowType.PRODUCT_INQUIRY,
+        IntentType.ORDER_TRACKING: WorkflowType.ORDER_TRACKING,
         IntentType.AGRI_ADVICE: WorkflowType.AGRICULTURE_ADVICE,
         IntentType.SALES_LEAD: WorkflowType.SALES_LEAD,
         IntentType.HUMAN_REQUEST: WorkflowType.HUMAN_REQUEST,

@@ -16,6 +16,7 @@ from src.chatbot.modules.knowledge.retriever import (
     CompositeKnowledgeStore,
     PostgresKnowledgeStore,
     RedisCrmDealerStore,
+    RedisCrmOrderStore,
     RedisCrmProductStore,
 )
 from src.chatbot.modules.llm.ollama import (
@@ -74,6 +75,7 @@ class WorkerRuntime:
             ),
             conversation_repository=conversation_repository,
             composer=composer,
+            order_store=RedisCrmOrderStore() if settings.INBOX_BACKEND.lower() == "postgres" else None,
         )
         self.inbox = build_inbox_store()
         self.dispatcher = OutboxDispatcher(self.outbox)

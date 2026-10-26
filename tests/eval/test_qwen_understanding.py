@@ -80,6 +80,26 @@ def test_short_followup_keeps_open_price_workflow() -> None:
     assert result.requires_human_handoff
 
 
+def test_switch_from_open_price_workflow_to_dealer() -> None:
+    analyzer = _analyzer(
+        IntentAnalysisResult(primary_intent=IntentType.DEALER_LOOKUP, confidence=0.9)
+    )
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "Tôi muốn tìm đại lý gần nhất",
+        {
+            "current_workflow": "PRICE_HANDOFF",
+            "current_intent": "PRICE_INQUIRY_DETAIL",
+            "current_slots": {"location": "Khánh Hòa"},
+            "message_ids": ["mid-1"],
+        },
+    )
+    assert result.primary_intent == IntentType.DEALER_LOOKUP
+    assert result.intent_transition == IntentTransition.SWITCH
+    assert result.extracted_slots["location"] == "Khánh Hòa"
+
+
+
 def test_timeout_is_bounded_and_fails_closed() -> None:
     analyzer = HybridInputAnalyzer(
         TimeoutClient(),

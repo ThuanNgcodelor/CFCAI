@@ -90,14 +90,75 @@ class AmisCacheWarmer:
         loc_hash = self._hash_data(locations_data)
         prod_hash = self._hash_data(products_data)
 
+        # Index eligible orders by phone and order code
+        import re
+
+        customer_phone_map: dict[str, str] = {}
+        for c in all_customers:
+            phone = c.effective_phone
+            if phone:
+                if c.account_code:
+                    customer_phone_map[c.account_code] = phone
+                if c.account_name:
+                    customer_phone_map[c.account_name.lower()] = phone
+                if c.account_id:
+                    customer_phone_map[c.account_id] = phone
+                if c.id:
+                    customer_phone_map[c.id] = phone
+
+        orders_by_phone: dict[str, list[dict[str, Any]]] = {}
+        orders_by_code: dict[str, dict[str, Any]] = {}
+        for o in eligible_orders:
+            code = o.effective_code
+            status_text = o.delivery_status or o.status or "Đang xử lý"
+            date_text = o.effective_date or ""
+
+            phone = o.phone
+            if phone:
+                clean = re.sub(r"\D", "", str(phone))
+                if clean.startswith("84"):
+                    clean = "0" + clean[2:]
+                phone = clean
+            else:
+                phone = (
+                    customer_phone_map.get(o.account_code or "")
+                    or customer_phone_map.get((o.account_name or "").lower())
+                    or customer_phone_map.get(o.customer_id or "")
+                )
+
+            summary = {
+                "order_id": o.order_id or o.id,
+                "order_code": code,
+                "account_name": o.account_name,
+                "status": status_text,
+                "order_date": date_text,
+                "total_amount": o.total_amount,
+                "phone": phone,
+            }
+            if code:
+                orders_by_code[code.upper()] = summary
+                lstripped = code.lstrip("0")
+                if lstripped and lstripped != code:
+                    orders_by_code[lstripped.upper()] = summary
+            if phone:
+                orders_by_phone.setdefault(phone, []).append(summary)
+
         # 6. Save in memory and/or write to Redis
         self._in_memory_dealers = locations_data
         self._in_memory_products = products_data
+        self._in_memory_orders = orders_by_phone
 
         if redis_client:
             await redis_client.set("cfc:dealers:locations", json.dumps(locations_data))
             await redis_client.set("cfc:products:catalog", json.dumps(products_data))
             await redis_client.set("cfc:sync:last_hash", loc_hash)
+
+            pipe = redis_client.pipeline()
+            for phone, ord_list in orders_by_phone.items():
+                pipe.set(f"cfc:orders:phone:{phone}", json.dumps(ord_list))
+            for code, ord_item in orders_by_code.items():
+                pipe.set(f"cfc:orders:code:{code}", json.dumps(ord_item))
+            await pipe.execute()
 
         now_iso = datetime.now(UTC).isoformat()
         result = AmisSyncResult(
