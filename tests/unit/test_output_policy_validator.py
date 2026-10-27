@@ -1,7 +1,5 @@
 """Unit tests for OutputPolicyValidator enforcing Phase F5 safety invariants."""
 
-import pytest
-
 from src.chatbot.modules.workflows.policy_validator import OutputPolicyValidator
 from src.chatbot.shared.enums import PageCode, WorkflowType
 
@@ -50,12 +48,13 @@ def test_validator_detects_unresolved_placeholders() -> None:
 
 
 def test_validator_sanitizes_deadline_placeholders_cleanly() -> None:
-    text = "Bạn kinh doanh sẽ liên hệ trước [moc_hen_lien_he] để hỗ trợ mình ạ."
+    text = "Nhân viên kinh doanh sẽ liên hệ trước [moc_hen_lien_he] để hỗ trợ anh/chị ạ."
     result = OutputPolicyValidator.validate(
         text,
         page_id=PageCode.CFC,
         workflow=WorkflowType.PRICE_HANDOFF,
         deadline_text="15h chiều nay",
+        handoff_created=True,
     )
     assert result.is_valid
     assert "trước 15h chiều nay" in result.text
@@ -70,11 +69,65 @@ def test_validator_detects_false_phone_confirmation_without_slot() -> None:
         page_id=PageCode.CFC,
         workflow=WorkflowType.PRICE_HANDOFF,
         slots={},  # no phone slot
-        fallback="Dạ anh/chị cho em xin số điện thoại để bạn kinh doanh liên hệ báo giá nha!",
+        fallback="Dạ anh/chị cho em xin số điện thoại để bộ phận kinh doanh báo giá nha!",
     )
     assert not result.is_valid
     assert "FALSE_PHONE_CONFIRMATION_WITHOUT_SLOT" in result.reasons
     assert "anh/chị cho em xin số điện thoại" in result.text
+
+
+def test_validator_never_returns_an_unsafe_fallback() -> None:
+    result = OutputPolicyValidator.validate(
+        "Anh/chị gọi 0999888777 để mua với giá 500.000đ ạ.",
+        page_id=PageCode.CFC,
+        workflow=WorkflowType.PRICE_HANDOFF,
+        fallback="Bạn kinh doanh sẽ gọi 0999888777 và báo giá 500.000đ ạ.",
+    )
+
+    assert not result.is_valid
+    assert "UNSAFE_FALLBACK_REJECTED" in result.reasons
+    assert "0999888777" not in result.text
+    assert "500.000" not in result.text
+    assert "bạn" not in result.text.casefold()
+
+
+def test_validator_rejects_false_handoff_confirmation() -> None:
+    result = OutputPolicyValidator.validate(
+        "Dạ em đã chuyển yêu cầu cho nhân viên phụ trách rồi ạ.",
+        page_id=PageCode.CFC,
+        workflow=WorkflowType.HUMAN_REQUEST,
+        handoff_created=False,
+    )
+
+    assert not result.is_valid
+    assert "FALSE_HANDOFF_CONFIRMATION" in result.reasons
+    assert "đã chuyển" not in result.text.casefold()
+
+
+def test_validator_requires_gps_evidence_for_nearest_claim() -> None:
+    result = OutputPolicyValidator.validate(
+        "Dạ đây là đại lý gần nhất tại Cần Thơ ạ.",
+        page_id=PageCode.CFC,
+        workflow=WorkflowType.DEALER_LOOKUP,
+        slots={"dealer_match_scope": "EXACT_ADMIN_AREA"},
+    )
+
+    assert not result.is_valid
+    assert "UNVERIFIED_NEAREST_DEALER_CLAIM" in result.reasons
+    assert "gần nhất" not in result.text.casefold()
+
+
+def test_validator_rejects_ungrounded_product_formula() -> None:
+    result = OutputPolicyValidator.validate(
+        "Dạ anh/chị dùng NPK 20-20-15 cho giai đoạn này ạ.",
+        page_id=PageCode.CFC,
+        workflow=WorkflowType.AGRICULTURE_ADVICE,
+        grounding_texts=["Hướng dẫn hữu cơ đã duyệt, không nêu công thức NPK."],
+    )
+
+    assert not result.is_valid
+    assert any(reason.startswith("UNGROUNDED_PRODUCT_FORMULA") for reason in result.reasons)
+    assert "20-20-15" not in result.text
 
 
 def test_validator_accepts_valid_phone_confirmation_when_slot_exists() -> None:

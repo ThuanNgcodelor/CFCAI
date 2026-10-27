@@ -4,6 +4,7 @@ import uuid
 import psycopg2
 import pytest
 
+from src.chatbot.core.settings import settings
 from src.chatbot.infrastructure.messaging.inbox import PostgresInboxStore
 from src.chatbot.modules.channels.meta.normalizer import normalize_messenger_payload
 
@@ -21,7 +22,8 @@ def _store_or_skip() -> PostgresInboxStore:
     return store
 
 
-def test_postgres_inbox_deduplicates_by_page_and_event() -> None:
+def test_postgres_inbox_deduplicates_by_page_and_event(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "CFC_PAGE_ID", "dev-page-cfc")
     store = _store_or_skip()
     payload = {
         "object": "page",

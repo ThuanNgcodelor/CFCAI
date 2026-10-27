@@ -131,11 +131,11 @@ pipeline keyword/FAQ hiện tại.
 
 ### Sprint 0 — Safety Recovery (ưu tiên ngay)
 
-- [ ] Price guard chạy trước retrieval/Ollama và không thể bị intent khác ghi đè.
-- [ ] Mọi `PRICE_INQUIRY` tạo `handoff_task`; bot chỉ xác nhận và hỏi tối đa một slot còn thiếu.
-- [ ] Tạm không trả dealer “gần nhất” nếu thiếu vị trí hoặc CRM không có GPS/địa chỉ khớp chính xác.
+- [x] Price guard chạy trước retrieval sinh câu trả lời và không thể bị workflow khác ghi đè.
+- [x] Mọi `PRICE_INQUIRY` production tạo `handoff_task` theo page/batch; bot chỉ xác nhận khi task đã tồn tại.
+- [x] Không trả dealer “gần nhất” nếu thiếu GPS; exact address chỉ được mô tả là phù hợp/trùng khu vực.
 - [ ] Thêm regression cho chuỗi chat thực tế: sản phẩm → giá → số lượng → cây trồng → đại lý → địa điểm.
-- [ ] Chạy toàn bộ test cũ, không có regression.
+- [x] Chạy toàn bộ test cũ, không có regression (275 passed ngày 27/10/2026).
 - **Gate:** zero price auto-answer, zero arbitrary dealer, zero intent override.
 
 ### Phase 2 — Conversation Runtime & Ownership
@@ -143,7 +143,7 @@ pipeline keyword/FAQ hiện tại.
 - [x] Tạo PostgreSQL `conversations`, `messages`, `conversation_slots` và repository page-scoped.
 - [x] Worker gom tin bằng debounce cấu hình, max batch cấu hình trước khi phân loại; PostgreSQL là nguồn thật và Redis giữ lịch tăng tốc.
 - [x] Repository lưu/merge `current_workflow`, `primary_intent` và slots dạng JSON không hardcode schema nghiệp vụ.
-- [ ] Follow-up ngắn như “Rạch Giá Kiên Giang”, “30 tấn”, “Rải mít” phải tiếp tục workflow đang mở.
+- [x] Follow-up ngắn như “Rạch Giá Kiên Giang”, “30 tấn”, “Rải mít” tiếp tục/chuyển workflow theo policy cấu hình.
 - [x] Ops takeover chuyển ownership sang `HUMAN`, tăng version, hủy batch và suppress pending outbox trong cùng transaction.
 - [ ] Xác minh live event phân biệt Business Suite human reply với bot echo trên cả CFC và ZEO.
 - **Gate:** `tests/integration/test_aggregation_handoff.py` + test hội thoại nhiều lượt pass.
@@ -176,10 +176,10 @@ pipeline keyword/FAQ hiện tại.
 
 ### Phase 6 — Retrieval Quality
 
-- [ ] Ranking tách riêng FAQ/product/dealer; có minimum score và ambiguity guard.
-- [ ] Không match chỉ vì từ chung như “giá”, “sản phẩm”, “gần nhất”, “Giang”.
+- [x] Ranking tách riêng FAQ/product/agronomy/dealer; có minimum score và ambiguity guard.
+- [x] Không match chỉ vì từ chung như “giá”, “sản phẩm”, “gần nhất”, “Giang”.
 - [ ] Semantic/vector retrieval chỉ bổ sung sau exact/alias matching; luôn page-scoped và approved-only.
-- [ ] Có source/provenance nội bộ và fallback/handoff khi confidence thấp.
+- [x] Có source/provenance nội bộ và clarification/fallback khi confidence thấp.
 - **Gate:** retrieval precision/recall bộ câu thật đạt ngưỡng và T10/T11 pass.
 
 ### CRM Integration — Operational Workflows
@@ -228,9 +228,9 @@ pipeline keyword/FAQ hiện tại.
 | Phase 1 | Meta tunnel POST `/webhooks/meta` trả 200; `PostgresInboxStore`, lease worker, migration và page-specific HMAC/dedup có; Phase 1 integration gate pass | Đạt DoD staging; chưa phải production sign-off |
 | Phase 2 | Durable conversation/message/batch/slot DB, Redis schedule, Ops takeover transaction và final outbox guard; integration gate 6/6 pass | Staging pass; chưa đóng gate vì chưa test live Business Suite echo/takeover và follow-up analyzer thuộc Phase 4 |
 | Phase 3 | Mapping ngoài code, checksum/idempotent quarantine, record/batch review, atomic publish/rollback, customer-only read model; integration gate 5/5 pass | Đạt DoD kỹ thuật; batch dữ liệu thật vẫn chờ người duyệt |
-| Phase 6 | ApprovedKnowledgeStore + PostgresKnowledgeStore, page/status filter; `tests/integration/test_knowledge_retrieval.py` pass; chưa có vector/RAG citation | Partial |
+| Phase 6 | Ranker riêng theo miền, exact/alias + score/margin, ambiguity fail-closed, page/status filter; F4 gate 132/132 pass; chưa có vector/RAG citation hiển thị | Partial |
 | Phase 7 | `/admin/ops/status`, pause/resume; Redis state dùng chung API/worker; `tests/integration/test_ops_controls.py` pass; chưa có auth/RBAC/audit/task queue | Partial |
-| Phase 8 | Docker Compose API/worker/Postgres/Redis healthy; `/health` 200; Ollama `qwen2.5:7b` có; `tests/eval/test_regression_full.py` chưa tồn tại | Chưa đạt DoD |
+| Phase 8 | `tests/eval/test_regression_full.py` đã chạy T01–T12: 12/12 pass; full suite 275 pass; còn shadow/canary, security, backup/restore và production sign-off | Partial |
 | MISA | Endpoint thật warm thành công và Redis snapshot có; dữ liệu GPS bằng 0, field mapping nhiều null, workflow chat chưa hoàn chỉnh | Partial, chưa production |
 
 Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn tại. Mỗi phase cần lệnh gate, regression của phase trước và bằng chứng môi trường tương ứng.
@@ -296,7 +296,7 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 - [x] Nhận diện chính xác ý định hỏi mua/giá (T01, T03), tìm đại lý (T04), tìm sản phẩm (T06).
 - [x] Xử lý ngắt ngữ cảnh: Khách chuyển ý định ("Rải mít" sau câu hỏi giá -> giữ nguyên luồng giá hoặc tách bạch tư vấn) (Case T02).
 - [x] Fallback an toàn khi Ollama timeout hoặc lỗi JSON: trả câu mẫu nhẹ nhàng hoặc chuyển nhân viên, không treo hệ thống (Case T12).
-- **Lệnh nghiệm thu:** `pytest tests/eval/test_qwen_understanding.py` (ĐÃ PASS 16/16 TEST)
+- **Lệnh nghiệm thu:** `RUN_LIVE_OLLAMA_EVAL=1 pytest tests/eval/test_qwen_understanding.py tests/integration/test_aggregation_handoff.py` (ĐÃ PASS 24/24 TEST ngày 27/10/2026)
 
 ---
 
@@ -306,7 +306,7 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 - [x] Triển khai workflow `PRODUCT_INQUIRY`: Cung cấp thông số kỹ thuật chuẩn từ catalog đã duyệt, không bịa đặt liều dùng.
 - [x] Delivery Outbox Worker: Quét bảng `outbox_messages` bằng `FOR UPDATE SKIP LOCKED`.
 - [x] **Final Send Guard:** Kiểm tra lại ownership và batch version trong cùng transaction trước khi gọi Meta Send API.
-- **Lệnh nghiệm thu:** `pytest tests/integration/test_workflows.py tests/unit/test_safe_pipeline.py tests/unit/test_output_policy_validator.py` (ĐÃ PASS 45/45 TEST)
+- **Lệnh nghiệm thu:** `pytest tests/integration/test_workflows.py tests/unit/test_safe_pipeline.py tests/unit/test_output_policy_validator.py` (ĐÃ PASS 51/51 TEST ngày 27/10/2026)
 
 ---
 
@@ -329,7 +329,7 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ---
 
 ### Phase 8: Security Hardening & Go-Live Verification
-- [ ] Chạy kiểm thử đầy đủ 12 ca hồi quy thực tế (T01 – T12) đạt tỉ lệ pass 100% trong `tests/eval/test_regression_full.py`.
+- [x] Chạy kiểm thử đầy đủ 12 ca hồi quy thực tế (T01 – T12) đạt 12/12 trong `tests/eval/test_regression_full.py` ngày 27/10/2026.
 - [ ] Kiểm tra bảo mật: Mask thông tin cá nhân (PII) trong log, bảo vệ secret keys.
 - [ ] Chạy Replay test trên dữ liệu cũ và Shadow mode trước khi bật gửi tin thật.
 - [ ] Docker Compose, PostgreSQL backup/restore, Ollama health/model readiness và Meta webhook production test đạt.

@@ -394,6 +394,25 @@ class PostgresKnowledgeStore:
         intents: tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
+        result = self.search_with_confidence(
+            page_id,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            intents=intents,
+            categories=categories,
+        )
+        return list(result.records) if result.status == "CONFIDENT" else []
+
+    def search_with_confidence(
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
         self._ensure_schema()
         prefix_values = None
         if record_prefix:
@@ -419,25 +438,31 @@ class PostgresKnowledgeStore:
                 )
                 for row in cursor.fetchall()
             ]
-        return list(self._ranker.rank(
+        return self._ranker.rank(
             records,
             query,
             limit=limit,
             record_prefix=record_prefix,
             categories=categories,
-        ).records)
+        )
 
 
 class RedisCrmProductStore:
     """Read the approved CRM product snapshot without exposing prices."""
 
-    def __init__(self, redis_url: str | None = None) -> None:
+    def __init__(
+        self,
+        redis_url: str | None = None,
+        *,
+        ranker: KnowledgeRanker | None = None,
+    ) -> None:
         # pyrefly: ignore[missing-import]
         import redis
 
         self._redis = redis.Redis.from_url(
             redis_url or settings.get_redis_url(), decode_responses=True
         )
+        self._ranker = ranker or KnowledgeRanker()
 
     def search(
         self, page_id: PageCode, query: str, limit: int = 5,
@@ -445,29 +470,61 @@ class RedisCrmProductStore:
         intents: tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
+        result = self.search_with_confidence(
+            page_id,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            intents=intents,
+            categories=categories,
+        )
+        return list(result.records) if result.status == "CONFIDENT" else []
+
+    def search_with_confidence(
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
         if page_id != PageCode.CFC or record_prefix and not (
             "crm-product:" in record_prefix if isinstance(record_prefix, tuple) else record_prefix == "crm-product:"
         ):
-            return []
+            return KnowledgeSearchResult("NO_MATCH", strategy="product")
         raw = self._redis.get("cfc:products:catalog")
         if not raw:
-            return []
+            return KnowledgeSearchResult("NO_MATCH", strategy="product")
         import json
 
-        tokens = [token for token in query.lower().split() if len(token) > 1]
-        records = []
+        records: list[KnowledgeRecord] = []
         for item in json.loads(raw):
-            name = str(item.get("name") or "")
-            haystack = f"{name} {item.get('code') or ''}".lower()
-            score = sum(token in haystack for token in tokens)
-            if score:
-                records.append((score, KnowledgeRecord(
-                    f"crm-product:{item.get('code') or name}", page_id, name,
-                    f"{name} | Mã sản phẩm: {item.get('code') or 'chưa có'} | Đơn vị: {item.get('unit') or 'chưa cập nhật'}",
+            name = str(item.get("name") or "").strip()
+            code = str(item.get("code") or "").strip()
+            if not name:
+                continue
+            aliases = " | ".join(value for value in (name, code) if value)
+            records.append(
+                KnowledgeRecord(
+                    f"crm-product:{code or name}",
+                    page_id,
+                    aliases,
+                    f"{name} | Mã sản phẩm: {code or 'chưa có'} | "
+                    f"Đơn vị: {item.get('unit') or 'chưa cập nhật'}",
                     "APPROVED",
-                )))
-        records.sort(key=lambda item: (-item[0], item[1].record_id))
-        return [record for _, record in records[:limit]]
+                    intent="product_inquiry",
+                    category=str(item.get("category") or "product"),
+                    source_locator="MISA_AMIS:Products",
+                )
+            )
+        return self._ranker.rank(
+            records,
+            query,
+            limit=limit,
+            record_prefix=record_prefix or "crm-product:",
+            categories=categories,
+        )
 
 
 class RedisCrmDealerStore:
@@ -817,15 +874,55 @@ class CompositeKnowledgeStore:
         intents: tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[KnowledgeRecord]:
-        matches: list[KnowledgeRecord] = []
+        result = self.search_with_confidence(
+            page_id,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            intents=intents,
+            categories=categories,
+        )
+        return list(result.records) if result.status == "CONFIDENT" else []
+
+    def search_with_confidence(
+        self,
+        page_id: PageCode,
+        query: str,
+        limit: int = 5,
+        record_prefix: str | tuple[str, ...] | None = None,
+        intents: tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
+        ambiguous: KnowledgeSearchResult | None = None
         for store in self.stores:
-            matches.extend(
-                store.search(
-                    page_id, query, limit, record_prefix,
-                    intents=intents, categories=categories,
+            confidence_search = getattr(store, "search_with_confidence", None)
+            if callable(confidence_search):
+                result = confidence_search(
+                    page_id,
+                    query,
+                    limit=limit,
+                    record_prefix=record_prefix,
+                    intents=intents,
+                    categories=categories,
                 )
-            )
-        return matches[:limit]
+            else:
+                records = store.search(
+                    page_id,
+                    query,
+                    limit,
+                    record_prefix,
+                    intents=intents,
+                    categories=categories,
+                )
+                result = KnowledgeSearchResult(
+                    "CONFIDENT" if records else "NO_MATCH",
+                    tuple(records[:limit]),
+                )
+            if result.status == "CONFIDENT":
+                return result
+            if result.status == "AMBIGUOUS" and ambiguous is None:
+                ambiguous = result
+        return ambiguous or KnowledgeSearchResult("NO_MATCH")
 
     def resolve_dealers(
         self,

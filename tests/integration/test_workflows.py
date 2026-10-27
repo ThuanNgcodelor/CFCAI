@@ -68,7 +68,7 @@ def test_workflow_price_inquiry_without_phone():
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
     # Zero-price compliance
-    assert "Dạ giá 1 bao phân" in reply or "bạn kinh doanh sẽ báo giá" in reply
+    assert "bộ phận kinh doanh" in reply
     assert "số điện thoại" in reply
     assert "nha 🌾" in reply
 
@@ -86,7 +86,7 @@ def test_workflow_price_inquiry_with_phone():
     assert "liên hệ trực tiếp" in reply or "báo giá chi tiết" in reply
 
 
-def test_workflow_product_cobanic_fallback_template():
+def test_workflow_product_cobanic_ambiguous_name_requests_disambiguation():
     outbox = InMemoryOutboxStore()
     normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
     analyzer = HybridInputAnalyzer(
@@ -106,9 +106,9 @@ def test_workflow_product_cobanic_fallback_template():
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
-    assert "Cobanic" in reply
-    assert "điểm bán" in reply or "tỉnh/huyện" in reply
-    assert "số điện thoại" in reply
+    assert "nhiều sản phẩm" in reply
+    assert "mã/công thức" in reply
+    assert "tỉnh/huyện" not in reply
 
 
 def test_workflow_product_with_llm_generator():
@@ -133,22 +133,28 @@ def test_workflow_product_with_llm_generator():
         MockIntentClient(IntentType.PRODUCT_INQUIRY, {"detected_skus": ["Cobanic 21"]}),
         normalizer,
     )
-    store = CompositeKnowledgeStore(
-        PostgresKnowledgeStore(),
-        RedisCrmProductStore(),
-        RedisCrmDealerStore(),
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord(
+                "product:cobanic-21",
+                PageCode.CFC,
+                "Hữu cơ Cobanic 21",
+                "Hữu cơ Cobanic 21, bao 25kg",
+                "APPROVED",
+            )
+        ]
     )
     pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store, composer=composer)
     event = _make_event(
-        "có phân bón Cabonic 21 ko",
+        "có phân bón Hữu cơ Cobanic 21 không",
         referral={"ad_title": "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"},
     )
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
     assert "Cobanic" in reply
-    assert "Trichoderma" in reply
-    assert "mít" in reply.lower()
+    assert "Trichoderma" not in reply
+    assert "tỉnh/huyện" in reply
     assert gen.last_payload["bai_quang_cao"] == "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"
 
 
@@ -579,6 +585,81 @@ def test_product_inquiry_marker_recognition():
     result = analyzer.analyze(PageCode.CFC, "Có phân bón npk ko", {"current_intent": "DEALER_LOOKUP"})
     assert result.primary_intent == IntentType.PRODUCT_INQUIRY
     assert result.intent_transition == IntentTransition.SWITCH
+
+
+def test_crm_product_search_requires_confidence_and_never_picks_first_npk() -> None:
+    import json
+
+    class FakeRedis:
+        def get(self, key):
+            if key != "cfc:products:catalog":
+                return None
+            return json.dumps(
+                [
+                    {"code": "NPK-A", "name": "Phân NPK 4-4-0", "unit": "bao"},
+                    {"code": "NPK-B", "name": "Phân NPK 15-15-15", "unit": "bao"},
+                    {"code": "CB44", "name": "NPK Cò Bay 16-16-8", "unit": "bao"},
+                ]
+            )
+
+    store = RedisCrmProductStore()
+    store._redis = FakeRedis()
+
+    broad = store.search_with_confidence(
+        PageCode.CFC,
+        "NPK",
+        limit=3,
+        record_prefix=("product:", "crm-product:"),
+    )
+    assert broad.status == "AMBIGUOUS"
+    assert store.search(
+        PageCode.CFC,
+        "NPK",
+        limit=3,
+        record_prefix=("product:", "crm-product:"),
+    ) == []
+
+    exact = store.search_with_confidence(
+        PageCode.CFC,
+        "CB44",
+        limit=2,
+        record_prefix=("product:", "crm-product:"),
+    )
+    assert exact.status == "CONFIDENT"
+    assert exact.records[0].record_id == "crm-product:CB44"
+
+
+def test_product_ambiguity_asks_for_disambiguation_without_listing_catalog() -> None:
+    class AmbiguousStore:
+        def search_with_confidence(self, *args, **kwargs):
+            from src.chatbot.modules.knowledge.retriever import KnowledgeSearchResult
+
+            return KnowledgeSearchResult(
+                "AMBIGUOUS",
+                (
+                    KnowledgeRecord("product:a", PageCode.CFC, "NPK A", "A", "APPROVED"),
+                    KnowledgeRecord("product:b", PageCode.CFC, "NPK B", "B", "APPROVED"),
+                ),
+                strategy="product",
+            )
+
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.PRODUCT_INQUIRY), normalizer
+    )
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=analyzer,
+        knowledge_store=AmbiguousStore(),
+    )
+
+    outbox_id = pipeline.process(_make_event("Có NPK không?"))
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "nhiều sản phẩm" in reply
+    assert "mã/công thức" in reply
+    assert "NPK A" not in reply and "NPK B" not in reply
 
 
 def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():

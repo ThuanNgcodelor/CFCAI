@@ -51,8 +51,7 @@ def calculate_contact_deadline(
             if rem > 0:
                 target += datetime.timedelta(minutes=(30 - rem))
             target = target.replace(second=0, microsecond=0)
-            if target > day_close:
-                target = day_close
+            target = min(target, day_close)
             return target, format_deadline_text(target, now)
 
         remaining_minutes -= available_minutes

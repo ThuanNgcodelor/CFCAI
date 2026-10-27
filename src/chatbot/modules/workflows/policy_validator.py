@@ -88,6 +88,31 @@ class OutputPolicyValidator:
         re.compile(r"\b(?:ba con|kinh chao ba con)\b", re.IGNORECASE),
         # Prohibit addressing customer as 'cô/bác', 'chị/em', 'chị/chú'
         re.compile(r"\b(?:chi/em|chi/chu|co/bac|anh/chi oi)\b", re.IGNORECASE),
+        re.compile(r"\bban kinh doanh\b", re.IGNORECASE),
+    )
+
+    _CUSTOMER_BAN_PATTERN = re.compile(r"(?<![\wÀ-ỹ])bạn(?![\wÀ-ỹ])", re.IGNORECASE)
+
+    _HANDOFF_CLAIM_PATTERNS = (
+        re.compile(r"\b(?:em|ben em) da (?:chuyen|tao)\b"),
+        re.compile(r"\bda tao yeu cau\b"),
+        re.compile(
+            r"\b(?:nhan vien|bo phan|chuyen vien)\b.{0,60}"
+            r"\bse (?:lien he|goi|tiep nhan)\b"
+        ),
+    )
+
+    _NEAREST_CLAIM_PATTERNS = (
+        re.compile(r"\b(?:day|do) la\b.{0,60}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
+        re.compile(r"\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b\s+(?:la|o|tai)\b"),
+        re.compile(r"\btim duoc\b.{0,60}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
+        re.compile(r"\b(?:bao|gioi thieu)\b.{0,30}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
+    )
+
+    _FORMULA_PATTERN = re.compile(
+        r"(?<!\d)(\d{1,2}(?:[.,]\d+)?\s*-\s*\d{1,2}(?:[.,]\d+)?\s*-\s*"
+        r"\d{1,2}(?:[.,]\d+)?(?:\s*\+\s*[A-Za-zÀ-ỹ0-9.,%\-]+)*)",
+        re.IGNORECASE,
     )
 
     _DEADLINE_TOKENS = frozenset(
@@ -170,12 +195,159 @@ class OutputPolicyValidator:
     @classmethod
     def check_persona(cls, text: str) -> str | None:
         """Return failure reason if forbidden persona markers are used."""
+        if match := cls._CUSTOMER_BAN_PATTERN.search(text):
+            return f"FORBIDDEN_PERSONA: {match.group(0)}"
         folded = cls._fold_text(text)
         for pattern in cls._FORBIDDEN_PERSONA_PATTERNS:
             match = pattern.search(folded)
             if match:
                 return f"FORBIDDEN_PERSONA: {match.group(0)}"
         return None
+
+    @classmethod
+    def check_handoff_claim(
+        cls,
+        text: str,
+        workflow: WorkflowType,
+        handoff_created: bool,
+    ) -> str | None:
+        if handoff_created or workflow not in {
+            WorkflowType.PRICE_HANDOFF,
+            WorkflowType.HUMAN_REQUEST,
+        }:
+            return None
+        folded = cls._fold_text(text)
+        if any(pattern.search(folded) for pattern in cls._HANDOFF_CLAIM_PATTERNS):
+            return "FALSE_HANDOFF_CONFIRMATION"
+        return None
+
+    @classmethod
+    def check_nearest_groundedness(
+        cls,
+        text: str,
+        workflow: WorkflowType,
+        slots: dict[str, Any],
+    ) -> str | None:
+        folded = cls._fold_text(text)
+        if not any(pattern.search(folded) for pattern in cls._NEAREST_CLAIM_PATTERNS):
+            return None
+        if slots.get("dealer_match_scope") != "GPS_DISTANCE":
+            return "UNVERIFIED_NEAREST_DEALER_CLAIM"
+        return None
+
+    @classmethod
+    def check_named_entity_groundedness(
+        cls,
+        text: str,
+        workflow: WorkflowType,
+        slots: dict[str, Any],
+        grounding_texts: list[str],
+    ) -> str | None:
+        """Reject novel capitalized catalog entities introduced by generation.
+
+        This is deliberately domain-agnostic: product names/codes must occur in
+        retrieved evidence or customer-provided slots. It catches invented brand
+        and ingredient names without maintaining a hardcoded product blacklist.
+        """
+        if workflow not in {
+            WorkflowType.PRODUCT_INQUIRY,
+            WorkflowType.AGRICULTURE_ADVICE,
+        }:
+            return None
+        evidence = " ".join([*grounding_texts, *(str(value) for value in slots.values())])
+        folded_evidence = cls._fold_text(evidence)
+        generic_terms = {
+            "dạ",
+            "anh",
+            "chị",
+            "cò",
+            "bay",
+            "zeo",
+            "npk",
+            "sđt",
+        }
+        for match in re.finditer(r"(?<![\wÀ-ỹ])([A-ZĐ][\wÀ-ỹ]{2,})(?![\wÀ-ỹ])", text):
+            token = match.group(1)
+            if token.casefold() in generic_terms:
+                continue
+            prefix = text[: match.start()].rstrip()
+            if not prefix or prefix[-1:] in ".!?\n":
+                continue
+            folded_token = cls._fold_text(token)
+            if not re.search(
+                rf"(?<![a-z0-9]){re.escape(folded_token)}(?![a-z0-9])",
+                folded_evidence,
+            ):
+                return f"UNGROUNDED_NAMED_ENTITY: {token}"
+        return None
+
+    @classmethod
+    def check_formula_groundedness(
+        cls,
+        text: str,
+        workflow: WorkflowType,
+        slots: dict[str, Any],
+        grounding_texts: list[str],
+    ) -> str | None:
+        if workflow not in {
+            WorkflowType.PRODUCT_INQUIRY,
+            WorkflowType.AGRICULTURE_ADVICE,
+        }:
+            return None
+        formulas = cls._FORMULA_PATTERN.findall(text)
+        if not formulas:
+            return None
+        evidence = " ".join([*grounding_texts, *(str(value) for value in slots.values())])
+        folded_evidence = re.sub(r"\s+", "", cls._fold_text(evidence))
+        for formula in formulas:
+            folded_formula = re.sub(r"\s+", "", cls._fold_text(formula))
+            if folded_formula not in folded_evidence:
+                return f"UNGROUNDED_PRODUCT_FORMULA: {formula}"
+        return None
+
+    @classmethod
+    def _default_fallback(
+        cls,
+        workflow: WorkflowType,
+        *,
+        handoff_created: bool,
+    ) -> str:
+        if workflow == WorkflowType.PRICE_HANDOFF:
+            if handoff_created:
+                return (
+                    "Dạ bên em không báo giá cụ thể khi chưa xác nhận khu vực và số lượng. "
+                    "Em đã tạo yêu cầu báo giá; anh/chị có thể bổ sung số điện thoại nếu cần liên hệ trực tiếp ạ."
+                )
+            return (
+                "Dạ bên em chưa thể xác nhận giá cụ thể trên chat. Anh/chị vui lòng cung cấp "
+                "khu vực, số lượng hoặc liên hệ bộ phận kinh doanh để được báo giá chính xác ạ."
+            )
+        if workflow == WorkflowType.HUMAN_REQUEST:
+            if handoff_created:
+                return "Dạ em đã tạo yêu cầu hỗ trợ. Anh/chị vui lòng chờ nhân viên phụ trách tiếp nhận ạ."
+            return (
+                "Dạ hiện em chưa xác nhận được yêu cầu chuyển nhân viên. "
+                "Anh/chị vui lòng thử lại hoặc liên hệ hotline hỗ trợ ạ."
+            )
+        if workflow == WorkflowType.DEALER_LOOKUP:
+            return (
+                "Dạ em chưa đủ căn cứ để xác nhận điểm bán phù hợp. "
+                "Anh/chị vui lòng cung cấp tỉnh/huyện/xã để em kiểm tra lại ạ."
+            )
+        if workflow == WorkflowType.PRODUCT_INQUIRY:
+            return (
+                "Dạ em chưa đủ căn cứ để xác định đúng sản phẩm. Anh/chị vui lòng gửi "
+                "tên đầy đủ, mã/công thức trên bao bì hoặc nhu cầu sử dụng ạ."
+            )
+        if workflow == WorkflowType.AGRICULTURE_ADVICE:
+            return (
+                "Dạ em chưa đủ dữ liệu đã duyệt để tư vấn chính xác. "
+                "Anh/chị vui lòng cho em biết loại cây, giai đoạn và tình trạng hiện tại ạ."
+            )
+        return (
+            "Dạ em chưa đủ căn cứ để trả lời chính xác. "
+            "Anh/chị vui lòng cung cấp thêm thông tin hoặc yêu cầu nhân viên hỗ trợ ạ."
+        )
 
     @classmethod
     def sanitize(cls, text: str, deadline_text: str = "sớm nhất") -> str:
@@ -219,6 +391,8 @@ class OutputPolicyValidator:
         allowed_phones: set[str] | None = None,
         deadline_text: str = "sớm nhất",
         fallback: str | None = None,
+        handoff_created: bool = False,
+        grounding_texts: list[str] | None = None,
     ) -> PolicyValidationResult:
         """Validate candidate response against all output policy constraints.
 
@@ -227,50 +401,67 @@ class OutputPolicyValidator:
         """
         slots = slots or {}
         allowed = set(allowed_phones or ())
-        reasons: list[str] = []
+        evidence = list(grounding_texts or ())
 
-        placeholder_err = cls.check_placeholders(text)
-        if placeholder_err:
-            reasons.append(placeholder_err)
-
-        sanitized = cls.sanitize(text, deadline_text)
-        if not sanitized:
-            reasons.append("EMPTY_RESPONSE_AFTER_SANITIZATION")
-        elif re.search(
-            r"\b(?:moc_hen_lien_he|thoi_gian|deadline_text|contact_deadline)\b",
-            sanitized,
-            flags=re.IGNORECASE,
-        ):
-            reasons.append("RAW_TEMPLATE_VARIABLE_NAME")
-
-        price_err = cls.check_price(sanitized)
-        if price_err:
-            reasons.append(price_err)
-
-        jargon_err = cls.check_internal_jargon(sanitized)
-        if jargon_err:
-            reasons.append(jargon_err)
-
-        phone_err = cls.check_phone_groundedness(sanitized, slots, allowed)
-        if phone_err:
-            reasons.append(phone_err)
-
-        persona_err = cls.check_persona(sanitized)
-        if persona_err:
-            reasons.append(persona_err)
-
-        if reasons:
-            safe_text = cls.sanitize(fallback or sanitized, deadline_text)
-            # Re-ensure fallback itself never has price or jargon
-            if cls.check_price(safe_text):
-                safe_text = (
-                    "Dạ giá sản phẩm tùy thuộc vào khu vực và số lượng lấy nên bên em không báo số cụ thể trên chat được ạ. "
-                    "Bạn kinh doanh khu vực sẽ liên hệ báo giá chính xác và tốt nhất cho mình nha anh/chị 🌾"
-                )
-            return PolicyValidationResult(
-                is_valid=False,
-                text=safe_text,
-                reasons=tuple(reasons),
+        def inspect(candidate: str) -> tuple[str, list[str]]:
+            candidate_reasons: list[str] = []
+            if placeholder_err := cls.check_placeholders(candidate):
+                candidate_reasons.append(placeholder_err)
+            sanitized_candidate = cls.sanitize(candidate, deadline_text)
+            if not sanitized_candidate:
+                candidate_reasons.append("EMPTY_RESPONSE_AFTER_SANITIZATION")
+            elif re.search(
+                r"\b(?:moc_hen_lien_he|thoi_gian|deadline_text|contact_deadline)\b",
+                sanitized_candidate,
+                flags=re.IGNORECASE,
+            ):
+                candidate_reasons.append("RAW_TEMPLATE_VARIABLE_NAME")
+            checks = (
+                cls.check_price(sanitized_candidate),
+                cls.check_internal_jargon(sanitized_candidate),
+                cls.check_phone_groundedness(sanitized_candidate, slots, allowed),
+                cls.check_persona(sanitized_candidate),
+                cls.check_handoff_claim(
+                    sanitized_candidate, workflow, handoff_created
+                ),
+                cls.check_nearest_groundedness(
+                    sanitized_candidate, workflow, slots
+                ),
+                cls.check_formula_groundedness(
+                    sanitized_candidate, workflow, slots, evidence
+                ),
+                cls.check_named_entity_groundedness(
+                    sanitized_candidate, workflow, slots, evidence
+                ),
             )
+            candidate_reasons.extend(reason for reason in checks if reason)
+            return sanitized_candidate, candidate_reasons
 
-        return PolicyValidationResult(is_valid=True, text=sanitized)
+        sanitized, reasons = inspect(text)
+        if not reasons:
+            return PolicyValidationResult(is_valid=True, text=sanitized)
+
+        if fallback:
+            safe_text, fallback_reasons = inspect(fallback)
+            if not fallback_reasons:
+                return PolicyValidationResult(
+                    is_valid=False,
+                    text=safe_text,
+                    reasons=tuple(reasons),
+                )
+            reasons.append("UNSAFE_FALLBACK_REJECTED")
+
+        safe_text = cls._default_fallback(
+            workflow,
+            handoff_created=handoff_created,
+        )
+        safe_text, final_reasons = inspect(safe_text)
+        if final_reasons:
+            # Last-resort text intentionally contains no dynamic facts, claims,
+            # contacts, prices or workflow-specific terminology.
+            safe_text = "Dạ em chưa đủ căn cứ để trả lời chính xác. Anh/chị vui lòng cung cấp thêm thông tin ạ."
+        return PolicyValidationResult(
+            is_valid=False,
+            text=safe_text,
+            reasons=tuple(reasons),
+        )

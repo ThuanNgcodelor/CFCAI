@@ -149,6 +149,20 @@
     "admin_area_id",
     "admin_level"
   ],
+  "transition_slot_transfer": {
+    "PRODUCT_INQUIRY->PRICE_INQUIRY": [
+      "product",
+      "product_mentions",
+      "detected_skus",
+      "detected_formulas"
+    ],
+    "PRODUCT_INQUIRY->PRICE_INQUIRY_DETAIL": [
+      "product",
+      "product_mentions",
+      "detected_skus",
+      "detected_formulas"
+    ]
+  },
   "knowledge_filters": {
     "AGRICULTURE_ADVICE": {
       "categories": ["agronomy", "soil_weather", "support"],

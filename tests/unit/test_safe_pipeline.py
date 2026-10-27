@@ -40,7 +40,9 @@ def test_pipeline_handles_price_inquiry_without_hallucinating_price() -> None:
     # Must never hallucinate exact price
     assert not re.search(r"\b\d+[\s.]*(?:đ|k|đồng|vnd)\b", msg_text, re.IGNORECASE)
     # Must politely explain and request customer contact info
-    assert "bạn kinh doanh sẽ báo giá" in msg_text or "giá 1 bao" in msg_text
+    assert "bộ phận kinh doanh" in msg_text
+    assert "số điện thoại" in msg_text
+    assert "bạn" not in msg_text.casefold()
 
 
 def test_pipeline_handles_human_request() -> None:
@@ -144,4 +146,3 @@ def test_pipeline_outbox_envelope_side_effects() -> None:
     assert envelope.batch_version == 102
     assert envelope.expected_conversation_version == 5
     assert envelope.expected_ownership.value == "AI"
-

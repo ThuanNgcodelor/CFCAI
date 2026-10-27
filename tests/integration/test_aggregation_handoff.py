@@ -3,13 +3,17 @@ from datetime import UTC, datetime, timedelta
 
 import psycopg2
 
-from src.chatbot.infrastructure.messaging.outbox import PostgresOutboxStore
+from src.chatbot.infrastructure.messaging.outbox import (
+    InMemoryOutboxStore,
+    PostgresOutboxStore,
+)
 from src.chatbot.modules.aggregation.service import MessageAggregator
 from src.chatbot.modules.conversations.repository import PostgresConversationRepository
 from src.chatbot.modules.conversations.state_machine import (
     ConversationStateStore,
     final_send_allowed,
 )
+from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.shared.enums import IntentType, Ownership, PageCode, WorkflowType
 from src.chatbot.shared.events import InboxEvent, NormalizedMessage, OutboxMessageSchema
 
@@ -212,3 +216,50 @@ def test_postgres_context_slots_merge_and_are_page_scoped(
         "district": "Rạch Giá",
     }
     assert context["recent_customer_messages"][-1]["text"] == "Tìm đại lý"
+
+
+def test_price_workflow_creates_one_durable_handoff_task(
+    isolated_database_url: str,
+) -> None:
+    repository = PostgresConversationRepository(isolated_database_url)
+    sender_id = f"psid-{uuid.uuid4().hex}"
+    event = InboxEvent(
+        event_id=f"event-{uuid.uuid4().hex}",
+        page_id=PageCode.CFC,
+        sender_id=sender_id,
+        message=NormalizedMessage(
+            mid=f"mid-{uuid.uuid4().hex}",
+            sender_id=sender_id,
+            recipient_id="configured-page",
+            timestamp=datetime.now(UTC),
+            text="Xin báo giá một tấn",
+        ),
+    )
+    scheduled = repository.ingest(event, debounce_seconds=1, max_batch_seconds=5)
+    assert scheduled is not None
+    conversation_id, batch_version, _ = scheduled
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(
+        outbox,
+        conversation_repository=repository,
+    )
+
+    first_id = pipeline.process(event, batch_version=batch_version)
+    second_id = pipeline.process(event, batch_version=batch_version)
+    assert first_id is not None and second_id is not None
+    assert "đã tạo yêu cầu báo giá" in outbox.messages[first_id].text.casefold()
+
+    with psycopg2.connect(isolated_database_url) as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """SELECT page_id,workflow,reason,status,count(*) OVER ()
+            FROM handoff_tasks WHERE conversation_id=%s""",
+            (conversation_id,),
+        )
+        row = cursor.fetchone()
+    assert row == (
+        PageCode.CFC.value,
+        WorkflowType.PRICE_HANDOFF.value,
+        IntentType.PRICE_INQUIRY.value,
+        "PENDING",
+        1,
+    )

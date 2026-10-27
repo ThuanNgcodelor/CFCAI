@@ -150,6 +150,8 @@ class ResponseComposer:
         page_id: PageCode = PageCode.CFC,
         workflow: WorkflowType = WorkflowType.FAQ_ANSWER,
         allowed_phones: set[str] | None = None,
+        handoff_created: bool = False,
+        grounding_texts: list[str] | None = None,
     ) -> str:
         """Accept model prose only when it is grounded in the supplied slots and passes policy."""
         result = OutputPolicyValidator.validate(
@@ -160,6 +162,8 @@ class ResponseComposer:
             allowed_phones=allowed_phones,
             deadline_text=deadline_text,
             fallback=fallback,
+            handoff_created=handoff_created,
+            grounding_texts=grounding_texts,
         )
         return result.text
 
@@ -204,7 +208,7 @@ class ResponseComposer:
             if re.search(pattern, text, re.IGNORECASE):
                 return (
                     "Dạ giá sản phẩm tùy thuộc vào khu vực và số lượng lấy nên bên em không báo số cụ thể trên chat được ạ. "
-                    "Bạn kinh doanh khu vực sẽ liên hệ báo giá chính xác và tốt nhất cho mình nha anh/chị 🌾"
+                    "Anh/chị vui lòng để lại thông tin liên hệ hoặc liên hệ bộ phận kinh doanh để nhận báo giá chính xác ạ."
                 )
         return text
 
@@ -216,20 +220,34 @@ class ResponseComposer:
         ad_title: str | None = None,
         customer_text: str = "",
         customer_key: str = "",
+        handoff_created: bool = False,
     ) -> str:
         slots = slots or {}
         phone = slots.get("phone")
 
-        if phone:
+        if phone and handoff_created:
+            fallback = (
+                f"Dạ em đã ghi nhận số điện thoại {phone} của mình và đã tạo yêu cầu báo giá ạ. "
+                f"Nhân viên kinh doanh sẽ tiếp nhận để báo giá chi tiết {deadline_text}; "
+                "anh/chị chưa đặt hàng ở bước này nha 🌾"
+            )
+        elif phone:
             fallback = (
                 f"Dạ em đã ghi nhận số điện thoại {phone} của mình ạ. "
-                f"Bạn kinh doanh sẽ liên hệ {deadline_text} để báo giá chi tiết và tư vấn; "
-                "anh/chị chưa đặt hàng ở bước này nha 🌾"
+                "Hiện em chưa xác nhận được yêu cầu chuyển người phụ trách; anh/chị có thể "
+                "liên hệ trực tiếp bộ phận kinh doanh để nhận báo giá chính xác nha 🌾"
+            )
+        elif handoff_created:
+            fallback = (
+                "Dạ giá sản phẩm tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ. "
+                "Em đã tạo yêu cầu báo giá cho bộ phận kinh doanh; anh/chị có thể để lại số điện thoại "
+                "nếu muốn được liên hệ trực tiếp nha 🌾"
             )
         else:
             fallback = (
-                "Dạ giá 1 bao phân tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ; "
-                "bạn kinh doanh sẽ báo giá chính xác. Anh/chị có thể để lại số điện thoại để được liên hệ nha 🌾"
+                "Dạ giá sản phẩm tùy khu vực và số lượng nên bên em không báo số cụ thể trên chat ạ. "
+                "Anh/chị có thể để lại số điện thoại hoặc liên hệ trực tiếp bộ phận kinh doanh "
+                "để nhận báo giá chính xác nha 🌾"
             )
 
         response = fallback
@@ -256,6 +274,9 @@ class ResponseComposer:
                     slots=price_slots,
                     fallback=fallback,
                     deadline_text=deadline_text,
+                    page_id=page_id,
+                    workflow=WorkflowType.PRICE_HANDOFF,
+                    handoff_created=handoff_created,
                 )
 
         response = self._append_support_contact(
@@ -281,18 +302,26 @@ class ResponseComposer:
         ad_title: str | None = None,
         deadline_text: str = "sớm nhất",
         customer_text: str = "",
+        ambiguous: bool = False,
     ) -> str:
         slots = slots or {}
         brand = self._brand_name(page_id)
         product_title = getattr(product_record, "title", "") if product_record else ""
         product_content = getattr(product_record, "content", "") if product_record else ""
+        display_title = str(product_title).split("|", 1)[0].strip()
 
         if product_record:
             fallback = (
                 f"Dạ {brand} có sản phẩm này ạ:\n"
-                f"🌱 {product_title}\n"
+                f"🌱 {display_title}\n"
                 f"Anh/chị cho em xin tỉnh/huyện nhận hàng để em kiểm tra điểm bán phù hợp {deadline_text} nha! "
                 "Sau khi chốt khu vực, mình có thể để lại số điện thoại nếu cần nhân viên liên hệ."
+            )
+        elif ambiguous:
+            fallback = (
+                f"Dạ danh mục {brand} có nhiều sản phẩm cùng khớp với thông tin anh/chị gửi. "
+                "Anh/chị cho em xin tên đầy đủ, mã/công thức trên bao bì hoặc nhu cầu sử dụng "
+                "để em xác định đúng sản phẩm ạ."
             )
         else:
             fallback = (
@@ -323,6 +352,9 @@ class ResponseComposer:
                     slots=product_slots,
                     fallback=fallback,
                     deadline_text=deadline_text,
+                    page_id=page_id,
+                    workflow=WorkflowType.PRODUCT_INQUIRY,
+                    grounding_texts=[str(product_title), str(product_content)],
                 )
 
         return self.validate_no_price(fallback, deadline_text)
@@ -403,6 +435,12 @@ class ResponseComposer:
                     slots=advice_slots,
                     fallback=fallback,
                     deadline_text=deadline_text,
+                    page_id=page_id,
+                    workflow=WorkflowType.AGRICULTURE_ADVICE,
+                    grounding_texts=[
+                        str(getattr(advice_record, "title", "") or ""),
+                        str(getattr(advice_record, "content", "") or ""),
+                    ],
                 )
 
         response = self._append_support_contact(
@@ -539,10 +577,20 @@ class ResponseComposer:
             "hay hỗ trợ nội dung nào để em chuyển đúng người phụ trách ạ?"
         )
 
-    def compose_human_handoff_response(self, page_id: PageCode) -> str:
+    def compose_human_handoff_response(
+        self,
+        page_id: PageCode,
+        *,
+        handoff_created: bool = False,
+    ) -> str:
+        if handoff_created:
+            return (
+                "Dạ em đã tạo yêu cầu hỗ trợ cho nhân viên phụ trách fanpage rồi ạ. "
+                "Anh/chị vui lòng chờ yêu cầu được tiếp nhận nhé!"
+            )
         return (
-            "Dạ em đã chuyển tin nhắn của anh/chị đến nhân viên phụ trách fanpage rồi ạ. "
-            "Bạn sẽ vào hỗ trợ mình ngay nhé! Cảm ơn anh/chị đã kiên nhẫn ạ 😊"
+            "Dạ anh/chị đang cần gặp nhân viên phụ trách. Hiện em chưa xác nhận được "
+            "yêu cầu chuyển người; anh/chị vui lòng thử lại hoặc liên hệ hotline hỗ trợ ạ."
         )
 
     def compose_career_response(self) -> str:

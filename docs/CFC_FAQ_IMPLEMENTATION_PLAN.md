@@ -408,6 +408,9 @@ pytest tests/integration/test_knowledge_retrieval.py
 
 ### Phase F3 — Intent, slot và hội thoại nhiều lượt
 
+**Trạng thái 27/10/2026: PASS** — 24/24 test gate, gồm live Qwen, state,
+handoff và follow-up theo ngữ cảnh.
+
 **Mục tiêu:** Câu hỏi phải đi đúng workflow trước khi retrieval được đánh giá.
 
 **Công việc**
@@ -421,7 +424,7 @@ pytest tests/integration/test_knowledge_retrieval.py
 - Follow-up ngắn phải dùng state đúng cách:
   - `thới lai` tiếp tục dealer lookup;
   - `30 tấn` bổ sung quantity cho price workflow;
-  - `rải mít` chuyển sang/tạo nhánh tư vấn cây mít thay vì bị khóa vĩnh viễn ở giá.
+  - `rải mít` trong ngữ cảnh giá được giữ là chi tiết của yêu cầu giá; chỉ chuyển sang tư vấn nông học khi khách hỏi rõ cách/liều/thời điểm bón. Ngoài ngữ cảnh giá, hành động bón vẫn mở nhánh tư vấn cây trồng.
 - Restart worker không làm mất state; test độc lập phải reset conversation rõ ràng.
 
 **Gate PASS**
@@ -445,6 +448,9 @@ pytest tests/integration/test_aggregation_handoff.py
 ---
 
 ### Phase F4 — Retrieval theo miền dữ liệu
+
+**Trạng thái 27/10/2026: PASS** — 132/132 test gate; câu mẫu nguồn
+Top-1 119/119, ambiguity không được chọn làm đáp án.
 
 **Mục tiêu:** Tìm đúng record sau khi đã biết intent; không dùng một bảng xếp hạng
 chung cho mọi loại dữ liệu.
@@ -481,6 +487,9 @@ pytest tests/integration/test_knowledge_retrieval.py
 ---
 
 ### Phase F5 — Workflow và response policy
+
+**Trạng thái 27/10/2026: PASS** — 51/51 test gate; handoff có task bền vững,
+validator fail-closed và không trả lại fallback vi phạm policy.
 
 **Mục tiêu:** Record đúng phải tạo ra hành vi đúng và câu trả lời phù hợp khách
 hàng.
@@ -628,10 +637,10 @@ Hạng mục FAQ chỉ hoàn thành khi đồng thời đạt tất cả điều
 - [ ] Nguồn active không thiếu đáp án, không sai persona, không có claim chưa duyệt.
 - [ ] Import/publish/rollback idempotent, có provenance.
 - [ ] Câu mẫu nguồn retrieval Top-1 100%.
-- [ ] Intent/slot đạt ngưỡng F3 và bốn transcript cũ pass.
-- [ ] Mỗi answer mode chạy đúng workflow, không hardcode câu hỏi.
-- [ ] Zero price hallucination và zero CFC/ZEO leakage.
-- [ ] Zero placeholder, internal term, fake confirmation và unsupported promise.
+- [x] Intent/slot đạt ngưỡng F3 và T01–T12 pass.
+- [x] Mỗi answer mode thuộc F3–F5 chạy đúng workflow, không hardcode câu hỏi.
+- [x] Zero price hallucination và zero CFC/ZEO leakage trong automated regression.
+- [x] Zero placeholder, internal term, fake confirmation và unsupported promise trong automated regression.
 - [ ] Full regression, takeover, duplicate và restart tests pass.
 - [ ] Shadow/canary, rollback và kill switch được nghiệm thu.
 - [ ] Chuyên gia ký duyệt các nội dung nông học trước khi mở cho khách thật.

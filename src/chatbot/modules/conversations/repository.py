@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -317,6 +318,70 @@ class PostgresConversationRepository:
             )
             row = cursor.fetchone()
             return dict(row[0]) if row else {}
+
+    def create_handoff_task(
+        self,
+        page_id: PageCode,
+        conversation_id: str,
+        *,
+        batch_version: int,
+        workflow: WorkflowType,
+        reason: str,
+        slots: dict[str, Any],
+    ) -> str | None:
+        """Create one idempotent handoff task for the current AI batch.
+
+        The page, ownership and batch predicates prevent a stale worker from
+        creating a task after a human takeover or a newer customer message.
+        Returning an existing task ID is still success: the durable side effect
+        was already committed for this workflow batch.
+        """
+        if not reason.strip():
+            raise ValueError("handoff reason is required")
+        task_material = (
+            f"{page_id.value}\0{conversation_id}\0{batch_version}\0{workflow.value}"
+        )
+        task_id = f"handoff-{hashlib.sha256(task_material.encode('utf-8')).hexdigest()[:24]}"
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """INSERT INTO handoff_tasks(
+                    task_id,page_id,conversation_id,batch_version,workflow,reason,slots
+                )
+                SELECT %s,%s,%s,%s,%s,%s,%s::jsonb
+                FROM conversations
+                WHERE conversation_id=%s AND page_id=%s
+                  AND ownership='AI' AND batch_version=%s
+                ON CONFLICT(conversation_id,batch_version,workflow) DO NOTHING
+                RETURNING task_id""",
+                (
+                    task_id,
+                    page_id.value,
+                    conversation_id,
+                    batch_version,
+                    workflow.value,
+                    reason,
+                    json.dumps(slots, ensure_ascii=False),
+                    conversation_id,
+                    page_id.value,
+                    batch_version,
+                ),
+            )
+            inserted = cursor.fetchone()
+            if inserted:
+                return str(inserted[0])
+            cursor.execute(
+                """SELECT task_id FROM handoff_tasks
+                WHERE conversation_id=%s AND page_id=%s
+                  AND batch_version=%s AND workflow=%s""",
+                (
+                    conversation_id,
+                    page_id.value,
+                    batch_version,
+                    workflow.value,
+                ),
+            )
+            existing = cursor.fetchone()
+            return str(existing[0]) if existing else None
 
     def load_understanding_context(
         self,

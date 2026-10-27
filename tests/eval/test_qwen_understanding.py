@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -121,7 +121,7 @@ def test_configured_slot_fixture_meets_f1_gate() -> None:
     assert f1 >= 0.95, failures
 
 
-def test_explicit_agronomy_action_switches_from_open_price_workflow() -> None:
+def test_bare_crop_detail_stays_in_open_price_workflow() -> None:
     analyzer = _analyzer(
         IntentAnalysisResult(primary_intent=IntentType.AGRI_ADVICE, confidence=0.8)
     )
@@ -135,11 +135,29 @@ def test_explicit_agronomy_action_switches_from_open_price_workflow() -> None:
             "message_ids": ["mid-1"],
         },
     )
+    assert result.primary_intent == IntentType.PRICE_INQUIRY_DETAIL
+    assert result.intent_transition == IntentTransition.CONTINUE
+    assert result.extracted_slots["crop"] == "mít"
+    assert result.extracted_slots["product_mentions"] == ["Cobanic 30"]
+    assert result.requires_human_handoff
+
+
+def test_explicit_usage_question_switches_from_open_price_workflow() -> None:
+    analyzer = _analyzer(
+        IntentAnalysisResult(primary_intent=IntentType.AGRI_ADVICE, confidence=0.8)
+    )
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "Rải mít thế nào?",
+        {
+            "current_workflow": "PRICE_HANDOFF",
+            "current_intent": "PRICE_INQUIRY",
+            "current_slots": {"product_mentions": ["Cobanic 30"]},
+        },
+    )
     assert result.primary_intent == IntentType.AGRI_ADVICE
     assert result.intent_transition == IntentTransition.SWITCH
     assert result.extracted_slots["crop"] == "mít"
-    assert "product_mentions" not in result.extracted_slots
-    assert not result.requires_human_handoff
 
 
 def test_location_name_containing_price_word_is_not_a_price_intent() -> None:

@@ -46,6 +46,9 @@ class VietnameseNormalizer:
             "contextual_continuation", {}
         )
         self.cross_workflow_slots = tuple(config.get("cross_workflow_slots", []))
+        self.transition_slot_transfer: dict[str, list[str]] = config.get(
+            "transition_slot_transfer", {}
+        )
         self.location_aliases: dict[str, str] = {}
         fallback_provinces: list[AdministrativeArea] = []
         for entry in config.get("locations", []):
@@ -206,6 +209,12 @@ class VietnameseNormalizer:
             re.IGNORECASE,
         ):
             crop = re.sub(r"\s+", " ", action_crop_match.group(1)).strip(" -:")
+            crop = re.sub(
+                r"\s+(?:như\s+)?thế\s+nào$|\s+ra\s+sao$|\s+bao\s+nhiêu$",
+                "",
+                crop,
+                flags=re.IGNORECASE,
+            ).strip()
             if crop:
                 slots["crop"] = crop
         stage_match = re.search(
@@ -280,6 +289,16 @@ class HybridInputAnalyzer:
             IntentType.DEALER_LOOKUP.value,
             WorkflowType.DEALER_LOOKUP.value,
         }
+        explicit_advice_requested = self.normalizer.contains(
+            "explicit_advice_markers", normalized
+        ) or bool(
+            re.search(
+                r"\b(?:bón|rải|phun|tưới)\b.{0,40}"
+                r"\b(?:thế nào|ra sao|bao nhiêu|cách nào)\b",
+                normalized,
+                flags=re.IGNORECASE,
+            )
+        )
 
         if self.normalizer.contains("price_markers", marker_text):
             forced_intent = IntentType.PRICE_INQUIRY
@@ -323,9 +342,21 @@ class HybridInputAnalyzer:
         # explicitly asks for usage guidance.
         if (
             forced_intent is None
+            and is_open_price_context
+            and self.normalizer.contains("advice_action_markers", normalized)
+            and not explicit_advice_requested
+        ):
+            forced_intent = IntentType.PRICE_INQUIRY_DETAIL
+            transition = IntentTransition.CONTINUE
+
+        if (
+            forced_intent is None
             and (
-                self.normalizer.contains("explicit_advice_markers", normalized)
-                or self.normalizer.contains("advice_action_markers", normalized)
+                explicit_advice_requested
+                or (
+                    not is_open_price_context
+                    and self.normalizer.contains("advice_action_markers", normalized)
+                )
             )
         ):
             forced_intent = IntentType.AGRI_ADVICE
@@ -347,7 +378,7 @@ class HybridInputAnalyzer:
             elif continuation_intent := self.normalizer.continuation_intent(current_intent):
                 fallback_intent = continuation_intent
                 fallback_trans = IntentTransition.CONTINUE
-            elif is_open_price_context and not self.normalizer.contains("explicit_advice_markers", normalized):
+            elif is_open_price_context and not explicit_advice_requested:
                 fallback_intent = IntentType.PRICE_INQUIRY_DETAIL
                 fallback_trans = IntentTransition.CONTINUE
             else:
@@ -408,10 +439,20 @@ class HybridInputAnalyzer:
         if result.intent_transition != IntentTransition.SWITCH:
             slot_sources.insert(0, context.get("current_slots", {}))
         else:
+            current_value = str(
+                current_intent.value
+                if isinstance(current_intent, IntentType)
+                else current_intent or ""
+            )
+            transition_key = f"{current_value}->{result.primary_intent.value}"
+            transfer_keys = {
+                *self.normalizer.cross_workflow_slots,
+                *self.normalizer.transition_slot_transfer.get(transition_key, []),
+            }
             transferable = {
                 key: value
                 for key, value in context.get("current_slots", {}).items()
-                if key in self.normalizer.cross_workflow_slots
+                if key in transfer_keys
             }
             slot_sources.insert(0, transferable)
         merged_slots = {

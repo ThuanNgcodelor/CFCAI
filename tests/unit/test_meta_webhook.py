@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 
+from src.chatbot.core.settings import settings
 from src.chatbot.infrastructure.messaging.inbox import DurableInboxStore
 from src.chatbot.modules.channels.meta.normalizer import normalize_messenger_payload
 from src.chatbot.modules.channels.meta.signature import verify_meta_signature
@@ -29,7 +30,8 @@ def test_meta_hmac_signature_verification():
     assert verify_meta_signature(payload, "invalid_header", secret) is False
 
 
-def test_meta_payload_normalization():
+def test_meta_payload_normalization(monkeypatch):
+    monkeypatch.setattr(settings, "CFC_PAGE_ID", "1000888999")
     payload = {
         "object": "page",
         "entry": [
@@ -60,7 +62,8 @@ def test_meta_payload_normalization():
     assert evt.page_id == PageCode.CFC
 
 
-def test_durable_inbox_deduplication():
+def test_durable_inbox_deduplication(monkeypatch):
+    monkeypatch.setattr(settings, "CFC_PAGE_ID", "page_cfc")
     # Case T09: Meta retries identical event
     inbox = DurableInboxStore()
 

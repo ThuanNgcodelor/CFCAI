@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import Any
 
 from src.chatbot.infrastructure.messaging.outbox import OutboxStore
@@ -11,6 +12,7 @@ from src.chatbot.modules.knowledge.retriever import (
     ApprovedKnowledgeStore,
     CompositeKnowledgeStore,
     DealerLookupResult,
+    KnowledgeSearchResult,
     PostgresKnowledgeStore,
 )
 from src.chatbot.modules.ops.controls import OpsControlStore
@@ -76,10 +78,39 @@ class SafeMessagePipeline:
         record_prefix: str | tuple[str, ...] | None = None,
         categories: tuple[str, ...] | None = None,
     ) -> list[Any]:
+        result = self._search_knowledge_result(
+            page_id,
+            query,
+            limit=limit,
+            record_prefix=record_prefix,
+            categories=categories,
+        )
+        return list(result.records) if result.status == "CONFIDENT" else []
+
+    def _search_knowledge_result(
+        self,
+        page_id: PageCode,
+        query: str,
+        *,
+        limit: int,
+        record_prefix: str | tuple[str, ...] | None = None,
+        categories: tuple[str, ...] | None = None,
+    ) -> KnowledgeSearchResult:
         if not self.knowledge_store:
-            return []
+            return KnowledgeSearchResult("NO_MATCH")
+        confidence_search = getattr(
+            self.knowledge_store, "search_with_confidence", None
+        )
+        if callable(confidence_search):
+            return confidence_search(
+                page_id,
+                query,
+                limit=limit,
+                record_prefix=record_prefix,
+                categories=categories,
+            )
         try:
-            return self.knowledge_store.search(
+            records = self.knowledge_store.search(
                 page_id,
                 query,
                 limit=limit,
@@ -89,7 +120,11 @@ class SafeMessagePipeline:
         except TypeError:
             # Keep third-party/test stores compatible while the metadata-aware
             # store contract rolls out.
-            return self.knowledge_store.search(page_id, query, limit, record_prefix)
+            records = self.knowledge_store.search(page_id, query, limit, record_prefix)
+        return KnowledgeSearchResult(
+            "CONFIDENT" if records else "NO_MATCH",
+            tuple(records[:limit]),
+        )
 
     def _resolve_dealer_lookup(
         self,
@@ -161,8 +196,6 @@ class SafeMessagePipeline:
 
     @staticmethod
     def classify(text: str | None) -> IntentType:
-        import re
-
         raw = (text or "").lower()
         cleaned = re.sub(r"(?<=[a-zA-Z0-9À-ỹ])[._]+(?=[a-zA-Z0-9À-ỹ])", " ", raw)
         cleaned = re.sub(r"(?<=[a-zA-ZÀ-ỹ])(?=\d)|(?<=\d)(?=[a-zA-ZÀ-ỹ])", " ", cleaned)
@@ -262,8 +295,29 @@ class SafeMessagePipeline:
             )
             effective_conversation_version = state.version
 
+        handoff_created = False
+        if intent in {
+            IntentType.PRICE_INQUIRY,
+            IntentType.PRICE_INQUIRY_DETAIL,
+            IntentType.HUMAN_REQUEST,
+        } and self.conversation_repository and batch_version is not None:
+            create_handoff = getattr(
+                self.conversation_repository, "create_handoff_task", None
+            )
+            if callable(create_handoff):
+                task_id = create_handoff(
+                    event.page_id,
+                    conversation_id,
+                    batch_version=batch_version,
+                    workflow=workflow,
+                    reason=intent.value,
+                    slots=effective_slots,
+                )
+                handoff_created = bool(task_id)
+
         _, deadline_text = calculate_contact_deadline()
         answer = "Mình đã nhận được tin nhắn và sẽ phản hồi sớm."
+        grounding_texts: list[str] = []
 
         # Case: Image inquiry (sent image with little/no text)
         if has_images and not text.strip():
@@ -283,11 +337,15 @@ class SafeMessagePipeline:
                 ad_title=ad_title,
                 customer_text=text,
                 customer_key=event.sender_id,
+                handoff_created=handoff_created,
             )
 
         # Branch 2: Human request
         elif intent == IntentType.HUMAN_REQUEST:
-            answer = self.composer.compose_human_handoff_response(event.page_id)
+            answer = self.composer.compose_human_handoff_response(
+                event.page_id,
+                handoff_created=handoff_created,
+            )
 
         # Branch 2b: deterministic, config-backed contact directory
         elif intent == IntentType.CONTACT_REQUEST:
@@ -308,16 +366,25 @@ class SafeMessagePipeline:
                 elif mentions:
                     search_query = " ".join(mentions)
 
-            matches = []
+            search_result = KnowledgeSearchResult("NO_MATCH", strategy="product")
             if self.knowledge_store:
-                matches = self._search_knowledge(
+                search_result = self._search_knowledge_result(
                     PageCode(event.page_id), search_query, limit=2,
                     record_prefix=("product:", "crm-product:"),
                 )
-            product_record = matches[0] if matches else None
+            product_record = (
+                search_result.records[0]
+                if search_result.status == "CONFIDENT" and search_result.records
+                else None
+            )
+            if product_record:
+                grounding_texts.extend(
+                    [str(product_record.title), str(product_record.content)]
+                )
             answer = self.composer.compose_product_response(
                 event.page_id,
                 product_record=product_record,
+                ambiguous=search_result.status == "AMBIGUOUS",
                 slots=effective_slots,
                 ad_title=ad_title,
                 deadline_text=deadline_text,
@@ -326,6 +393,9 @@ class SafeMessagePipeline:
 
         # Branch 4: Dealer lookup
         elif intent == IntentType.DEALER_LOOKUP:
+            if dealer_lookup:
+                for record in dealer_lookup.records:
+                    grounding_texts.extend([record.title, record.content])
             answer = self.composer.compose_dealer_response(
                 event.page_id,
                 dealers=dealer_lookup.records if dealer_lookup else [],
@@ -357,6 +427,8 @@ class SafeMessagePipeline:
                 PageCode(event.page_id), " ".join(query_parts), limit=1,
                 record_prefix="faq:", categories=categories or None,
             )
+            if matches:
+                grounding_texts.extend([matches[0].title, matches[0].content])
             answer = self.composer.compose_agriculture_response(
                 event.page_id,
                 advice_record=matches[0] if matches else None,
@@ -368,7 +440,6 @@ class SafeMessagePipeline:
 
         # Branch 6: Order Tracking
         elif intent == IntentType.ORDER_TRACKING:
-            import re
             phone = effective_slots.get("phone")
             if not phone and text:
                 phone_match = re.search(r"(?:\+?84|0)(?:[\s.\-]?\d){9,10}(?!\d)", text)
@@ -425,7 +496,17 @@ class SafeMessagePipeline:
                 is_greeting = self.intent_analyzer.normalizer.contains("greeting_markers", lower_text) and len(lower_text.split()) <= 4
             else:
                 is_career = any(w in lower_text for w in ["tuyển dụng", "tuyen dung", "việc làm", "vị trí", "ứng tuyển", "xin việc"])
-                is_homecare = any(w in lower_text for w in ["nước giặt", "rửa chén", "zeo", "oplus", "pano", "bột giặt"])
+                is_homecare = any(
+                    re.search(rf"(?<!\w){re.escape(marker)}(?!\w)", lower_text)
+                    for marker in [
+                        "nước giặt",
+                        "rửa chén",
+                        "zeo",
+                        "oplus",
+                        "pano",
+                        "bột giặt",
+                    ]
+                )
                 is_greeting = any(lower_text.startswith(g) for g in ["chào", "xin chào", "hello", "hi", "alo"]) and len(lower_text.split()) <= 4
 
             if is_career:
@@ -448,6 +529,7 @@ class SafeMessagePipeline:
                         PageCode(event.page_id), text, limit=1, record_prefix="faq:"
                     )
                 if matches:
+                    grounding_texts.extend([matches[0].title, matches[0].content])
                     answer = matches[0].content
                 else:
                     answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
@@ -465,7 +547,8 @@ class SafeMessagePipeline:
             slots=effective_slots,
             allowed_phones=allowed_phones,
             deadline_text=deadline_text,
-            fallback=answer,
+            handoff_created=handoff_created,
+            grounding_texts=grounding_texts,
         )
         answer = validation.text
 
