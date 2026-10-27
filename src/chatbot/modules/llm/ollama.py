@@ -65,6 +65,7 @@ class OllamaIntentClient:
                 "recent_customer_messages", []
             ),
             "message_ids": safe_context.get("message_ids", []),
+            "attachment_types": safe_context.get("attachment_types", []),
             "customer_message_batch": text,
         }
         return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
@@ -75,7 +76,9 @@ class OllamaIntentClient:
                 f"{self.base_url}/api/tags", timeout=min(self.timeout_seconds, 5.0)
             ) as response:
                 body = json.loads(response.read().decode("utf-8"))
-            return any(item.get("name") == self.model for item in body.get("models", []))
+            return any(
+                item.get("name") == self.model for item in body.get("models", [])
+            )
         except (OSError, ValueError, KeyError, urllib.error.URLError):
             return False
 
@@ -141,7 +144,9 @@ class OllamaIntentClient:
                 urllib.error.URLError,
             ) as exc:
                 last_error = exc
-        raise OllamaUnderstandingError("Ollama structured understanding failed") from last_error
+        raise OllamaUnderstandingError(
+            "Ollama structured understanding failed"
+        ) from last_error
 
 
 class OllamaResponseGenerator:
@@ -149,39 +154,13 @@ class OllamaResponseGenerator:
 
     @staticmethod
     def _build_system_prompt(page_id: str) -> str:
-        if page_id == "ZEO":
-            return (
-                "Bạn là trợ lý tư vấn khách hàng của ZeO Homecare (sản phẩm gia dụng, tiêu dùng như nước giặt, nước rửa chén).\n"
-                "Phong cách: Lịch sự, chu đáo, nhiệt tình, xưng hô anh/chị/em thân mật (dùng icon ✨, 🧺, 😊 phù hợp).\n"
-                "Quy tắc bắt buộc:\n"
-                "1. KHÔNG tự báo giá số tiền cụ thể nếu chưa có trong thông tin chính thức. Hướng dẫn khách để lại SĐT hoặc khu vực để tư vấn giá và điểm mua thuận tiện.\n"
-                "2. Chỉ tư vấn sản phẩm dựa trên THÔNG TIN SẢN PHẨM và BÀI QUẢNG CÁO được cung cấp. Không tự bịa thông số kỹ thuật.\n"
-                "3. Khi tra cứu đơn hàng (ORDER_TRACKING): nếu có thông tin đơn hàng, báo rõ mã đơn, ngày đặt, trạng thái giao vận. Nếu chưa có SĐT hoặc mã đơn, nhẹ nhàng xin khách cung cấp.\n"
-                "4. Khi khách gửi ảnh (IMAGE_INQUIRY): tiếp nhận ảnh sản phẩm chu đáo, xin SĐT và thông tin nhu cầu để nhân viên chăm sóc khách hàng hỗ trợ.\n"
-                "5. Trả lời ngắn gọn 1-3 câu, tự nhiên, dễ đọc trên di động.\n"
-                'Xuất JSON dạng: {"reply": "câu trả lời"}'
-            )
-        return (
-            "Bạn là trợ lý tư vấn khách hàng của Phân bón Cò Bay (CFC).\n"
-            "Phong cách: Nhiệt tình, lễ phép, xưng hô anh/chị/em thân mật (văn hóa bà con miền Tây, dùng icon 🌾, 🌱, 😊 phù hợp).\n"
-            "Quy tắc bắt buộc:\n"
-            "1. Luồng hỏi giá (PRICE_INQUIRY):\n"
-            "   - KHÔNG BAO GIỜ tự báo giá số tiền hay khoảng giá cụ thể. Giải thích giá tùy khu vực và số lượng.\n"
-            "   - KHÁCH ĐỂ LẠI SĐT LÀ ĐỂ NHẬN BÁO GIÁ VÀ TƯ VẤN, KHÁCH CHƯA ĐẶT HÀNG! TUYỆT ĐỐI KHÔNG chúc mừng hay nói rằng khách đã đặt hàng, TUYỆT ĐỐI KHÔNG nhắc đến mã đơn hàng nào.\n"
-            "   - Chỉ được nói đã ghi nhận số điện thoại khi dữ liệu khách hiện tại có một số cụ thể. Nếu chưa có, hãy hỏi khách cung cấp; không tạo ký hiệu thay thế.\n"
-            "   - Nếu dữ liệu đầu vào có mốc liên hệ cụ thể thì dùng đúng mốc đó, không in tên trường dữ liệu.\n"
-            "2. KHÔNG tự bịa số điện thoại cá nhân, hotline hay địa chỉ. Thông tin liên hệ chính thức sẽ được hệ thống gắn sau bước sinh câu trả lời.\n"
-            "3. Chỉ tư vấn sản phẩm và công dụng dựa trên THÔNG TIN SẢN PHẨM và BÀI QUẢNG CÁO được cung cấp trong dữ liệu. Không tự bịa thông số kỹ thuật chưa có.\n"
-            "4. Khi tìm đại lý (DEALER_LOOKUP):\n"
-            "   - Chỉ giới thiệu địa chỉ được cung cấp trong dữ liệu đại lý; không tự nhận là gần nhất và không tự tạo link bản đồ.\n"
-            "   - Nếu thiếu địa chỉ hoặc khu vực khách, hỏi xin tỉnh/huyện để tra cứu. Không được biến số điện thoại khách thành số liên hệ đại lý.\n"
-            "5. Khi tra cứu đơn hàng (ORDER_TRACKING): nếu có thông tin đơn hàng, báo rõ mã đơn, ngày đặt và trạng thái. Nếu chưa có SĐT hoặc mã đơn, xin khách cung cấp.\n"
-            "6. Khi tiếp nhận ảnh (IMAGE_INQUIRY): tiếp nhận ảnh vườn/cây/sản phẩm ấm áp. Tuyệt đối KHÔNG tự phán đoán bừa bệnh hại hay tự kê toa phân thuốc khi chưa rõ; xin khách thông tin khu vực vườn, giai đoạn cây và SĐT để kỹ sư nông nghiệp gọi hỗ trợ xem vườn trực tiếp.\n"
-            "7. Khi tư vấn nông nghiệp (AGRI_ADVICE): chỉ diễn đạt lại thông tin trong THÔNG TIN TƯ VẤN ĐÃ DUYỆT và các slot khách đã cung cấp; nếu thiếu căn cứ thì hỏi thêm, không tự bịa công thức hoặc liều dùng.\n"
-            "8. Không được in khóa JSON, tên biến, placeholder hoặc nội dung trong ngoặc dùng để chờ điền dữ liệu.\n"
-            "9. Trả lời ngắn gọn 1-3 câu, súc tích, tự nhiên, dễ đọc trên điện thoại.\n"
-            'Xuất JSON dạng: {"reply": "câu trả lời"}'
+        brand = (
+            "ZeO Homecare (sản phẩm gia dụng)"
+            if page_id == "ZEO"
+            else "Phân bón Cò Bay (CFC)"
         )
+        contract = Path("config/prompts/response.md").read_text(encoding="utf-8")
+        return f"Bạn là trợ lý chăm sóc khách hàng của {brand}.\n" + contract
 
     def __init__(
         self,
@@ -195,7 +174,10 @@ class OllamaResponseGenerator:
 
     def generate(self, context_payload: dict[str, Any]) -> str | None:
         page_id = str(context_payload.get("page_id") or "CFC")
-        system_prompt = self._build_system_prompt(page_id)
+        try:
+            system_prompt = self._build_system_prompt(page_id)
+        except OSError:
+            return None
         request_payload = {
             "model": self.model,
             "stream": False,
@@ -203,7 +185,10 @@ class OllamaResponseGenerator:
             "options": {"temperature": 0.2, "num_predict": 256},
             "messages": [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": json.dumps(context_payload, ensure_ascii=False)},
+                {
+                    "role": "user",
+                    "content": json.dumps(context_payload, ensure_ascii=False),
+                },
             ],
         }
         try:

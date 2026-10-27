@@ -1,7 +1,10 @@
 """Integration tests for Phase 5 Business Workflows and Response Composer."""
 
 import datetime
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
+
+import pytest
 
 from src.chatbot.infrastructure.messaging.outbox import InMemoryOutboxStore
 from src.chatbot.modules.knowledge.retriever import (
@@ -19,7 +22,12 @@ from src.chatbot.modules.orchestration.input_analyzer import (
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.modules.workflows.composer import ResponseComposer
 from src.chatbot.modules.workflows.support_contacts import SupportContactDirectory
-from src.chatbot.shared.enums import IntentTransition, IntentType, PageCode
+from src.chatbot.shared.enums import (
+    IntentTransition,
+    IntentType,
+    PageCode,
+    WorkflowType,
+)
 from src.chatbot.shared.events import (
     InboxEvent,
     IntentAnalysisResult,
@@ -34,7 +42,9 @@ class MockIntentClient:
         self.intent = intent
         self.slots = slots or {}
 
-    def analyze(self, page_id: str, text: str, context: dict | None = None) -> IntentAnalysisResult:
+    def analyze(
+        self, page_id: str, text: str, context: dict | None = None
+    ) -> IntentAnalysisResult:
         return IntentAnalysisResult(
             primary_intent=self.intent,
             confidence=0.95,
@@ -44,7 +54,11 @@ class MockIntentClient:
         )
 
 
-def _make_event(text: str, referral: dict | None = None) -> InboxEvent:
+def _make_event(
+    text: str,
+    referral: dict | None = None,
+    attachments: list[dict] | None = None,
+) -> InboxEvent:
     return InboxEvent(
         event_id="evt-wf-1",
         page_id=PageCode.CFC,
@@ -55,6 +69,7 @@ def _make_event(text: str, referral: dict | None = None) -> InboxEvent:
             recipient_id="page-cfc",
             timestamp=datetime.datetime.now(datetime.UTC),
             text=text,
+            attachments=attachments or [],
             referral=referral,
         ),
     )
@@ -76,7 +91,9 @@ def test_workflow_price_inquiry_without_phone():
 def test_workflow_price_inquiry_with_phone():
     outbox = InMemoryOutboxStore()
     normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
-    analyzer = HybridInputAnalyzer(MockIntentClient(IntentType.PRICE_INQUIRY), normalizer)
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.PRICE_INQUIRY), normalizer
+    )
     pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
     event = _make_event("Giá bao nhiêu 1 bao vậy em? Số anh 0918123456 ở Cần Thơ")
     outbox_id = pipeline.process(event)
@@ -98,10 +115,14 @@ def test_workflow_product_cobanic_ambiguous_name_requests_disambiguation():
         RedisCrmProductStore(),
         RedisCrmDealerStore(),
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store)
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, knowledge_store=store
+    )
     event = _make_event(
         "có phân bón Cabonic 21 ko",
-        referral={"ad_title": "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"},
+        referral={
+            "ad_title": "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"
+        },
     )
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
@@ -144,10 +165,14 @@ def test_workflow_product_with_llm_generator():
             )
         ]
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store, composer=composer)
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, knowledge_store=store, composer=composer
+    )
     event = _make_event(
         "có phân bón Hữu cơ Cobanic 21 không",
-        referral={"ad_title": "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"},
+        referral={
+            "ad_title": "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"
+        },
     )
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
@@ -155,13 +180,18 @@ def test_workflow_product_with_llm_generator():
     assert "Cobanic" in reply
     assert "Trichoderma" not in reply
     assert "tỉnh/huyện" in reply
-    assert gen.last_payload["bai_quang_cao"] == "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"
+    assert (
+        gen.last_payload["bai_quang_cao"]
+        == "Mít sắp vô bông mà lá còn nhỏ, rễ còn thưa - sao yên tâm?"
+    )
 
 
 def test_workflow_dealer_lookup_asking_location():
     outbox = InMemoryOutboxStore()
     normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
-    analyzer = HybridInputAnalyzer(MockIntentClient(IntentType.DEALER_LOOKUP), normalizer)
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.DEALER_LOOKUP), normalizer
+    )
     pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
     event = _make_event("Tôi muốn tìm đại lý gần nhất")
     outbox_id = pipeline.process(event)
@@ -203,7 +233,9 @@ def test_workflow_agriculture_uses_approved_metadata_and_slots():
             ),
         ]
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store)
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, knowledge_store=store
+    )
     outbox_id = pipeline.process(_make_event("hướng dẫn cách dùng"))
     assert outbox_id is not None
     assert "Hướng dẫn đã được duyệt" in outbox.messages[outbox_id].text
@@ -218,9 +250,20 @@ def test_workflow_agriculture_asks_context_before_using_generic_match():
         normalizer,
     )
     store = ApprovedKnowledgeStore(
-        [KnowledgeRecord("faq:agri", PageCode.CFC, "Câu hỏi", "Nội dung không được đoán.", "APPROVED", category="agronomy")]
+        [
+            KnowledgeRecord(
+                "faq:agri",
+                PageCode.CFC,
+                "Câu hỏi",
+                "Nội dung không được đoán.",
+                "APPROVED",
+                category="agronomy",
+            )
+        ]
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=store)
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, knowledge_store=store
+    )
     outbox_id = pipeline.process(_make_event("Tôi muốn được tư vấn cách dùng"))
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
@@ -232,6 +275,7 @@ def test_workflow_dealer_lookup_shows_address_without_google_maps_link():
     class MockDealerStore:
         def search(self, page_id, query, limit=1, record_prefix=None):
             from src.chatbot.modules.knowledge.retriever import KnowledgeRecord
+
             return [
                 KnowledgeRecord(
                     record_id="dealer:DL001",
@@ -248,7 +292,9 @@ def test_workflow_dealer_lookup_shows_address_without_google_maps_link():
         MockIntentClient(IntentType.DEALER_LOOKUP, {"location": "Đồng Tháp"}),
         normalizer,
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, knowledge_store=MockDealerStore())
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, knowledge_store=MockDealerStore()
+    )
     event = _make_event("cho mình tìm đại lý ở Đồng Tháp")
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
@@ -272,14 +318,269 @@ def test_workflow_image_inquiry_attachment_only():
             recipient_id="page-cfc",
             timestamp=datetime.datetime.now(datetime.UTC),
             text="",
-            attachments=[{"type": "image", "payload": {"url": "https://example.com/leaf.jpg"}}],
+            attachments=[
+                {"type": "image", "payload": {"url": "https://example.com/leaf.jpg"}}
+            ],
         ),
     )
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
     reply = outbox.messages[outbox_id].text
     assert "hình ảnh" in reply
-    assert "kỹ sư nông nghiệp" in reply or "chuyên viên kỹ thuật" in reply
+    assert "loại cây trồng" in reply
+    assert "giai đoạn" in reply
+    assert "liên hệ" not in reply
+
+
+def test_image_caption_routes_by_attachment_context_not_catalog_fallback():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(
+            IntentType.PRODUCT_INQUIRY,
+            {"crop": "anh nè nên mua phân bón gì"},
+        ),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+    event = _make_event(
+        "vườn anh nè nên mua phân bón gì",
+        attachments=[
+            {"type": "image", "payload": {"url": "https://example.com/garden-1.jpg"}},
+            {"type": "image", "payload": {"url": "https://example.com/garden-2.jpg"}},
+        ],
+    )
+
+    outbox_id = pipeline.process(event)
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.AGRICULTURE_ADVICE
+    assert "hình ảnh" in envelope.text
+    assert "mã sản phẩm" not in envelope.text
+    assert "anh nè nên mua" not in envelope.text
+
+
+@pytest.mark.parametrize("caption", [
+    "Vườn a nè nên dùng phân bón gì",
+    "Nhờ tư vấn chọn phân cho vườn trong hình",
+    "Đây là ảnh vườn, nên chăm sóc thế nào",
+])
+def test_image_pipeline_rejects_generated_reupload_and_callback(caption):
+    class BadImageGenerator:
+        def generate(self, payload):
+            assert payload["attachment_context"]["received_types"] == ["image"]
+            assert payload["contact_commitment_allowed"] is False
+            return (
+                "Anh/chị chụp ảnh vườn gửi em nhé, em sẽ tư vấn cho cây a. "
+                "Trước 15h30 chiều nay, em sẽ liên hệ cho anh/chị."
+            )
+
+    outbox = InMemoryOutboxStore()
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.AGRI_ADVICE, {"crop": "a"}),
+        VietnameseNormalizer("config/normalization/vi_intent.json"),
+    )
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer,
+        composer=ResponseComposer(generator=BadImageGenerator()),
+    )
+    outbox_id = pipeline.process(_make_event(
+        caption, attachments=[{"type": "image", "payload": {"url": "https://example.com/garden.jpg"}}],
+    ))
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.AGRICULTURE_ADVICE
+    assert "đã nhận được hình ảnh" in envelope.text
+    assert "loại cây trồng" in envelope.text
+    assert "cây a" not in envelope.text
+    assert "15h30" not in envelope.text
+    assert "chụp ảnh" not in envelope.text
+
+
+@pytest.mark.parametrize(
+    ("caption", "model_intent"),
+    [
+        ("Nhờ xem ảnh vườn và tư vấn giúp anh/chị", IntentType.GENERAL_FAQ),
+        ("Cây đang bị như trong hình", IntentType.AGRI_ADVICE),
+        ("Đây là bao phân đang sử dụng", IntentType.PRODUCT_INQUIRY),
+        ("Không biết nên xử lý thế nào", IntentType.UNKNOWN),
+        ("Nhờ xem giúp tình trạng trong ảnh", IntentType.HUMAN_REQUEST),
+    ],
+)
+def test_image_caption_variants_share_attachment_led_route(
+    caption: str,
+    model_intent: IntentType,
+):
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(MockIntentClient(model_intent), normalizer)
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+
+    outbox_id = pipeline.process(
+        _make_event(
+            caption,
+            attachments=[
+                {
+                    "type": "image",
+                    "payload": {"url": "https://example.com/context.jpg"},
+                }
+            ],
+        )
+    )
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.AGRICULTURE_ADVICE
+    assert "hình ảnh" in envelope.text
+    assert "mã sản phẩm" not in envelope.text
+
+
+def test_named_product_with_image_keeps_product_workflow():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(
+            IntentType.PRODUCT_INQUIRY,
+            {"product_mentions": ["Hữu cơ Cobanic 21"]},
+        ),
+        normalizer,
+    )
+    store = ApprovedKnowledgeStore(
+        [
+            KnowledgeRecord(
+                "product:cobanic-21-image",
+                PageCode.CFC,
+                "Hữu cơ Cobanic 21",
+                "Hữu cơ Cobanic 21, bao 25kg",
+                "APPROVED",
+            )
+        ]
+    )
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=analyzer,
+        knowledge_store=store,
+    )
+
+    outbox_id = pipeline.process(
+        _make_event(
+            "Có bán Hữu cơ Cobanic 21 trong hình không?",
+            attachments=[
+                {
+                    "type": "image",
+                    "payload": {"url": "https://example.com/cobanic.jpg"},
+                }
+            ],
+        )
+    )
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.PRODUCT_INQUIRY
+    assert "Hữu cơ Cobanic 21" in envelope.text
+    assert "đã nhận được hình ảnh" not in envelope.text
+
+
+@pytest.mark.parametrize(
+    ("caption", "expected_fragment"),
+    [
+        ("Cho hỏi thông tin tuyển dụng trong ảnh", "cfccareer"),
+        ("Cho hỏi nước giặt trong ảnh", "ZeO Việt Nam"),
+    ],
+)
+def test_image_does_not_hide_configured_special_topics(
+    caption: str,
+    expected_fragment: str,
+):
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.GENERAL_FAQ),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+
+    outbox_id = pipeline.process(
+        _make_event(
+            caption,
+            attachments=[
+                {
+                    "type": "image",
+                    "payload": {"url": "https://example.com/topic.jpg"},
+                }
+            ],
+        )
+    )
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.FAQ_ANSWER
+    assert expected_fragment in envelope.text
+    assert "đã nhận được hình ảnh" not in envelope.text
+
+
+def test_image_does_not_override_explicit_price_safety_route():
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.PRODUCT_INQUIRY),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+    event = _make_event(
+        "Sản phẩm trong hình giá bao nhiêu?",
+        attachments=[
+            {"type": "image", "payload": {"url": "https://example.com/bag.jpg"}}
+        ],
+    )
+
+    outbox_id = pipeline.process(event)
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == WorkflowType.PRICE_HANDOFF
+    assert "báo giá" in envelope.text
+    assert "đã nhận được hình ảnh" not in envelope.text
+
+
+@pytest.mark.parametrize(
+    ("caption", "expected_workflow"),
+    [
+        ("Cho gặp nhân viên xem hình này", WorkflowType.HUMAN_REQUEST),
+        ("Tìm đại lý bán sản phẩm trong hình", WorkflowType.DEALER_LOOKUP),
+        ("Xin số điện thoại hỗ trợ sản phẩm trong hình", WorkflowType.CONTACT_SUPPORT),
+        ("Kiểm tra đơn hàng 00003328 trong ảnh", WorkflowType.ORDER_TRACKING),
+        ("Tôi muốn làm đại lý sản phẩm trong hình", WorkflowType.SALES_LEAD),
+    ],
+)
+def test_image_preserves_explicit_operational_intents(
+    caption: str,
+    expected_workflow: WorkflowType,
+):
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.GENERAL_FAQ),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer)
+
+    outbox_id = pipeline.process(
+        _make_event(
+            caption,
+            attachments=[
+                {
+                    "type": "image",
+                    "payload": {"url": "https://example.com/operational.jpg"},
+                }
+            ],
+        )
+    )
+
+    assert outbox_id is not None
+    envelope = outbox.messages[outbox_id]
+    assert envelope.workflow == expected_workflow
+    assert "đã nhận được hình ảnh" not in envelope.text
 
 
 def test_workflow_order_tracking_with_phone():
@@ -303,7 +604,9 @@ def test_workflow_order_tracking_with_phone():
         MockIntentClient(IntentType.ORDER_TRACKING, {"phone": "0918123456"}),
         normalizer,
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, order_store=MockOrderStore())
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, order_store=MockOrderStore()
+    )
     event = _make_event("Kiểm tra đơn hàng giúp anh, số 0918123456")
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
@@ -333,7 +636,9 @@ def test_workflow_order_tracking_with_code():
         MockIntentClient(IntentType.ORDER_TRACKING, {"order_code": "00003328"}),
         normalizer,
     )
-    pipeline = SafeMessagePipeline(outbox, intent_analyzer=analyzer, order_store=MockOrderStore())
+    pipeline = SafeMessagePipeline(
+        outbox, intent_analyzer=analyzer, order_store=MockOrderStore()
+    )
     event = _make_event("tra cứu đơn hàng 00003328")
     outbox_id = pipeline.process(event)
     assert outbox_id is not None
@@ -355,7 +660,9 @@ def test_workflow_image_inquiry_on_zeo_page():
             recipient_id="page-zeo",
             timestamp=datetime.datetime.now(datetime.UTC),
             text="",
-            attachments=[{"type": "image", "payload": {"url": "https://example.com/soap.jpg"}}],
+            attachments=[
+                {"type": "image", "payload": {"url": "https://example.com/soap.jpg"}}
+            ],
         ),
     )
     outbox_id = pipeline.process(event)
@@ -448,8 +755,7 @@ def test_placeholder_sanitizer_replaces_deadline_markers():
 
 def test_placeholder_sanitizer_handles_all_supported_template_syntaxes():
     reply = ResponseComposer.sanitize_placeholders(
-        "A {unknown} {{second}} ${third} [fourth] "
-        "trước {moc\\_hen\\_lien\\_he}.",
+        "A {unknown} {{second}} ${third} [fourth] trước {moc\\_hen\\_lien\\_he}.",
         "16h hôm nay",
     )
 
@@ -582,9 +888,52 @@ def test_product_inquiry_marker_recognition():
     normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
     assert normalizer.contains("product_markers", "có phân bón npk ko")
     analyzer = HybridInputAnalyzer(MockIntentClient(IntentType.UNKNOWN), normalizer)
-    result = analyzer.analyze(PageCode.CFC, "Có phân bón npk ko", {"current_intent": "DEALER_LOOKUP"})
+    result = analyzer.analyze(
+        PageCode.CFC, "Có phân bón npk ko", {"current_intent": "DEALER_LOOKUP"}
+    )
     assert result.primary_intent == IntentType.PRODUCT_INQUIRY
     assert result.intent_transition == IntentTransition.SWITCH
+
+
+def test_recommendation_is_agriculture_advice_and_rejects_false_crop_slot():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(
+            IntentType.PRODUCT_INQUIRY,
+            {"crop": "anh nè nên mua phân bón gì"},
+        ),
+        normalizer,
+    )
+
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "vườn anh nè nên mua phân bón gì",
+    )
+
+    assert result.primary_intent == IntentType.AGRI_ADVICE
+    assert "crop" not in result.extracted_slots
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "vườn anh nè nên mua phân bón gì",
+        "vườn mình đây, nhờ tư vấn giúp",
+        "vườn nhà đang bị như hình",
+    ],
+)
+def test_discourse_after_garden_is_never_saved_as_crop(message: str):
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    slots = normalizer.deterministic_slots(normalizer.normalize(message))
+    assert "crop" not in slots
+
+
+def test_crop_before_discourse_boundary_is_retained():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    slots = normalizer.deterministic_slots(
+        normalizer.normalize("vườn mít nên dùng phân nào")
+    )
+    assert slots["crop"] == "mít"
 
 
 def test_crm_product_search_requires_confidence_and_never_picks_first_npk() -> None:
@@ -612,12 +961,15 @@ def test_crm_product_search_requires_confidence_and_never_picks_first_npk() -> N
         record_prefix=("product:", "crm-product:"),
     )
     assert broad.status == "AMBIGUOUS"
-    assert store.search(
-        PageCode.CFC,
-        "NPK",
-        limit=3,
-        record_prefix=("product:", "crm-product:"),
-    ) == []
+    assert (
+        store.search(
+            PageCode.CFC,
+            "NPK",
+            limit=3,
+            record_prefix=("product:", "crm-product:"),
+        )
+        == []
+    )
 
     exact = store.search_with_confidence(
         PageCode.CFC,
@@ -637,8 +989,12 @@ def test_product_ambiguity_asks_for_disambiguation_without_listing_catalog() -> 
             return KnowledgeSearchResult(
                 "AMBIGUOUS",
                 (
-                    KnowledgeRecord("product:a", PageCode.CFC, "NPK A", "A", "APPROVED"),
-                    KnowledgeRecord("product:b", PageCode.CFC, "NPK B", "B", "APPROVED"),
+                    KnowledgeRecord(
+                        "product:a", PageCode.CFC, "NPK A", "A", "APPROVED"
+                    ),
+                    KnowledgeRecord(
+                        "product:b", PageCode.CFC, "NPK B", "B", "APPROVED"
+                    ),
                 ),
                 strategy="product",
             )
@@ -670,18 +1026,20 @@ def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
     class FakeRedis:
         def get(self, key):
             if key == "cfc:dealers:locations":
-                return json.dumps([
-                    {
-                        "name": "CÔNG TY TNHH MỘT THÀNH VIÊN PHÂN BÓN HỮU CƠ ĐẬM ĐẶC",
-                        "address": None,
-                        "code": None,
-                    },
-                    {
-                        "name": "Đại lý Phân Bón Tuấn Kiệt",
-                        "address": "Số 475 Tổ 1, Ấp An Điền, Xã Châu Thành, Tỉnh Tây Ninh",
-                        "code": "DL002",
-                    },
-                ])
+                return json.dumps(
+                    [
+                        {
+                            "name": "CÔNG TY TNHH MỘT THÀNH VIÊN PHÂN BÓN HỮU CƠ ĐẬM ĐẶC",
+                            "address": None,
+                            "code": None,
+                        },
+                        {
+                            "name": "Đại lý Phân Bón Tuấn Kiệt",
+                            "address": "Số 475 Tổ 1, Ấp An Điền, Xã Châu Thành, Tỉnh Tây Ninh",
+                            "code": "DL002",
+                        },
+                    ]
+                )
             return None
 
     store = RedisCrmDealerStore()
@@ -694,12 +1052,16 @@ def test_dealer_lookup_requires_location_and_does_not_match_product_tokens():
     assert len(matches) == 0
 
     # Query with specific dealer location
-    loc_matches = store.search(PageCode.CFC, "Tây Ninh", limit=1, record_prefix=("dealer:",))
+    loc_matches = store.search(
+        PageCode.CFC, "Tây Ninh", limit=1, record_prefix=("dealer:",)
+    )
     assert len(loc_matches) == 1
     assert loc_matches[0].title == "Đại lý Phân Bón Tuấn Kiệt"
     assert "Tây Ninh" in loc_matches[0].content
 
-    unaccented_matches = store.search(PageCode.CFC, "Tay Ninh", limit=1, record_prefix=("dealer:",))
+    unaccented_matches = store.search(
+        PageCode.CFC, "Tay Ninh", limit=1, record_prefix=("dealer:",)
+    )
     assert len(unaccented_matches) == 1
 
 
@@ -727,6 +1089,116 @@ def test_greeting_response_uses_anh_chi_and_never_ba_con():
     reply = outbox.messages[outbox_id].text
     assert "bà con" not in reply.lower()
     assert "anh/chị" in reply.lower()
+
+
+def test_greeting_overrides_model_human_guess_without_creating_handoff():
+    class Repository:
+        def __init__(self):
+            self.tasks = []
+            self.saved_intent = None
+
+        def load_understanding_context(self, page_id, conversation_id):
+            return {}
+
+        def update_context(self, page_id, conversation_id, **kwargs):
+            self.saved_intent = kwargs["primary_intent"]
+            return SimpleNamespace(version=1)
+
+        def create_handoff_task(self, page_id, conversation_id, **kwargs):
+            self.tasks.append(kwargs)
+            return "unexpected-handoff"
+
+    repository = Repository()
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.HUMAN_REQUEST),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=analyzer,
+        conversation_repository=repository,
+    )
+
+    outbox_id = pipeline.process(_make_event("Xin chào"), batch_version=1)
+
+    assert outbox_id is not None
+    assert repository.saved_intent == IntentType.GENERAL_FAQ
+    assert repository.tasks == []
+    assert outbox.messages[outbox_id].workflow == WorkflowType.FAQ_ANSWER
+    assert "Cò Bay kính chào" in outbox.messages[outbox_id].text
+
+
+@pytest.mark.parametrize(
+    "greeting",
+    ["Xin chào", "Chào anh/chị", "Hello", "Hi", "Alo"],
+)
+def test_greeting_variants_override_wrong_human_model_intent(greeting: str):
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.HUMAN_REQUEST),
+        normalizer,
+    )
+
+    result = analyzer.analyze(PageCode.CFC, greeting)
+
+    assert result.primary_intent == IntentType.GENERAL_FAQ
+    assert result.requires_human_handoff is False
+
+
+def test_model_cannot_create_human_request_without_configured_evidence():
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.HUMAN_REQUEST),
+        normalizer,
+    )
+
+    result = analyzer.analyze(PageCode.CFC, "Anh/chị có một câu hỏi")
+
+    assert result.primary_intent == IntentType.UNKNOWN
+    assert result.requires_human_handoff is True
+
+
+def test_workflow_switch_does_not_reinject_unrelated_slots_from_old_context():
+    class Repository:
+        def __init__(self):
+            self.saved_slots = None
+
+        def load_understanding_context(self, page_id, conversation_id):
+            return {
+                "current_intent": IntentType.PRODUCT_INQUIRY.value,
+                "current_workflow": WorkflowType.PRODUCT_INQUIRY.value,
+                "current_slots": {
+                    "product_mentions": ["Sản phẩm cũ"],
+                    "crop": "cây cũ",
+                    "location": "Cần Thơ",
+                },
+            }
+
+        def update_context(self, page_id, conversation_id, **kwargs):
+            self.saved_slots = kwargs["slots"]
+            return SimpleNamespace(version=2)
+
+    repository = Repository()
+    outbox = InMemoryOutboxStore()
+    normalizer = VietnameseNormalizer("config/normalization/vi_intent.json")
+    analyzer = HybridInputAnalyzer(
+        MockIntentClient(IntentType.HUMAN_REQUEST),
+        normalizer,
+    )
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=analyzer,
+        conversation_repository=repository,
+    )
+
+    pipeline.process(_make_event("Xin chào"), batch_version=2)
+
+    assert repository.saved_slots["location"] == "Cần Thơ"
+    assert repository.saved_slots["province"] == "Cần Thơ"
+    assert "product_mentions" not in repository.saved_slots
+    assert "crop" not in repository.saved_slots
 
 
 def test_output_policy_blocks_unauthorized_phone_and_unresolved_placeholders():

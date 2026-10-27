@@ -1,9 +1,12 @@
 import uuid
 from datetime import UTC, datetime
 
+import pytest
+
 # pyrefly: ignore[missing-import]
 from fastapi.testclient import TestClient
 
+import apps.api.main as api_main
 from apps.api.main import app
 from src.chatbot.core.settings import settings
 from src.chatbot.infrastructure.messaging.outbox import InMemoryOutboxStore
@@ -13,6 +16,18 @@ from src.chatbot.modules.ops.repository import OpsAuditRepository
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
 from src.chatbot.shared.enums import HandoffStatus, PageCode, WorkflowType
 from src.chatbot.shared.events import InboxEvent, NormalizedMessage
+
+
+@pytest.fixture(autouse=True)
+def isolated_api_ops_controls(monkeypatch) -> None:
+    """Keep API route tests from mutating the live Redis ops-control keys.
+
+    The FastAPI module builds a Redis-backed control store at import time in a
+    normal runtime.  Tests exercise the same route functions, so replace that
+    module-global dependency with the deterministic in-memory store for every
+    test in this module.
+    """
+    monkeypatch.setattr(api_main, "ops_controls", OpsControlStore())
 
 
 def test_kill_switch_and_pause_are_page_scoped() -> None:

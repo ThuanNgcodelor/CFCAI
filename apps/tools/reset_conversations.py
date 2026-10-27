@@ -1,19 +1,68 @@
-#!/usr/bin/env python3
-"""Utility script to reset conversation history and slot memory for testing.
+"""Reset chat-runtime data for a fresh test conversation.
 
-Preserves catalog_items, faq_items, knowledge_records, and publications.
+This deliberately preserves approved knowledge/catalog data, CRM snapshots and the
+append-only operational audit.  It only removes state that can make the next chat
+look like a continuation: inbox/outbox records, conversation memory, batches and
+customer handoff tasks.
+
 Usage:
     python apps/tools/reset_conversations.py [--sender-id SENDER_ID] [--all]
 """
 
 import argparse
 import sys
+
 import psycopg2
+
 from src.chatbot.core.settings import settings
+
+# Every table here either references ``conversations`` or contains transient
+# delivery state keyed by its conversation ID.  The order is intentional:
+# ``handoff_tasks`` was introduced after this tool and has a foreign key to
+# ``conversations``, so it must be removed before its parent row.
+_CONVERSATION_STATE_TABLES = (
+    "handoff_tasks",
+    "handoff_events",
+    "conversation_slots",
+    "conversation_messages",
+    "message_batches",
+    "outbox_messages",
+)
+
+
+def _delete_sender_conversation_state(cur, sender_id: str) -> None:
+    """Delete transient state for every page-scoped conversation of one sender."""
+    for table_name in _CONVERSATION_STATE_TABLES:
+        cur.execute(
+            f"""
+            DELETE FROM {table_name}
+            WHERE conversation_id IN (
+                SELECT conversation_id FROM conversations WHERE sender_id = %s
+            )
+            """,
+            (sender_id,),
+        )
+
+    # Inbox events can exist before a conversation was created, so they must be
+    # deleted directly by sender instead of through the conversation subquery.
+    cur.execute("DELETE FROM inbox_events WHERE sender_id = %s", (sender_id,))
+    cur.execute("DELETE FROM conversations WHERE sender_id = %s", (sender_id,))
+
+
+def _delete_all_conversation_state(cur) -> None:
+    """Delete all transient chat state in foreign-key-safe order."""
+    for table_name in _CONVERSATION_STATE_TABLES:
+        cur.execute(f"DELETE FROM {table_name};")
+    cur.execute("DELETE FROM inbox_events;")
+    cur.execute("DELETE FROM conversations;")
 
 
 def reset_conversations(sender_id: str | None = None, reset_all: bool = False) -> None:
-    db_url = settings.get_database_url().replace("postgresql+asyncpg://", "postgresql://").replace("postgresql+psycopg2://", "postgresql://")
+    db_url = (
+        settings.get_database_url()
+        .replace("postgresql+asyncpg://", "postgresql://")
+        .replace("postgresql+psycopg2://", "postgresql://")
+    )
     conn = psycopg2.connect(db_url)
     conn.autocommit = False
 
@@ -21,54 +70,10 @@ def reset_conversations(sender_id: str | None = None, reset_all: bool = False) -
         with conn.cursor() as cur:
             if sender_id:
                 print(f"[*] Resetting conversation for sender: {sender_id}")
-                cur.execute(
-                    """
-                    DELETE FROM conversation_slots
-                    WHERE conversation_id IN (
-                        SELECT conversation_id FROM conversations WHERE sender_id = %s
-                    )
-                    """,
-                    (sender_id,),
-                )
-                cur.execute(
-                    """
-                    DELETE FROM conversation_messages
-                    WHERE conversation_id IN (
-                        SELECT conversation_id FROM conversations WHERE sender_id = %s
-                    )
-                    """,
-                    (sender_id,),
-                )
-                cur.execute(
-                    """
-                    DELETE FROM message_batches
-                    WHERE conversation_id IN (
-                        SELECT conversation_id FROM conversations WHERE sender_id = %s
-                    )
-                    """,
-                    (sender_id,),
-                )
-                cur.execute(
-                    """
-                    DELETE FROM handoff_events
-                    WHERE conversation_id IN (
-                        SELECT conversation_id FROM conversations WHERE sender_id = %s
-                    )
-                    """,
-                    (sender_id,),
-                )
-                cur.execute("DELETE FROM outbox_messages WHERE recipient_id = %s", (sender_id,))
-                cur.execute("DELETE FROM inbox_events WHERE sender_id = %s", (sender_id,))
-                cur.execute("DELETE FROM conversations WHERE sender_id = %s", (sender_id,))
+                _delete_sender_conversation_state(cur, sender_id)
             elif reset_all:
                 print("[*] Resetting ALL conversations, slots, and message history...")
-                cur.execute("DELETE FROM conversation_slots;")
-                cur.execute("DELETE FROM conversation_messages;")
-                cur.execute("DELETE FROM handoff_events;")
-                cur.execute("DELETE FROM message_batches;")
-                cur.execute("DELETE FROM outbox_messages;")
-                cur.execute("DELETE FROM inbox_events;")
-                cur.execute("DELETE FROM conversations;")
+                _delete_all_conversation_state(cur)
             else:
                 print("Error: Specify --sender-id <id> or --all")
                 sys.exit(1)

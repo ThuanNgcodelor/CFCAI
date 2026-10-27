@@ -7,6 +7,7 @@ from src.chatbot.shared.events import OutboxMessageSchema
 
 def test_dispatcher_disabled_by_default(monkeypatch) -> None:
     monkeypatch.setattr(settings, "META_SEND_ENABLED", False)
+    monkeypatch.setattr(settings, "DELIVERY_MODE", "disabled")
     store = InMemoryOutboxStore()
     store.enqueue(
         OutboxMessageSchema(

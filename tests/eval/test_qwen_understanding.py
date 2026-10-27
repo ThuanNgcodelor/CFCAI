@@ -256,6 +256,8 @@ def test_timeout_is_bounded_and_fails_closed() -> None:
         ("Tôi muốn tìm đại lý gần nhất", IntentType.DEALER_LOOKUP),
         ("Tôi muốn tìm mua Hữu cơ Cobanic 21", IntentType.PRODUCT_INQUIRY),
         ("Hướng dẫn tôi bón phân cho mít", IntentType.AGRI_ADVICE),
+        ("Xin chào", IntentType.GENERAL_FAQ),
+        ("Vườn anh nè nên mua phân bón gì", IntentType.AGRI_ADVICE),
     ],
 )
 def test_live_qwen_structured_understanding(message: str, expected: IntentType) -> None:
@@ -274,3 +276,31 @@ def test_live_qwen_structured_understanding(message: str, expected: IntentType) 
     )
     result = analyzer.analyze(PageCode.CFC, message)
     assert result.primary_intent == expected
+
+
+@pytest.mark.skipif(
+    os.getenv("RUN_LIVE_OLLAMA_EVAL") != "1",
+    reason="Set RUN_LIVE_OLLAMA_EVAL=1 for the local model gate",
+)
+def test_live_qwen_image_metadata_routes_attachment_led_request() -> None:
+    client = OllamaIntentClient(
+        settings.OLLAMA_BASE_URL,
+        settings.OLLAMA_MODEL_TAG,
+        settings.OLLAMA_TIMEOUT_SECONDS,
+        prompt_path=settings.INTENT_PROMPT_PATH,
+        max_attempts=1,
+    )
+    if not client.is_ready():
+        pytest.fail("Ollama/model is not ready for the requested live gate")
+    analyzer = HybridInputAnalyzer(
+        client,
+        VietnameseNormalizer(settings.INTENT_NORMALIZATION_PATH),
+    )
+
+    result = analyzer.analyze(
+        PageCode.CFC,
+        "Nhờ xem hình vườn và tư vấn giúp anh/chị",
+        {"attachment_types": ["image"]},
+    )
+
+    assert result.primary_intent == IntentType.AGRI_ADVICE

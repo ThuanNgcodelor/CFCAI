@@ -152,6 +152,8 @@ class ResponseComposer:
         allowed_phones: set[str] | None = None,
         handoff_created: bool = False,
         grounding_texts: list[str] | None = None,
+        received_attachment_types: tuple[str, ...] = (),
+        contact_commitment_allowed: bool = True,
     ) -> str:
         """Accept model prose only when it is grounded in the supplied slots and passes policy."""
         result = OutputPolicyValidator.validate(
@@ -164,6 +166,8 @@ class ResponseComposer:
             fallback=fallback,
             handoff_created=handoff_created,
             grounding_texts=grounding_texts,
+            received_attachment_types=received_attachment_types,
+            contact_commitment_allowed=contact_commitment_allowed,
         )
         return result.text
 
@@ -774,19 +778,24 @@ class ResponseComposer:
         slots = slots or {}
         brand = self._brand_name(page_id)
 
-        crop = slots.get("crop")
-        crop_part = f" đối với cây {crop}" if crop else ""
-        if page_id == PageCode.ZEO:
-            fallback = (
-                f"Dạ {brand} đã nhận được hình ảnh của anh/chị ạ 📸.\n"
-                "Để chuyên viên tư vấn hỗ trợ đúng nhu cầu cho mình, "
-                f"anh/chị cho em xin thêm thông tin và số điện thoại để bên em liên hệ hỗ trợ {deadline_text} nha ✨"
+        fields = (
+            (("product", "tên sản phẩm hoặc nhu cầu sử dụng"),)
+            if page_id == PageCode.ZEO
+            else (
+                ("crop", "loại cây trồng"),
+                ("stage", "giai đoạn hiện tại"),
+                ("problem", "tình trạng hoặc mục tiêu cần tư vấn"),
             )
+        )
+        missing = [label for key, label in fields if not slots.get(key)][:2]
+        acknowledgment = f"Dạ {brand} đã nhận được hình ảnh của anh/chị. "
+        if missing:
+            fallback = acknowledgment + f"Anh/chị cho em biết thêm {' và '.join(missing)} để hỗ trợ đúng nhu cầu ạ."
         else:
             fallback = (
-                f"Dạ {brand} đã nhận được hình ảnh của anh/chị ạ 📸.\n"
-                f"Để kỹ sư nông nghiệp chẩn đoán chính xác tình trạng{crop_part} và tư vấn giải pháp/sản phẩm phù hợp nhất, "
-                f"anh/chị cho em xin thêm thông tin: vườn mình ở tỉnh/huyện nào và số điện thoại để chuyên viên kỹ thuật gọi hỗ trợ xem vườn {deadline_text} nha 🌾"
+                acknowledgment
+                + "Em chưa có kết quả phân tích nội dung ảnh để kết luận chính xác; "
+                "anh/chị có muốn được chuyên viên kỹ thuật hỗ trợ thêm không ạ?"
             )
 
         # Try model generation first if available
@@ -796,7 +805,13 @@ class ResponseComposer:
                 "y_dinh": "IMAGE_INQUIRY",
                 "tin_nhan_khach": customer_text,
                 "thong_tin_khach_hien_tai": slots,
-                "moc_hen_lien_he": deadline_text,
+                "attachment_context": {
+                    "received_types": ["image"],
+                    "content_analyzed": False,
+                },
+                "missing_information": missing,
+                "contact_commitment_allowed": False,
+                "handoff_created": False,
             }
             llm_reply = self.generator.generate(payload)
             if llm_reply:
@@ -805,6 +820,14 @@ class ResponseComposer:
                     slots=slots,
                     fallback=fallback,
                     deadline_text=deadline_text,
+                    received_attachment_types=("image",),
+                    contact_commitment_allowed=False,
+                    page_id=page_id,
+                    workflow=(
+                        WorkflowType.PRODUCT_INQUIRY
+                        if page_id == PageCode.ZEO
+                        else WorkflowType.AGRICULTURE_ADVICE
+                    ),
                 )
 
         return self.validate_no_price(fallback, deadline_text)

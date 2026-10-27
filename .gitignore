@@ -5,6 +5,10 @@ __pycache__/
 *.so
 .Python
 build/
+!/build/
+/build/*
+!/build/*.sh
+!/build/*.md
 develop-eggs/
 dist/
 downloads/

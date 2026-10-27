@@ -29,6 +29,22 @@ def test_prompt_contains_customer_request_but_no_commerce_context() -> None:
     assert "crm" not in prompt.casefold()
 
 
+def test_prompt_exposes_attachment_type_without_provider_payload() -> None:
+    prompt = _client().build_prompt(
+        "CFC",
+        "Vườn anh/chị nên dùng phân gì?",
+        {
+            "attachment_types": ["image"],
+            "raw_payload": {"url": "https://provider.example/private-image"},
+        },
+    )
+
+    payload = json.loads(prompt)
+    assert payload["attachment_types"] == ["image"]
+    assert "private-image" not in prompt
+    assert "raw_payload" not in prompt
+
+
 def test_price_intent_forces_handoff(monkeypatch) -> None:
     class Response:
         def __enter__(self):

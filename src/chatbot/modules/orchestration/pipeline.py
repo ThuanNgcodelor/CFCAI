@@ -343,29 +343,67 @@ class SafeMessagePipeline:
         # Check for image attachments
         attachments = event.message.attachments or []
         has_images = any(att.get("type") == "image" for att in attachments)
+        attachment_types = sorted(
+            {
+                str(attachment.get("type") or "").casefold()
+                for attachment in attachments
+                if attachment.get("type")
+            }
+        )
+        if attachment_types:
+            # Only structural metadata reaches the understanding layer.  URLs
+            # and raw provider payloads remain outside the LLM prompt.
+            context["attachment_types"] = attachment_types
 
         analysis = None
-        if self.intent_analyzer and text:
+        if self.intent_analyzer and (text or attachment_types):
             analysis = self.intent_analyzer.analyze(event.page_id, text, context)
             intent = analysis.primary_intent
         else:
             intent = self.classify(text)
 
         workflow = workflow_for_intent(intent)
+        slot_source = (
+            analysis.extracted_slots
+            if analysis is not None
+            else dict(context.get("current_slots", {}))
+        )
         effective_slots: dict[str, object] = {
             key: value
-            for key, value in dict(context.get("current_slots", {})).items()
+            for key, value in slot_source.items()
             if value is not None and value != ""
         }
-        if analysis and analysis.extracted_slots:
-            effective_slots.update(
-                {
-                    key: value
-                    for key, value in analysis.extracted_slots.items()
-                    if value is not None and value != ""
-                }
-            )
         effective_slots = filter_slots_for_workflow(workflow, effective_slots)
+
+        image_inquiry = has_images and not text.strip()
+        if has_images and self.intent_analyzer:
+            has_product_reference = bool(
+                analysis
+                and (
+                    analysis.detected_skus
+                    or analysis.product_mentions
+                    or analysis.extracted_slots.get("detected_skus")
+                    or analysis.extracted_slots.get("product_mentions")
+                )
+            )
+            configured_image_intent = self.intent_analyzer.normalizer.attachment_intent(
+                "image",
+                event.page_id,
+                intent,
+                normalized_text=self.intent_analyzer.normalizer.normalize(text),
+                has_product_reference=has_product_reference,
+            )
+            image_inquiry = configured_image_intent == intent
+        elif has_images:
+            image_inquiry = intent not in {
+                IntentType.PRICE_INQUIRY,
+                IntentType.PRICE_INQUIRY_DETAIL,
+                IntentType.DEALER_LOOKUP,
+                IntentType.ORDER_TRACKING,
+                IntentType.SALES_LEAD,
+                IntentType.HUMAN_REQUEST,
+                IntentType.CONTACT_REQUEST,
+            }
 
         dealer_lookup: DealerLookupResult | None = None
         previously_no_confirmed_match = (
@@ -432,8 +470,9 @@ class SafeMessagePipeline:
         answer = "Mình đã nhận được tin nhắn và sẽ phản hồi sớm."
         grounding_texts: list[str] = []
 
-        # Case: Image inquiry (sent image with little/no text)
-        if has_images and not text.strip():
+        # Attachment-led requests use their configured workflow even when Meta
+        # delivers a caption and images as separate events in the same batch.
+        if image_inquiry:
             answer = self.composer.compose_image_inquiry_response(
                 event.page_id,
                 slots=effective_slots,

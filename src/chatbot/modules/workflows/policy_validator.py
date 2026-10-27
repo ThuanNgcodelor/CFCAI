@@ -421,6 +421,8 @@ class OutputPolicyValidator:
         fallback: str | None = None,
         handoff_created: bool = False,
         grounding_texts: list[str] | None = None,
+        received_attachment_types: tuple[str, ...] = (),
+        contact_commitment_allowed: bool = True,
     ) -> PolicyValidationResult:
         """Validate candidate response against all output policy constraints.
 
@@ -459,6 +461,22 @@ class OutputPolicyValidator:
                 ),
             )
             candidate_reasons.extend(reason for reason in checks if reason)
+            folded = cls._fold_text(sanitized_candidate)
+            if "image" in received_attachment_types and re.search(
+                r"\b(?:gui|chup|cung cap|bo sung|tai len)\s+(?:lai\s+|them\s+)?"
+                r"(?:anh|hinh)\b",
+                folded,
+            ):
+                candidate_reasons.append("REPEATED_IMAGE_REQUEST")
+            if not contact_commitment_allowed and (
+                re.search(
+                    r"\b(?:se|da|sap)\s+(?:goi|lien he|chuyen|tao yeu cau)\b",
+                    folded,
+                )
+                or re.search(r"\b\d{1,2}\s*(?:h|gio|:)\s*\d{0,2}\b", folded)
+                or re.search(r"\b(?:hen|lien he|goi)\b.{0,40}\b(?:hom nay|ngay mai|som nhat)\b", folded)
+            ):
+                candidate_reasons.append("UNAUTHORIZED_CONTACT_COMMITMENT")
             return sanitized_candidate, candidate_reasons
 
         sanitized, reasons = inspect(text)

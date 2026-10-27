@@ -49,6 +49,13 @@ class VietnameseNormalizer:
         self.transition_slot_transfer: dict[str, list[str]] = config.get(
             "transition_slot_transfer", {}
         )
+        self.slot_rules: dict[str, list[str]] = config.get("slot_rules", {})
+        self.attachment_routing: dict[str, dict[str, Any]] = config.get(
+            "attachment_routing", {}
+        )
+        self.model_intent_evidence: dict[str, list[str]] = config.get(
+            "model_intent_evidence", {}
+        )
         self.location_aliases: dict[str, str] = {}
         fallback_provinces: list[AdministrativeArea] = []
         for entry in config.get("locations", []):
@@ -123,6 +130,81 @@ class VietnameseNormalizer:
                 flags=re.IGNORECASE,
             )
             for marker in self.safety.get(group, [])
+        )
+
+    def normalize_crop_candidate(self, value: object) -> str | None:
+        """Return a customer-stated crop, rejecting configured discourse text.
+
+        Phrases following ``vườn`` are linguistically ambiguous in Vietnamese:
+        ``vườn mít`` names a crop, while ``vườn anh nè`` does not.  The stop and
+        rejection vocabulary lives in configuration so deployments can tune the
+        grammar without adding customer phrases or crop catalogs to Python.
+        """
+        candidate = self.normalize(str(value or "")).strip(" -:")
+        candidate = re.sub(r"^(?:cây|vườn)\s+", "", candidate).strip()
+        for marker in sorted(
+            self.slot_rules.get("crop_stop_markers", []),
+            key=len,
+            reverse=True,
+        ):
+            match = re.search(
+                rf"(?<!\w){re.escape(marker.casefold())}(?!\w)",
+                candidate,
+                flags=re.IGNORECASE,
+            )
+            if match:
+                candidate = candidate[: match.start()].strip(" -:")
+
+        if not candidate:
+            return None
+        rejected = {
+            self.normalize(marker)
+            for marker in self.slot_rules.get("crop_rejection_markers", [])
+        }
+        return None if candidate in rejected else candidate
+
+    def attachment_intent(
+        self,
+        attachment_type: str,
+        page_id: PageCode,
+        inferred_intent: IntentType,
+        *,
+        normalized_text: str = "",
+        has_product_reference: bool = False,
+    ) -> IntentType | None:
+        """Return a configured intent override for an attachment-led request.
+
+        Explicit operational intents (for example price or human handoff) are
+        preserved by configuration.  ``None`` means normal text routing wins.
+        """
+        rule = self.attachment_routing.get(attachment_type.casefold(), {})
+        preserved = {str(value) for value in rule.get("preserve_intents", [])}
+        if inferred_intent.value in preserved:
+            return None
+        if bool(rule.get("preserve_product_reference")) and has_product_reference:
+            return None
+        if normalized_text and any(
+            self.contains(str(group), normalized_text)
+            for group in rule.get("preserve_marker_groups", [])
+        ):
+            return None
+        mapped = dict(rule.get("intent_by_page", {})).get(page_id.value)
+        if not mapped:
+            return None
+        try:
+            return IntentType(str(mapped))
+        except ValueError:
+            return None
+
+    def has_model_intent_evidence(
+        self,
+        intent: IntentType,
+        normalized_text: str,
+    ) -> bool:
+        """Validate model-only high-impact intents against configured evidence."""
+        groups = self.model_intent_evidence.get(intent.value, [])
+        return not groups or any(
+            self.contains(group, normalized_text) for group in groups
         )
 
     def filters_for_workflow(
@@ -205,22 +287,21 @@ class VietnameseNormalizer:
             re.IGNORECASE,
         )
         if crop_match:
-            crop = re.sub(r"\s+", " ", crop_match.group(1)).strip(" -:")
-            crop = re.sub(r"^(?:đang|bị|mình|nhà)\s+", "", crop, flags=re.IGNORECASE)
-            if crop and crop.casefold() not in {"gì", "gi", "nào", "nao", "trồng"}:
+            crop = self.normalize_crop_candidate(crop_match.group(1))
+            if crop:
                 slots["crop"] = crop
         elif action_crop_match := re.search(
             r"\b(?:bón|rải|phun|tưới)\s+(?:cho\s+)?(?:cây\s+)?([^,.!?;\n]{1,40})",
             text,
             re.IGNORECASE,
         ):
-            crop = re.sub(r"\s+", " ", action_crop_match.group(1)).strip(" -:")
-            crop = re.sub(
+            crop_text = re.sub(
                 r"\s+(?:như\s+)?thế\s+nào$|\s+ra\s+sao$|\s+bao\s+nhiêu$",
                 "",
-                crop,
+                action_crop_match.group(1),
                 flags=re.IGNORECASE,
             ).strip()
+            crop = self.normalize_crop_candidate(crop_text)
             if crop:
                 slots["crop"] = crop
         stage_match = re.search(
@@ -277,6 +358,46 @@ class HybridInputAnalyzer:
         self.client = client
         self.normalizer = normalizer
 
+    def _attachment_intent(
+        self,
+        page_id: PageCode,
+        inferred_intent: IntentType,
+        context: dict[str, Any],
+        *,
+        normalized_text: str = "",
+        has_product_reference: bool = False,
+    ) -> IntentType | None:
+        attachment_types = context.get("attachment_types", [])
+        if isinstance(attachment_types, str):
+            attachment_types = [attachment_types]
+        for attachment_type in attachment_types:
+            routed = self.normalizer.attachment_intent(
+                str(attachment_type),
+                page_id,
+                inferred_intent,
+                normalized_text=normalized_text,
+                has_product_reference=has_product_reference,
+            )
+            if routed is not None:
+                return routed
+        return None
+
+    @staticmethod
+    def _transition_to(
+        current_intent: object,
+        target_intent: IntentType,
+    ) -> IntentTransition:
+        current = str(
+            current_intent.value
+            if isinstance(current_intent, IntentType)
+            else current_intent or ""
+        )
+        if not current:
+            return IntentTransition.START
+        if current == target_intent.value:
+            return IntentTransition.CONTINUE
+        return IntentTransition.SWITCH
+
     def analyze(
         self,
         page_id: PageCode,
@@ -308,6 +429,9 @@ class HybridInputAnalyzer:
                 normalized,
                 flags=re.IGNORECASE,
             )
+        )
+        recommendation_requested = self.normalizer.contains(
+            "recommendation_markers", normalized
         )
         has_price_marker = self.normalizer.contains("price_markers", marker_text)
         # A short token can also be part of a place name. While a dealer search
@@ -366,7 +490,10 @@ class HybridInputAnalyzer:
             transition = (
                 IntentTransition.SWITCH if current_intent else IntentTransition.START
             )
-        elif self.normalizer.contains("agri_question_markers", normalized):
+        elif (
+            self.normalizer.contains("agri_question_markers", normalized)
+            or recommendation_requested
+        ):
             forced_intent = IntentType.AGRI_ADVICE
             transition = (
                 IntentTransition.SWITCH if current_intent else IntentTransition.START
@@ -379,6 +506,9 @@ class HybridInputAnalyzer:
             transition = (
                 IntentTransition.SWITCH if current_intent else IntentTransition.START
             )
+        elif self.normalizer.contains("greeting_markers", normalized):
+            forced_intent = IntentType.GENERAL_FAQ
+            transition = self._transition_to(current_intent, forced_intent)
 
         # Advice markers are configuration-driven. They outrank a generic FAQ
         # result, but an open price workflow is retained unless the customer
@@ -413,6 +543,33 @@ class HybridInputAnalyzer:
         ):
             forced_intent = IntentType.DEALER_LOOKUP
             transition = IntentTransition.CONTINUE
+
+        attachment_intent = self._attachment_intent(
+            page_id,
+            forced_intent or IntentType.UNKNOWN,
+            context,
+            normalized_text=normalized,
+        )
+        if not normalized and attachment_intent is not None:
+            attachment_transition = self._transition_to(
+                current_intent, attachment_intent
+            )
+            current_slots = dict(context.get("current_slots", {}))
+            if attachment_transition == IntentTransition.CONTINUE:
+                attachment_slots = current_slots
+            else:
+                attachment_slots = {
+                    key: value
+                    for key, value in current_slots.items()
+                    if key in self.normalizer.cross_workflow_slots
+                }
+            return IntentAnalysisResult(
+                primary_intent=attachment_intent,
+                intent_transition=attachment_transition,
+                confidence=1.0,
+                extracted_slots=attachment_slots,
+                evidence_message_ids=list(context.get("message_ids", [])),
+            )
         try:
             result = self.client.analyze(page_id.value, normalized, context)
         except (OllamaUnderstandingError, OSError, ValueError, KeyError, TypeError):
@@ -430,6 +587,16 @@ class HybridInputAnalyzer:
             else:
                 fallback_intent = IntentType.UNKNOWN
                 fallback_trans = IntentTransition.UNCLEAR
+
+            attachment_intent = self._attachment_intent(
+                page_id,
+                fallback_intent,
+                context,
+                normalized_text=normalized,
+            )
+            if attachment_intent is not None:
+                fallback_intent = attachment_intent
+                fallback_trans = self._transition_to(current_intent, attachment_intent)
 
             fallback_slots = dict(deterministic_slots)
             if fallback_trans == IntentTransition.CONTINUE:
@@ -454,6 +621,14 @@ class HybridInputAnalyzer:
                 },
                 evidence_message_ids=list(context.get("message_ids", [])),
             )
+
+        if forced_intent is None and not self.normalizer.has_model_intent_evidence(
+            result.primary_intent,
+            normalized,
+        ):
+            result.primary_intent = IntentType.UNKNOWN
+            result.intent_transition = IntentTransition.UNCLEAR
+            result.requires_human_handoff = False
 
         if forced_intent is None:
             continuation_intent = self.normalizer.continuation_intent(
@@ -480,6 +655,25 @@ class HybridInputAnalyzer:
             elif result.primary_intent in {IntentType.UNKNOWN, IntentType.GENERAL_FAQ}:
                 result.primary_intent = IntentType.PRICE_INQUIRY_DETAIL
                 result.intent_transition = IntentTransition.CONTINUE
+
+        has_product_reference = bool(
+            result.detected_skus
+            or result.product_mentions
+            or result.extracted_slots.get("detected_skus")
+            or result.extracted_slots.get("product_mentions")
+        )
+        attachment_intent = self._attachment_intent(
+            page_id,
+            result.primary_intent,
+            context,
+            normalized_text=normalized,
+            has_product_reference=has_product_reference,
+        )
+        if attachment_intent is not None:
+            result.primary_intent = attachment_intent
+            result.intent_transition = self._transition_to(
+                current_intent, attachment_intent
+            )
 
         slot_sources = [result.extracted_slots, deterministic_slots]
         if result.intent_transition != IntentTransition.SWITCH:
@@ -526,8 +720,13 @@ class HybridInputAnalyzer:
                 # Preserve the raw customer/model location for an exact CRM
                 # address match, but do not invent province/district hierarchy.
                 merged_slots["location"] = result.location
-        if result.crop:
-            merged_slots["crop"] = result.crop
+        crop_value = result.crop or merged_slots.get("crop")
+        if crop_value:
+            normalized_crop = self.normalizer.normalize_crop_candidate(crop_value)
+            if normalized_crop:
+                merged_slots["crop"] = normalized_crop
+            else:
+                merged_slots.pop("crop", None)
         if result.stage:
             merged_slots["stage"] = result.stage
         if result.problem:
@@ -538,12 +737,12 @@ class HybridInputAnalyzer:
             merged_slots["detected_skus"] = result.detected_skus
         result.extracted_slots = merged_slots
 
-        if result.primary_intent in {
+        result.requires_human_handoff = result.primary_intent in {
             IntentType.PRICE_INQUIRY,
             IntentType.PRICE_INQUIRY_DETAIL,
             IntentType.HUMAN_REQUEST,
-        }:
-            result.requires_human_handoff = True
+            IntentType.UNKNOWN,
+        }
         return result
 
 

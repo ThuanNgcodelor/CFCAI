@@ -48,6 +48,20 @@
       "người thật",
       "nguoi that",
       "nhân viên tư vấn",
+      "gặp tư vấn viên",
+      "gap tu van vien",
+      "nói chuyện với nhân viên",
+      "noi chuyen voi nhan vien",
+      "chuyển cho nhân viên",
+      "chuyen cho nhan vien",
+      "gặp người phụ trách",
+      "gap nguoi phu trach",
+      "gặp admin",
+      "gap admin",
+      "muốn gặp admin",
+      "muon gap admin",
+      "có người hỗ trợ",
+      "co nguoi ho tro",
       "admin hỗ trợ",
       "cho gặp nhân viên"
     ],
@@ -91,6 +105,20 @@
       "rải",
       "phun cho",
       "tưới cho"
+    ],
+    "recommendation_markers": [
+      "nên dùng phân",
+      "nen dung phan",
+      "nên bón phân",
+      "nen bon phan",
+      "nên mua phân",
+      "nen mua phan",
+      "phân nào phù hợp",
+      "phan nao phu hop",
+      "loại phân nào",
+      "loai phan nao",
+      "tư vấn loại phân",
+      "tu van loai phan"
     ],
     "agri_question_markers": [
       "pha phân",
@@ -172,6 +200,88 @@
       "hi",
       "alo"
     ]
+  },
+  "slot_rules": {
+    "crop_stop_markers": [
+      "trong hình",
+      "trong hinh",
+      "trong ảnh",
+      "trong anh",
+      "trên hình",
+      "tren hinh",
+      "trên ảnh",
+      "tren anh",
+      "ở",
+      "o",
+      "vào",
+      "vao",
+      "giai đoạn",
+      "giai doan",
+      "giải đoạn",
+      "này",
+      "nay",
+      "nè",
+      "ne",
+      "đây",
+      "day",
+      "đang",
+      "dang",
+      "bị",
+      "bi",
+      "nên",
+      "nen",
+      "muốn",
+      "muon",
+      "cần",
+      "can",
+      "của",
+      "cua",
+      "và",
+      "va"
+    ],
+    "crop_rejection_markers": [
+      "a",
+      "ac",
+      "a/c",
+      "anh",
+      "chị",
+      "chi",
+      "em",
+      "tôi",
+      "toi",
+      "mình",
+      "minh",
+      "nhà",
+      "nha",
+      "gì",
+      "gi",
+      "nào",
+      "nao",
+      "trồng",
+      "trong"
+    ]
+  },
+  "attachment_routing": {
+    "image": {
+      "intent_by_page": {
+        "CFC": "AGRI_ADVICE",
+        "ZEO": "PRODUCT_INQUIRY"
+      },
+      "preserve_intents": [
+        "PRICE_INQUIRY",
+        "PRICE_INQUIRY_DETAIL",
+        "DEALER_LOOKUP",
+        "ORDER_TRACKING",
+        "SALES_LEAD",
+        "HUMAN_REQUEST",
+        "CONTACT_REQUEST"
+      ],
+      "preserve_marker_groups": ["career_markers", "homecare_markers"],
+      "preserve_product_reference": true
+    }
+  },
+  "model_intent_evidence": {
+    "HUMAN_REQUEST": ["human_markers"]
   },
   "quantity_units": [
     "kg",
