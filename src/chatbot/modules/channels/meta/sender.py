@@ -45,5 +45,7 @@ class MetaSender:
         except Exception as exc:
             raise MetaSendError("Meta Send API request failed") from exc
         if "message_id" not in body:
-            raise MetaSendError(f"Meta Send API rejected request: {body}")
+            # Provider bodies may contain identifiers or diagnostic echoes; keep
+            # them out of application errors/logs.
+            raise MetaSendError("Meta Send API rejected request")
         return str(body["message_id"])

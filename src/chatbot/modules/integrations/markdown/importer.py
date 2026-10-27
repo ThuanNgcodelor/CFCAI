@@ -378,8 +378,9 @@ class MarkdownCatalogImporter:
             self.repository.stage(report, faqs, [])
         return report
 
-    def import_all(self) -> list[dict[str, Any]]:
+    def import_all(self, *, actor: str = "system") -> list[dict[str, Any]]:
         mapping = self._mapping()
         return [
-            self.import_source(self._source_id(source)) for source in mapping["sources"]
+            self.import_source(self._source_id(source), actor=actor)
+            for source in mapping["sources"]
         ]

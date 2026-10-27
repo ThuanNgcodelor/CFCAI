@@ -10,6 +10,7 @@ from src.chatbot.shared.enums import (
     OutboxStatus,
     Ownership,
     PageCode,
+    WorkflowType,
 )
 
 
@@ -74,4 +75,7 @@ class OutboxMessageSchema(BaseModel):
     batch_version: int
     expected_conversation_version: int | None = None
     expected_ownership: Ownership = Ownership.AI
+    # Runtime metadata used by the release policy. It is not customer-facing
+    # knowledge and remains optional for compatibility with existing outbox rows.
+    workflow: WorkflowType | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

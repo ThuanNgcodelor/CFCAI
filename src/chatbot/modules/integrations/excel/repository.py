@@ -268,6 +268,7 @@ class CatalogPublishRepository:
         record_type: str,
         record_id: str,
         decision: str,
+        actor: str = "system",
     ) -> bool:
         table_and_key = {
             "faq": ("faq_items", "faq_id"),
@@ -286,7 +287,21 @@ class CatalogPublishRepository:
                   AND status<>'CONFLICT'""",
                 (status, record_id, batch_id, page_id.value),
             )
-            return cursor.rowcount == 1
+            changed = cursor.rowcount == 1
+            if changed:
+                self._audit(
+                    cursor,
+                    action="REVIEW_RECORD",
+                    actor=actor,
+                    page_id=page_id,
+                    batch_id=batch_id,
+                    details={
+                        "record_type": record_type,
+                        "record_id": record_id,
+                        "decision": status,
+                    },
+                )
+            return changed
 
     def list_records(
         self,

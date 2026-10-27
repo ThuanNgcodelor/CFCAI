@@ -2,6 +2,9 @@
 
 import logging
 
+# pyrefly: ignore[missing-import]
+from redis.exceptions import RedisError
+
 from src.chatbot.core.settings import settings
 from src.chatbot.shared.enums import PageCode
 
@@ -74,7 +77,7 @@ def build_ops_control_store() -> OpsControlStore:
             store = RedisOpsControlStore(settings.get_redis_url())
             store.snapshot()
             return store
-        except (OSError, ConnectionError) as exc:
+        except (OSError, ConnectionError, RedisError) as exc:
             logger.warning(
                 "Redis ops controls unavailable; using local fallback: %s", exc
             )

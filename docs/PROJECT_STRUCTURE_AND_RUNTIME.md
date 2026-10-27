@@ -25,7 +25,7 @@ CFCAI/
 │   ├── cfc/faq/                  FAQ Markdown chuẩn duy nhất của CFC
 │   ├── cfc/catalog/              Excel danh mục CFC
 │   └── zeo/catalog/              Excel danh mục ZEO
-├── migrations/                   Schema PostgreSQL 001..008, chạy theo thứ tự
+├── migrations/                   Schema PostgreSQL 001..009, chạy theo thứ tự
 ├── src/chatbot/                  Mã nghiệp vụ chính
 │   ├── core/                     Settings và đọc biến môi trường
 │   ├── infrastructure/           Database, durable inbox/outbox, worker
@@ -42,7 +42,7 @@ CFCAI/
 │   │   └── workflows/            Composer, contact, SLA, output validator
 │   └── shared/                   Enum, event schema, địa danh dùng chung
 ├── tests/                        Unit, integration, eval và fixture bất biến
-├── scripts/                      Sinh fixture, đánh giá F6 và tiện ích local
+├── scripts/                      Sinh fixture, đánh giá F6, preflight và backup guard
 ├── reports/                      Bằng chứng eval đã sinh; không phải dữ liệu production
 ├── docs/                         Kiến trúc, nguồn dữ liệu, kế hoạch, test run
 ├── docker-compose.yml            API/worker/Postgres/Redis/data jobs
@@ -74,7 +74,8 @@ Meta webhook
   -> output policy: giá, placeholder, persona, grounding, jargon
   -> PostgreSQL outbox
   -> final ownership + batch/version guard
-  -> Meta Send API
+  -> delivery policy (disabled/shadow/canary/live)
+  -> Meta Send API (chỉ khi policy và sign-off cho phép)
 ```
 
 Qwen chỉ hỗ trợ hiểu ngôn ngữ và diễn đạt. Giá, sản phẩm, đại lý, số điện thoại
@@ -156,6 +157,10 @@ python scripts/build_cfc_faq_test_cases.py --check
 python scripts/evaluate_cfc_faq.py --live --check-production --check
 pytest tests/eval/test_regression_full.py tests/eval/test_cfc_conversation_replays.py
 pytest
+
+# F7/F8 preflight không bật gửi thật
+python scripts/verify_go_live.py --offline
+bash scripts/backup_postgres.sh
 ```
 
 Không chạy `reset_conversations.py --all`, xóa Docker volume hoặc publish batch

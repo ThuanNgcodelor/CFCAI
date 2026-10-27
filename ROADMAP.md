@@ -14,8 +14,8 @@
 - [x] **Phase 4: Qwen 8B Understanding (Structured Intent & Entity Extraction) (COMPLETED — deterministic safety + Qwen structured JSON + live eval pass)**
 - [x] **Phase 5: Business Workflows & Final Send Outbox Guard (COMPLETED — workflows, output policy validator & outbox guard pass)**
 - [ ] **Phase 6: Approved Knowledge Retrieval & FAQ RAG (PARTIAL — approved Postgres/keyword retrieval có; semantic RAG/citation chưa có)**
-- [ ] **Phase 7: Operations Console & Emergency Controls (Kill Switch) (PARTIAL — Redis shared pause/resume có; auth/RBAC/audit chưa có)**
-- [ ] **Phase 8: Security Hardening, Regression Verification & Production Go-Live**
+- [ ] **Phase 7: Operations Console & Emergency Controls (IMPLEMENTED/TEST PASS — token/RBAC, audit, handoff queue, takeover và emergency controls có; còn SLA notification/rehearsal vận hành thực tế)**
+- [ ] **Phase 8: Security Hardening, Regression Verification & Production Go-Live (AUTOMATED PASS/PILOT BLOCKED — hardening, runbook, shadow/canary code có; chưa có shadow thật, Meta production test, restore drill và business sign-off)**
 - [ ] **Integration: MISA AMIS CRM Python Warmer (PARTIAL — endpoint thật và Redis snapshot đã chạy; workflow chat/TTL/GPS còn thiếu)**
 
 ## Kế hoạch thực thi từ trạng thái hiện tại
@@ -193,20 +193,31 @@ pipeline keyword/FAQ hiện tại.
 
 ### Phase 7 — Operations & Human Handoff
 
-- [ ] Auth/RBAC cho admin endpoints; audit append-only.
-- [ ] Handoff queue có claim/resolve/SLA/notification.
-- [ ] Per-conversation pause/resume/takeover và outbox suppression kiểm chứng thật.
-- [ ] Dashboard tối thiểu: inbox backlog, outbox failure, Ollama timeout, sync freshness.
-- **Gate:** `tests/integration/test_ops_controls.py` mở rộng pass.
+- [x] Auth token cho mọi `/admin` endpoint; RBAC cấu hình được theo `viewer`,
+  `operator`, `publisher`, `admin`; audit append-only không chứa phone/secret.
+- [x] Handoff queue page-scoped có list, claim, resolve và lịch sử audit.
+- [x] Per-Page pause/resume, manual takeover/resume và suppress outbox/batch được
+  kiểm chứng transactionally; Redis không truy cập được sẽ fall back an toàn thay
+  vì làm API crash.
+- [x] Operational summary có count outbox failure, handoff status và shadow review.
+- [ ] SLA escalation và notification đến hệ thống nhân viên thật: cần chủ hệ thống
+  chọn kênh nhận và chính sách phân công; không tự gửi email/CRM message.
+- **Gate:** `tests/integration/test_ops_controls.py` — **6 passed** ngày 27/10/2026.
 
 ### Phase 8 — Go-Live
 
-- [ ] Chuyển toàn bộ transcript thật thành T01–T12 automated regression.
-- [ ] Replay/shadow/canary trước khi bật auto-reply rộng.
-- [ ] Backup/restore PostgreSQL; Redis cache rebuild; Named Cloudflare Tunnel/domain cố định.
-- [ ] Security review secrets/PII/webhook/admin endpoints.
+- [x] Chuyển toàn bộ transcript thật thành T01–T12 automated regression; full
+  suite **292 passed, 4 skipped** ngày 27/10/2026.
+- [x] Có Replay test và delivery mode shadow/canary được kiểm tra tự động; chưa
+  coi đây là bằng chứng shadow traffic thật.
+- [x] Có backup/restore guard, API/Ollama preflight read-only và runbook.
+- [x] Security review code: PII/secret log masking, token/RBAC và production
+  configuration fail-closed.
+- [ ] Chạy shadow traffic thật, backup/restore drill, Meta webhook production và
+  Ollama model readiness có evidence từ môi trường phát hành.
 - [ ] Business sign-off và rollback drill.
-- **Gate:** `tests/eval/test_regression_full.py` pass 100%; thiếu một gate thì chưa production.
+- **Gate code:** `tests/eval/test_regression_full.py` pass; thiếu evidence/sign-off
+  môi trường thì chưa production.
 
 ### Mốc hoàn thành thực dụng
 
@@ -229,8 +240,8 @@ pipeline keyword/FAQ hiện tại.
 | Phase 2 | Durable conversation/message/batch/slot DB, Redis schedule, Ops takeover transaction và final outbox guard; integration gate 6/6 pass | Staging pass; chưa đóng gate vì chưa test live Business Suite echo/takeover và follow-up analyzer thuộc Phase 4 |
 | Phase 3 | Mapping ngoài code, checksum/idempotent quarantine, record/batch review, atomic publish/rollback, customer-only read model; integration gate 5/5 pass | Đạt DoD kỹ thuật; batch dữ liệu thật vẫn chờ người duyệt |
 | Phase 6 | Ranker riêng theo miền, exact/alias + score/margin, ambiguity fail-closed, page/status filter; F4 gate 132/132 pass; chưa có vector/RAG citation hiển thị | Partial |
-| Phase 7 | `/admin/ops/status`, pause/resume; Redis state dùng chung API/worker; `tests/integration/test_ops_controls.py` pass; chưa có auth/RBAC/audit/task queue | Partial |
-| Phase 8 | `tests/eval/test_regression_full.py` đã chạy T01–T12: 12/12 pass; full suite 275 pass; còn shadow/canary, security, backup/restore và production sign-off | Partial |
+| Phase 7 | Token + RBAC config cho `/admin`, durable audit, list/claim/resolve handoff, takeover/resume, shadow/outbox summary; `tests/integration/test_ops_controls.py` 6 passed | Implemented/test pass; SLA notification và rehearsal thực tế còn pending |
+| Phase 8 | PII/secret logging guard, delivery `disabled`/`shadow`/`canary`/`live` policy, guarded backup/restore, preflight/runbook; T01–T12 pass, full suite 292 passed/4 skipped | Automated pass; shadow thật, restore drill, Meta production test và sign-off còn BLOCKED |
 | MISA | Endpoint thật warm thành công và Redis snapshot có; dữ liệu GPS bằng 0, field mapping nhiều null, workflow chat chưa hoàn chỉnh | Partial, chưa production |
 
 Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn tại. Mỗi phase cần lệnh gate, regression của phase trước và bằng chứng môi trường tương ứng.
@@ -321,17 +332,26 @@ Không được đổi `[ ]` thành `[x]` chỉ vì code hoặc fixture tồn t�
 ### Phase 7: Operations Console & Emergency Controls
 - [x] Cung cấp API quản trị khẩn cấp:
   - Pause / Resume auto-reply theo từng Page (`kill_switch_cfc`, `kill_switch_zeo`).
-  - [ ] Takeover thủ công theo từng hội thoại.
-  - [ ] Xem danh sách tác vụ Handoff đang chờ nhân viên xử lý.
-- [ ] Hệ thống Audit Log: Ghi lại ai thay đổi trạng thái, ai duyệt dữ liệu, lịch sử chuyển quyền.
-- **Lệnh nghiệm thu:** `pytest tests/integration/test_ops_controls.py`
+  - [x] Takeover/resume thủ công theo từng hội thoại.
+  - [x] Xem, claim và resolve tác vụ Handoff đang chờ nhân viên xử lý.
+- [x] Hệ thống Audit Log: thay đổi trạng thái, claim/resolve và lịch sử chuyển quyền;
+  data publish đã audit actor qua `X-Operator-Id`.
+- [ ] SLA notification tích hợp kênh nhân viên: phụ thuộc kênh/phân công do chủ hệ
+  thống chọn, không được giả lập là đã gửi.
+- **Lệnh nghiệm thu:** `pytest tests/integration/test_ops_controls.py` — 6 passed
+  ngày 27/10/2026.
 
 ---
 
 ### Phase 8: Security Hardening & Go-Live Verification
 - [x] Chạy kiểm thử đầy đủ 12 ca hồi quy thực tế (T01 – T12) đạt 12/12 trong `tests/eval/test_regression_full.py` ngày 27/10/2026.
-- [ ] Kiểm tra bảo mật: Mask thông tin cá nhân (PII) trong log, bảo vệ secret keys.
-- [ ] Chạy Replay test trên dữ liệu cũ và Shadow mode trước khi bật gửi tin thật.
-- [ ] Docker Compose, PostgreSQL backup/restore, Ollama health/model readiness và Meta webhook production test đạt.
+- [x] Kiểm tra bảo mật: Mask PII/secret trong log, token admin/RBAC, config production
+  fail-closed; có regression test.
+- [x] Có Replay test và delivery mode shadow/canary được kiểm tra tự động; chưa coi
+  đây là bằng chứng shadow traffic thật.
+- [x] Docker Compose nhận delivery config explicit; có backup/restore guard,
+  Ollama/API preflight và runbook.
+- [ ] Backup/restore drill, Ollama model readiness và Meta webhook production test có
+  evidence từ môi trường phát hành.
 - [ ] Nghiệm thu toàn bộ Go-live gate và ký duyệt bàn giao; chưa được bật auto-reply trước bước này.
 - **Lệnh nghiệm thu:** `pytest tests/eval/test_regression_full.py`

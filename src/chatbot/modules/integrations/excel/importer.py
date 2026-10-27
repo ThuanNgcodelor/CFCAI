@@ -226,10 +226,10 @@ class ExcelCatalogImporter:
     def import_zeo_file(self, file_path: str | None = None) -> dict[str, Any]:
         return self.import_page(PageCode.ZEO, file_path)
 
-    def import_all(self) -> list[dict[str, Any]]:
+    def import_all(self, *, actor: str = "system") -> list[dict[str, Any]]:
         mapping = self._mapping()
         return [
-            self.import_page(PageCode(source["page_id"]))
+            self.import_page(PageCode(source["page_id"]), actor=actor)
             for source in mapping["sources"]
         ]
 

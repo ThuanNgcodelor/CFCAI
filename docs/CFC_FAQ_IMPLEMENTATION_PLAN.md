@@ -576,11 +576,15 @@ pytest
 
 **Mục tiêu:** Đưa bản đã pass vào vận hành có khả năng dừng và rollback.
 
+**Trạng thái code (27/10/2026):** `IMPLEMENTED / AUTOMATED PASS`. Không phải
+`PRODUCTION PASS`: evidence shadow/canary thật và business sign-off vẫn chưa có,
+nên delivery đang giữ `disabled`.
+
 **Công việc**
 
 - Publish version FAQ đã ký duyệt; lưu version rollback.
 - Chạy shadow: tạo đáp án nhưng không gửi khách, so với nhân viên/expected result.
-- Canary chỉ Page CFC và một nhóm intent ít rủi ro trước (`DIRECT_FAQ`).
+- Canary chỉ Page CFC và workflow FAQ ít rủi ro trước (`FAQ_ANSWER`).
 - Sau đó mới mở product, dealer; agronomy mở cuối cùng sau chuyên gia sign-off.
 - Theo dõi intent distribution, no-match, handoff, output guard rejection, duplicate,
   outbox failure và CRM freshness.
@@ -595,6 +599,19 @@ pytest
 - Có business sign-off; không tự động mở rộng rollout.
 
 **Ánh xạ ROADMAP:** Phase 7 và Phase 8.
+
+**Artefact đã có**
+
+- `DELIVERY_MODE=disabled|shadow|canary|live`; default `disabled`. Shadow claim
+  outbox, ghi `delivery_shadow_reviews`, rồi suppress trước khi có thể gọi Meta.
+- Canary là policy config page/workflow/tỷ lệ/allow-list; thiếu bất cứ điều kiện
+  nào hoặc `DELIVERY_NOT_BEFORE` thì deny, không có nhánh hardcode theo câu khách hỏi.
+- `/admin/handoffs`, takeover/resume, pause/resume, audit và operational summary
+  đều page-scoped; admin token/RBAC bảo vệ endpoint.
+- `docs/GO_LIVE_RUNBOOK.md`, `scripts/backup_postgres.sh`,
+  `scripts/restore_postgres.sh` và `scripts/verify_go_live.py` là quy trình có
+  chốt an toàn, không tự kích hoạt gửi thật.
+- Báo cáo kiểm thử: `docs/test_runs/cfc_faq_phase_f7_f8_2026-10-27.md`.
 
 ## 6. Thứ tự PR/triển khai đề xuất
 

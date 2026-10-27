@@ -23,7 +23,7 @@ class OutboxStore(Protocol):
 
     def mark_sent(self, outbox_id: str) -> None: ...
 
-    def mark_failed(self, outbox_id: str) -> None: ...
+    def mark_failed(self, outbox_id: str, failure_code: str = "DELIVERY_ERROR") -> None: ...
 
 
 class InMemoryOutboxStore:
@@ -74,7 +74,7 @@ class InMemoryOutboxStore:
                 update={"status": OutboxStatus.SENT}
             )
 
-    def mark_failed(self, outbox_id: str) -> None:
+    def mark_failed(self, outbox_id: str, failure_code: str = "DELIVERY_ERROR") -> None:
         if outbox_id in self.messages:
             self.messages[outbox_id] = self.messages[outbox_id].model_copy(
                 update={"status": OutboxStatus.FAILED}
@@ -100,6 +100,8 @@ class PostgresOutboxStore:
     CREATE INDEX IF NOT EXISTS idx_outbox_pending ON outbox_messages(status, id);
     ALTER TABLE outbox_messages
         ADD COLUMN IF NOT EXISTS expected_conversation_version BIGINT;
+    ALTER TABLE outbox_messages
+        ADD COLUMN IF NOT EXISTS failure_code TEXT;
     """
 
     def __init__(self, database_url: str) -> None:
@@ -231,12 +233,13 @@ class PostgresOutboxStore:
                 (outbox_id,),
             )
 
-    def mark_failed(self, outbox_id: str) -> None:
+    def mark_failed(self, outbox_id: str, failure_code: str = "DELIVERY_ERROR") -> None:
         self._ensure_schema()
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "UPDATE outbox_messages SET status='FAILED' WHERE outbox_id=%s",
-                (outbox_id,),
+                """UPDATE outbox_messages
+                SET status='FAILED',failure_code=%s WHERE outbox_id=%s""",
+                (failure_code, outbox_id),
             )
 
 

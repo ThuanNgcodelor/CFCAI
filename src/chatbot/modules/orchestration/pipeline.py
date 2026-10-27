@@ -736,5 +736,6 @@ class SafeMessagePipeline:
                 batch_version=delivery_batch_version,
                 expected_conversation_version=effective_conversation_version,
                 expected_ownership=Ownership.AI,
+                workflow=workflow,
             )
         )

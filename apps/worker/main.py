@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import time
 
+from src.chatbot.core.logging import configure_logging
 from src.chatbot.core.settings import settings
 from src.chatbot.infrastructure.db.migrations import apply_migrations
 from src.chatbot.infrastructure.messaging.inbox import build_inbox_store
@@ -125,7 +126,7 @@ def run_once() -> int:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_logging(settings.LOG_LEVEL)
     interval = 2.0
     while True:
         try:

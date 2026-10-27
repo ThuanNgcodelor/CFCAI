@@ -56,12 +56,15 @@ class AmisCrmClient:
                     break
                 backoff = min(15.0, (2**attempt)) + 0.1
                 logger.warning(
-                    f"[AMIS Client] Transient error on attempt {attempt + 1}/{self.max_retries}: {err}. Retrying in {backoff:.2f}s..."
+                    "AMIS transient request failure attempt=%s/%s; retrying in %.2fs",
+                    attempt + 1,
+                    self.max_retries,
+                    backoff,
                 )
                 await asyncio.sleep(backoff)
         raise RuntimeError(
-            f"[AMIS Client] Request failed after {self.max_retries} attempts: {last_error}"
-        )
+            f"AMIS request failed after {self.max_retries} attempts"
+        ) from last_error
 
     async def authenticate(self, client: httpx.AsyncClient | None = None) -> str:
         if not self.client_secret:
@@ -90,9 +93,7 @@ class AmisCrmClient:
                 token = data["data"]["access_token"]
 
             if not token:
-                raise RuntimeError(
-                    f"[AMIS Client] Empty auth token in response: {str(data)[:200]}"
-                )
+                raise RuntimeError("AMIS authentication response did not contain a token")
 
             self._token = token
             return token

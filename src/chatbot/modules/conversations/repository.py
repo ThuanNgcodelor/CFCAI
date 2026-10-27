@@ -8,7 +8,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
-from src.chatbot.shared.enums import IntentType, Ownership, PageCode, WorkflowType
+from src.chatbot.shared.enums import (
+    HandoffStatus,
+    IntentType,
+    Ownership,
+    PageCode,
+    WorkflowType,
+)
 from src.chatbot.shared.events import InboxEvent, NormalizedMessage
 
 
@@ -41,6 +47,32 @@ class PostgresConversationRepository:
         import psycopg2  # type: ignore[import-untyped]
 
         return psycopg2.connect(self._dsn)
+
+    @staticmethod
+    def _record_ops_audit(
+        cursor,
+        *,
+        page_id: PageCode,
+        conversation_id: str | None,
+        action: str,
+        actor: str,
+        reason: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Append non-PII operational evidence in the same business transaction."""
+        cursor.execute(
+            """INSERT INTO ops_audit_log(
+            page_id,conversation_id,action,actor,reason,details)
+            VALUES (%s,%s,%s,%s,%s,%s::jsonb)""",
+            (
+                page_id.value,
+                conversation_id,
+                action,
+                actor,
+                reason,
+                json.dumps(details or {}, ensure_ascii=False),
+            ),
+        )
 
     @staticmethod
     def conversation_id(page_id: PageCode, sender_id: str) -> str:
@@ -383,6 +415,134 @@ class PostgresConversationRepository:
             existing = cursor.fetchone()
             return str(existing[0]) if existing else None
 
+    def list_handoff_tasks(
+        self,
+        *,
+        page_id: PageCode | None = None,
+        status: HandoffStatus | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """List sales/support work without crossing a page boundary."""
+        if not 1 <= limit <= 500:
+            raise ValueError("limit must be 1..500")
+        clauses: list[str] = []
+        params: list[object] = []
+        if page_id:
+            clauses.append("page_id=%s")
+            params.append(page_id.value)
+        if status:
+            clauses.append("status=%s")
+            params.append(status.value)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        params.append(limit)
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT task_id,page_id,conversation_id,batch_version,workflow,reason,
+                status,slots,created_at,claimed_at,claimed_by,resolved_at,resolved_by,resolution
+                FROM handoff_tasks"""
+                + where
+                + " ORDER BY created_at ASC LIMIT %s",
+                tuple(params),
+            )
+            columns = [column[0] for column in cursor.description]
+            return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
+
+    def claim_handoff_task(
+        self,
+        page_id: PageCode,
+        task_id: str,
+        *,
+        actor: str,
+        reason: str,
+    ) -> dict[str, Any]:
+        if not actor.strip() or not reason.strip():
+            raise ValueError("handoff claim actor and reason are required")
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT task_id,conversation_id,status,claimed_by,workflow,reason,slots
+                FROM handoff_tasks WHERE task_id=%s AND page_id=%s FOR UPDATE""",
+                (task_id, page_id.value),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                raise ValueError("unknown handoff task or page scope mismatch")
+            current_status = HandoffStatus(row[2])
+            if current_status == HandoffStatus.PENDING:
+                cursor.execute(
+                    """UPDATE handoff_tasks SET status='CLAIMED',claimed_at=now(),claimed_by=%s
+                    WHERE task_id=%s AND page_id=%s""",
+                    (actor, task_id, page_id.value),
+                )
+            elif not (
+                current_status == HandoffStatus.CLAIMED and str(row[3] or "") == actor
+            ):
+                raise ValueError(f"handoff task is already {current_status.value}")
+            self._record_ops_audit(
+                cursor,
+                page_id=page_id,
+                conversation_id=str(row[1]),
+                action="HANDOFF_CLAIM",
+                actor=actor,
+                reason=reason,
+                details={"task_id": task_id, "workflow": row[4]},
+            )
+        return self._handoff_task(page_id, task_id)
+
+    def resolve_handoff_task(
+        self,
+        page_id: PageCode,
+        task_id: str,
+        *,
+        actor: str,
+        resolution: str,
+    ) -> dict[str, Any]:
+        if not actor.strip() or not resolution.strip():
+            raise ValueError("handoff resolution actor and resolution are required")
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT conversation_id,status,resolved_by,workflow FROM handoff_tasks
+                WHERE task_id=%s AND page_id=%s FOR UPDATE""",
+                (task_id, page_id.value),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                raise ValueError("unknown handoff task or page scope mismatch")
+            current_status = HandoffStatus(row[1])
+            if current_status in {HandoffStatus.PENDING, HandoffStatus.CLAIMED}:
+                cursor.execute(
+                    """UPDATE handoff_tasks SET status='RESOLVED',resolved_at=now(),
+                    resolved_by=%s,resolution=%s WHERE task_id=%s AND page_id=%s""",
+                    (actor, resolution, task_id, page_id.value),
+                )
+            elif not (
+                current_status == HandoffStatus.RESOLVED and str(row[2] or "") == actor
+            ):
+                raise ValueError(f"handoff task is already {current_status.value}")
+            self._record_ops_audit(
+                cursor,
+                page_id=page_id,
+                conversation_id=str(row[0]),
+                action="HANDOFF_RESOLVE",
+                actor=actor,
+                reason=resolution,
+                details={"task_id": task_id, "workflow": row[3]},
+            )
+        return self._handoff_task(page_id, task_id)
+
+    def _handoff_task(self, page_id: PageCode, task_id: str) -> dict[str, Any]:
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """SELECT task_id,page_id,conversation_id,batch_version,workflow,reason,
+                status,slots,created_at,claimed_at,claimed_by,resolved_at,resolved_by,resolution
+                FROM handoff_tasks WHERE task_id=%s AND page_id=%s""",
+                (task_id, page_id.value),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                raise ValueError("unknown handoff task or page scope mismatch")
+            columns = [column[0] for column in cursor.description]
+            return dict(zip(columns, row, strict=True))
+
     def load_understanding_context(
         self,
         page_id: PageCode,
@@ -477,6 +637,15 @@ class PostgresConversationRepository:
                 VALUES (%s,%s,%s,'HUMAN',%s,%s)""",
                 (page_id.value, conversation_id, current[1], actor, reason),
             )
+            self._record_ops_audit(
+                cursor,
+                page_id=page_id,
+                conversation_id=conversation_id,
+                action="CONVERSATION_TAKEOVER",
+                actor=actor,
+                reason=reason,
+                details={"from_owner": current[1], "to_owner": "HUMAN"},
+            )
         return DurableConversation(
             conversation_id,
             page_id,
@@ -520,6 +689,15 @@ class PostgresConversationRepository:
                 page_id,conversation_id,from_owner,to_owner,actor,reason)
                 VALUES (%s,%s,%s,'AI',%s,%s)""",
                 (page_id.value, conversation_id, current[1], actor, reason),
+            )
+            self._record_ops_audit(
+                cursor,
+                page_id=page_id,
+                conversation_id=conversation_id,
+                action="CONVERSATION_RESUME",
+                actor=actor,
+                reason=reason,
+                details={"from_owner": current[1], "to_owner": "AI"},
             )
         return DurableConversation(
             conversation_id,
