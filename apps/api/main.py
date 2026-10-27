@@ -208,6 +208,7 @@ async def get_misa_sync_status():
     """
     Returns latest AMIS sync summary and counts.
     """
+    # pyrefly: ignore[missing-import]
     import redis.asyncio as redis
 
     redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)
@@ -229,6 +230,7 @@ async def get_eligible_dealers():
     """
     import json
 
+    # pyrefly: ignore[missing-import]
     import redis.asyncio as redis
 
     redis_client = redis.Redis.from_url(settings.get_redis_url(), decode_responses=True)

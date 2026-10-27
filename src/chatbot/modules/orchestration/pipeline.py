@@ -27,14 +27,31 @@ from src.chatbot.shared.enums import IntentType, Ownership, PageCode, WorkflowTy
 from src.chatbot.shared.events import InboxEvent, OutboxMessageSchema
 
 
-def filter_slots_for_workflow(workflow: WorkflowType, slots: dict[str, Any]) -> dict[str, Any]:
+def filter_slots_for_workflow(
+    workflow: WorkflowType, slots: dict[str, Any]
+) -> dict[str, Any]:
     common_keys = {
-        "phone", "location", "province", "district", "ward", "area", "parent_province",
-        "admin_area_id", "admin_level", "crop", "product",
-        "stage", "problem", "product_mentions", "detected_skus", "detected_formulas",
+        "phone",
+        "location",
+        "province",
+        "district",
+        "ward",
+        "area",
+        "parent_province",
+        "admin_area_id",
+        "admin_level",
+        "crop",
+        "product",
+        "stage",
+        "problem",
+        "product_mentions",
+        "detected_skus",
+        "detected_formulas",
     }
     dealer_state_keys = {
-        "dealer_search_status", "dealer_search_area", "dealer_parent_province",
+        "dealer_search_status",
+        "dealer_search_area",
+        "dealer_parent_province",
         "dealer_match_scope",
     }
     if workflow == WorkflowType.PRICE_HANDOFF:
@@ -56,7 +73,10 @@ class SafeMessagePipeline:
         outbox: OutboxStore,
         controls: OpsControlStore | None = None,
         intent_analyzer: HybridInputAnalyzer | None = None,
-        knowledge_store: ApprovedKnowledgeStore | PostgresKnowledgeStore | CompositeKnowledgeStore | None = None,
+        knowledge_store: ApprovedKnowledgeStore
+        | PostgresKnowledgeStore
+        | CompositeKnowledgeStore
+        | None = None,
         conversation_repository: PostgresConversationRepository | None = None,
         composer: ResponseComposer | None = None,
         order_store: Any | None = None,
@@ -147,9 +167,7 @@ class SafeMessagePipeline:
         area = None
         if self.intent_analyzer:
             normalizer = self.intent_analyzer.normalizer
-            area = normalizer.area_resolver.by_id(
-                str(slots.get("admin_area_id") or "")
-            )
+            area = normalizer.area_resolver.by_id(str(slots.get("admin_area_id") or ""))
             if area is None:
                 area = normalizer.resolve_location(
                     location,
@@ -182,7 +200,9 @@ class SafeMessagePipeline:
                         else (area.canonical if area else None)
                     ),
                     match_scope="EXACT_ADDRESS_TEXT",
-                    candidates=tuple(DealerCandidate(record=match) for match in matches[:3]),
+                    candidates=tuple(
+                        DealerCandidate(record=match) for match in matches[:3]
+                    ),
                 )
         return DealerLookupResult(
             status="NO_CONFIRMED_MATCH",
@@ -199,20 +219,97 @@ class SafeMessagePipeline:
         raw = (text or "").lower()
         cleaned = re.sub(r"(?<=[a-zA-Z0-9À-ỹ])[._]+(?=[a-zA-Z0-9À-ỹ])", " ", raw)
         cleaned = re.sub(r"(?<=[a-zA-ZÀ-ỹ])(?=\d)|(?<=\d)(?=[a-zA-ZÀ-ỹ])", " ", cleaned)
-        if any(w in cleaned for w in ("giá", "gia", "bao nhiêu", "bao nhieu", "price", "báo giá", "bao gia", "mấy tiền", "may tien", "chi phí", "chi phi")):
-            return IntentType.PRICE_INQUIRY
-        if any(w in cleaned for w in ("số điện thoại", "so dien thoai", "số liên hệ", "so lien he", "hotline", "liên hệ ai", "lien he ai", "gọi số nào", "goi so nao")):
-            return IntentType.CONTACT_REQUEST
-        if any(w in cleaned for w in ("đại lý", "dai ly", "ở đâu", "o dau", "mua ở đâu", "mua o dau", "cửa hàng", "cua hang")):
-            return IntentType.DEALER_LOOKUP
-        if (
-            any(w in cleaned for w in ("đơn hàng", "don hang", "mã đơn", "ma don", "tra cứu đơn", "tra cuu don", "kiểm tra đơn", "kiem tra don", "đơn tới đâu", "don toi dau", "hỏi đơn", "hoi don", "xem đơn", "xem don"))
-            or re.search(r"\b(?:đơn|don)\s+[a-z0-9_-]+", cleaned)
+        if any(
+            w in cleaned
+            for w in (
+                "giá",
+                "gia",
+                "bao nhiêu",
+                "bao nhieu",
+                "price",
+                "báo giá",
+                "bao gia",
+                "mấy tiền",
+                "may tien",
+                "chi phí",
+                "chi phi",
+            )
         ):
+            return IntentType.PRICE_INQUIRY
+        if any(
+            w in cleaned
+            for w in (
+                "số điện thoại",
+                "so dien thoai",
+                "số liên hệ",
+                "so lien he",
+                "hotline",
+                "liên hệ ai",
+                "lien he ai",
+                "gọi số nào",
+                "goi so nao",
+            )
+        ):
+            return IntentType.CONTACT_REQUEST
+        if any(
+            w in cleaned
+            for w in (
+                "đại lý",
+                "dai ly",
+                "ở đâu",
+                "o dau",
+                "mua ở đâu",
+                "mua o dau",
+                "cửa hàng",
+                "cua hang",
+            )
+        ):
+            return IntentType.DEALER_LOOKUP
+        if any(
+            w in cleaned
+            for w in (
+                "đơn hàng",
+                "don hang",
+                "mã đơn",
+                "ma don",
+                "tra cứu đơn",
+                "tra cuu don",
+                "kiểm tra đơn",
+                "kiem tra don",
+                "đơn tới đâu",
+                "don toi dau",
+                "hỏi đơn",
+                "hoi don",
+                "xem đơn",
+                "xem don",
+            )
+        ) or re.search(r"\b(?:đơn|don)\s+[a-z0-9_-]+", cleaned):
             return IntentType.ORDER_TRACKING
-        if any(w in cleaned for w in ("phân bón", "phan bon", "hữu cơ", "huu co", "cobanic", "cabonic", "npk", "mua")):
+        if any(
+            w in cleaned
+            for w in (
+                "phân bón",
+                "phan bon",
+                "hữu cơ",
+                "huu co",
+                "cobanic",
+                "cabonic",
+                "npk",
+                "mua",
+            )
+        ):
             return IntentType.PRODUCT_INQUIRY
-        if any(w in cleaned for w in ("người thật", "nguoi that", "nhân viên", "nhan vien", "tư vấn viên", "admin")):
+        if any(
+            w in cleaned
+            for w in (
+                "người thật",
+                "nguoi that",
+                "nhân viên",
+                "nhan vien",
+                "tư vấn viên",
+                "admin",
+            )
+        ):
             return IntentType.HUMAN_REQUEST
         return IntentType.GENERAL_FAQ
 
@@ -272,7 +369,9 @@ class SafeMessagePipeline:
 
         dealer_lookup: DealerLookupResult | None = None
         previously_no_confirmed_match = (
-            str(dict(context.get("current_slots", {})).get("dealer_search_status") or "")
+            str(
+                dict(context.get("current_slots", {})).get("dealer_search_status") or ""
+            )
             == "NO_CONFIRMED_MATCH"
         )
         if intent == IntentType.DEALER_LOOKUP:
@@ -296,11 +395,25 @@ class SafeMessagePipeline:
             effective_conversation_version = state.version
 
         handoff_created = False
-        if intent in {
+        handoff_intents = {
             IntentType.PRICE_INQUIRY,
             IntentType.PRICE_INQUIRY_DETAIL,
             IntentType.HUMAN_REQUEST,
-        } and self.conversation_repository and batch_version is not None:
+        }
+        sales_lead_complete = (
+            intent == IntentType.SALES_LEAD
+            and bool(effective_slots.get("phone"))
+            and bool(
+                effective_slots.get("location")
+                or effective_slots.get("district")
+                or effective_slots.get("province")
+            )
+        )
+        if (
+            (intent in handoff_intents or sales_lead_complete)
+            and self.conversation_repository
+            and batch_version is not None
+        ):
             create_handoff = getattr(
                 self.conversation_repository, "create_handoff_task", None
             )
@@ -355,6 +468,15 @@ class SafeMessagePipeline:
                 customer_text=text,
             )
 
+        # Branch 2c: dealer/distributor onboarding. A handoff is only confirmed
+        # after both contact and area are present and the durable task exists.
+        elif intent == IntentType.SALES_LEAD:
+            answer = self.composer.compose_sales_lead_response(
+                event.page_id,
+                slots=effective_slots,
+                handoff_created=handoff_created,
+            )
+
         # Branch 3: Product inquiries
         elif intent == IntentType.PRODUCT_INQUIRY:
             search_query = text
@@ -369,7 +491,9 @@ class SafeMessagePipeline:
             search_result = KnowledgeSearchResult("NO_MATCH", strategy="product")
             if self.knowledge_store:
                 search_result = self._search_knowledge_result(
-                    PageCode(event.page_id), search_query, limit=2,
+                    PageCode(event.page_id),
+                    search_query,
+                    limit=2,
                     record_prefix=("product:", "crm-product:"),
                 )
             product_record = (
@@ -411,7 +535,14 @@ class SafeMessagePipeline:
         # shared word such as "phân" or "trái".
         elif intent == IntentType.AGRI_ADVICE:
             query_parts = [text]
-            for key in ("crop", "stage", "problem", "product", "product_mentions", "detected_skus"):
+            for key in (
+                "crop",
+                "stage",
+                "problem",
+                "product",
+                "product_mentions",
+                "detected_skus",
+            ):
                 value = effective_slots.get(key)
                 if isinstance(value, list):
                     query_parts.extend(str(item) for item in value)
@@ -424,8 +555,11 @@ class SafeMessagePipeline:
                 )
                 categories = filters.get("categories", ())
             matches = self._search_knowledge(
-                PageCode(event.page_id), " ".join(query_parts), limit=1,
-                record_prefix="faq:", categories=categories or None,
+                PageCode(event.page_id),
+                " ".join(query_parts),
+                limit=1,
+                record_prefix="faq:",
+                categories=categories or None,
             )
             if matches:
                 grounding_texts.extend([matches[0].title, matches[0].content])
@@ -462,7 +596,9 @@ class SafeMessagePipeline:
                     if extracted != str(phone):
                         order_code = extracted
                 if not order_code:
-                    standalone = re.search(r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text)
+                    standalone = re.search(
+                        r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text
+                    )
                     if standalone and standalone.group(0) != str(phone):
                         order_code = standalone.group(0)
 
@@ -491,11 +627,30 @@ class SafeMessagePipeline:
             is_homecare = False
             is_greeting = False
             if self.intent_analyzer:
-                is_career = self.intent_analyzer.normalizer.contains("career_markers", lower_text)
-                is_homecare = self.intent_analyzer.normalizer.contains("homecare_markers", lower_text)
-                is_greeting = self.intent_analyzer.normalizer.contains("greeting_markers", lower_text) and len(lower_text.split()) <= 4
+                is_career = self.intent_analyzer.normalizer.contains(
+                    "career_markers", lower_text
+                )
+                is_homecare = self.intent_analyzer.normalizer.contains(
+                    "homecare_markers", lower_text
+                )
+                is_greeting = (
+                    self.intent_analyzer.normalizer.contains(
+                        "greeting_markers", lower_text
+                    )
+                    and len(lower_text.split()) <= 4
+                )
             else:
-                is_career = any(w in lower_text for w in ["tuyển dụng", "tuyen dung", "việc làm", "vị trí", "ứng tuyển", "xin việc"])
+                is_career = any(
+                    w in lower_text
+                    for w in [
+                        "tuyển dụng",
+                        "tuyen dung",
+                        "việc làm",
+                        "vị trí",
+                        "ứng tuyển",
+                        "xin việc",
+                    ]
+                )
                 is_homecare = any(
                     re.search(rf"(?<!\w){re.escape(marker)}(?!\w)", lower_text)
                     for marker in [
@@ -507,14 +662,22 @@ class SafeMessagePipeline:
                         "bột giặt",
                     ]
                 )
-                is_greeting = any(lower_text.startswith(g) for g in ["chào", "xin chào", "hello", "hi", "alo"]) and len(lower_text.split()) <= 4
+                is_greeting = (
+                    any(
+                        lower_text.startswith(g)
+                        for g in ["chào", "xin chào", "hello", "hi", "alo"]
+                    )
+                    and len(lower_text.split()) <= 4
+                )
 
             if is_career:
                 answer = self.composer.compose_career_response()
             elif event.page_id == PageCode.CFC and is_homecare:
                 answer = self.composer.compose_homecare_response()
             elif is_greeting:
-                answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
+                answer = self.composer.compose_greeting_response(
+                    event.page_id, ad_title=ad_title
+                )
             elif has_images:
                 answer = self.composer.compose_image_inquiry_response(
                     event.page_id,
@@ -532,7 +695,9 @@ class SafeMessagePipeline:
                     grounding_texts.extend([matches[0].title, matches[0].content])
                     answer = matches[0].content
                 else:
-                    answer = self.composer.compose_greeting_response(event.page_id, ad_title=ad_title)
+                    answer = self.composer.compose_greeting_response(
+                        event.page_id, ad_title=ad_title
+                    )
 
         # Final safety validation (Policy guard: zero-price, no jargon, persona, placeholders)
         allowed_phones: set[str] = set()
@@ -554,10 +719,13 @@ class SafeMessagePipeline:
 
         delivery_batch_version = batch_version
         if delivery_batch_version is None:
-            delivery_batch_version = int.from_bytes(
-                hashlib.sha256(event.event_id.encode("utf-8")).digest()[:4],
-                "big",
-            ) & 0x7FFFFFFF
+            delivery_batch_version = (
+                int.from_bytes(
+                    hashlib.sha256(event.event_id.encode("utf-8")).digest()[:4],
+                    "big",
+                )
+                & 0x7FFFFFFF
+            )
 
         return self.outbox.enqueue(
             OutboxMessageSchema(

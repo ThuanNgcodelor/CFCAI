@@ -641,7 +641,8 @@ Hạng mục FAQ chỉ hoàn thành khi đồng thời đạt tất cả điều
 - [x] Mỗi answer mode thuộc F3–F5 chạy đúng workflow, không hardcode câu hỏi.
 - [x] Zero price hallucination và zero CFC/ZEO leakage trong automated regression.
 - [x] Zero placeholder, internal term, fake confirmation và unsupported promise trong automated regression.
-- [ ] Full regression, takeover, duplicate và restart tests pass.
+- [x] Full regression, takeover, duplicate và restart tests pass. Báo cáo F6:
+  `docs/test_runs/cfc_faq_phase_f6_2026-10-27.md`.
 - [ ] Shadow/canary, rollback và kill switch được nghiệm thu.
 - [ ] Chuyên gia ký duyệt các nội dung nông học trước khi mở cho khách thật.
 

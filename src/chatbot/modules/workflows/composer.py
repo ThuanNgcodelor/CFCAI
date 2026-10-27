@@ -110,16 +110,16 @@ class ResponseComposer:
     def _fold_validation_text(text: str) -> str:
         folded = unicodedata.normalize("NFD", text.casefold())
         folded = "".join(
-            character
-            for character in folded
-            if unicodedata.category(character) != "Mn"
+            character for character in folded if unicodedata.category(character) != "Mn"
         )
         return folded.replace("đ", "d")
 
     @classmethod
     def _claims_customer_phone(cls, text: str) -> bool:
         folded = cls._fold_validation_text(text)
-        return any(pattern.search(folded) for pattern in cls._PHONE_CONFIRMATION_PATTERNS)
+        return any(
+            pattern.search(folded) for pattern in cls._PHONE_CONFIRMATION_PATTERNS
+        )
 
     @classmethod
     def _contains_unapproved_phone(
@@ -255,8 +255,20 @@ class ResponseComposer:
         # Try model generation first if available
         if self.generator:
             price_slots = {
-                k: v for k, v in slots.items()
-                if k in {"product", "crop", "quantity", "unit", "location", "province", "district", "area", "phone"}
+                k: v
+                for k, v in slots.items()
+                if k
+                in {
+                    "product",
+                    "crop",
+                    "quantity",
+                    "unit",
+                    "location",
+                    "province",
+                    "district",
+                    "area",
+                    "phone",
+                }
                 and v is not None
             }
             payload = {
@@ -307,7 +319,9 @@ class ResponseComposer:
         slots = slots or {}
         brand = self._brand_name(page_id)
         product_title = getattr(product_record, "title", "") if product_record else ""
-        product_content = getattr(product_record, "content", "") if product_record else ""
+        product_content = (
+            getattr(product_record, "content", "") if product_record else ""
+        )
         display_title = str(product_title).split("|", 1)[0].strip()
 
         if product_record:
@@ -332,8 +346,18 @@ class ResponseComposer:
         # Try model generation first if available
         if self.generator and product_record:
             product_slots = {
-                k: v for k, v in slots.items()
-                if k in {"product", "crop", "location", "province", "district", "area", "phone"}
+                k: v
+                for k, v in slots.items()
+                if k
+                in {
+                    "product",
+                    "crop",
+                    "location",
+                    "province",
+                    "district",
+                    "area",
+                    "phone",
+                }
                 and v is not None
             }
             payload = {
@@ -389,9 +413,7 @@ class ResponseComposer:
             "và tư vấn sát vườn mình ạ."
         )
         if has_context and advice_record:
-            approved_content = str(
-                getattr(advice_record, "content", "") or ""
-            ).strip()
+            approved_content = str(getattr(advice_record, "content", "") or "").strip()
             if approved_content:
                 fallback = approved_content
 
@@ -478,7 +500,9 @@ class ResponseComposer:
             or slots.get("province")
         )
         scope = getattr(lookup_result, "match_scope", None)
-        status = getattr(lookup_result, "status", None) or slots.get("dealer_search_status")
+        status = getattr(lookup_result, "status", None) or slots.get(
+            "dealer_search_status"
+        )
         visible_dealers: list[tuple[str, str]] = []
         for dealer in (dealers or [])[:3]:
             title = str(getattr(dealer, "title", "") or "").strip()
@@ -489,12 +513,17 @@ class ResponseComposer:
                 address = address.strip()
             elif content and content != title:
                 address = content
-            if title and address and address.casefold() not in {
-                "chưa cập nhật địa chỉ",
-                "chưa cập nhật",
-                "null",
-                "none",
-            }:
+            if (
+                title
+                and address
+                and address.casefold()
+                not in {
+                    "chưa cập nhật địa chỉ",
+                    "chưa cập nhật",
+                    "null",
+                    "none",
+                }
+            ):
                 visible_dealers.append((title, address))
 
         if visible_dealers:
@@ -536,7 +565,11 @@ class ResponseComposer:
             return self.validate_no_price("\n".join(response_lines), deadline_text)
 
         if status == "NO_CONFIRMED_MATCH" or location:
-            check_text = "Mình đã kiểm tra lại" if previously_no_confirmed_match else "Mình đã kiểm tra"
+            check_text = (
+                "Mình đã kiểm tra lại"
+                if previously_no_confirmed_match
+                else "Mình đã kiểm tra"
+            )
             area_text = f" khu vực {location}" if location else " khu vực mình cung cấp"
             response = (
                 f"Dạ {check_text}{area_text}, nhưng hiện tại hệ thống chưa có điểm bán được xác nhận tại đây "
@@ -593,6 +626,44 @@ class ResponseComposer:
             "yêu cầu chuyển người; anh/chị vui lòng thử lại hoặc liên hệ hotline hỗ trợ ạ."
         )
 
+    def compose_sales_lead_response(
+        self,
+        page_id: PageCode,
+        *,
+        slots: dict[str, Any] | None = None,
+        handoff_created: bool = False,
+    ) -> str:
+        """Collect the minimum configured lead data before confirming handoff."""
+        slots = slots or {}
+        has_phone = bool(slots.get("phone"))
+        has_location = bool(
+            slots.get("location") or slots.get("district") or slots.get("province")
+        )
+        if handoff_created:
+            return (
+                "Dạ em đã tạo yêu cầu tư vấn chính sách đại lý cho nhân viên phụ trách "
+                "khu vực rồi ạ. Anh/chị vui lòng chờ yêu cầu được tiếp nhận nhé!"
+            )
+        if not has_phone and not has_location:
+            return (
+                "Dạ anh/chị cho em xin tỉnh/huyện muốn kinh doanh và số điện thoại "
+                "liên hệ để bên em chuyển đúng nhân viên phụ trách khu vực ạ."
+            )
+        if not has_location:
+            return (
+                "Dạ bên em đã có số điện thoại. Anh/chị cho em xin thêm tỉnh/huyện "
+                "muốn kinh doanh để chuyển đúng nhân viên phụ trách khu vực ạ."
+            )
+        if not has_phone:
+            return (
+                "Dạ bên em đã ghi nhận khu vực. Anh/chị cho em xin số điện thoại "
+                "liên hệ để tạo yêu cầu tư vấn chính sách đại lý ạ."
+            )
+        return (
+            "Dạ hiện em chưa xác nhận được yêu cầu chuyển nhân viên. "
+            "Anh/chị vui lòng thử lại hoặc liên hệ hotline hỗ trợ ạ."
+        )
+
     def compose_career_response(self) -> str:
         return (
             "Dạ về thông tin tuyển dụng, vị trí việc làm và nộp hồ sơ, anh/chị vui lòng xem và nhắn trực tiếp qua "
@@ -605,7 +676,9 @@ class ResponseComposer:
             "Anh/chị vui lòng nhắn qua fanpage ZeO Việt Nam để được tư vấn chu đáo nhất nha!"
         )
 
-    def compose_greeting_response(self, page_id: PageCode, ad_title: str | None = None) -> str:
+    def compose_greeting_response(
+        self, page_id: PageCode, ad_title: str | None = None
+    ) -> str:
         if page_id == PageCode.ZEO:
             return "Dạ ZeO Homecare kính chào quý khách! ZeO có thể hỗ trợ gì cho mình hôm nay ạ?"
 
@@ -667,7 +740,10 @@ class ResponseComposer:
             if found_order:
                 order_info = f"Mã đơn: {found_order.get('order_code')}, Ngày đặt: {found_order.get('order_date')}, Trạng thái: {found_order.get('status')}"
             elif orders:
-                order_info = "; ".join(f"Mã {o.get('order_code')}: {o.get('status')} (ngày {o.get('order_date')})" for o in orders[:3])
+                order_info = "; ".join(
+                    f"Mã {o.get('order_code')}: {o.get('status')} (ngày {o.get('order_date')})"
+                    for o in orders[:3]
+                )
             payload = {
                 "page_id": page_id.value,
                 "y_dinh": "ORDER_TRACKING",

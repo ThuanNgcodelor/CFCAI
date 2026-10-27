@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "description": "Minimum non-regression thresholds for CFC FAQ Phase F6.",
+  "metrics": {
+    "source_retrieval_top1_rate": {"min": 1.0},
+    "source_retrieval_top3_rate": {"min": 1.0},
+    "heldout_top1_rate": {"min": 0.9},
+    "heldout_top3_rate": {"min": 0.98},
+    "active_runtime_pass_rate": {"min": 1.0},
+    "output_policy_violations": {"max": 0.0}
+  }
+}

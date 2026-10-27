@@ -43,6 +43,10 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Local runtime/tunnel logs
+cloudflared-tunnel.*.log
+*.local.log
+
 # Databases & Local Data
 *.sqlite3
 data/*

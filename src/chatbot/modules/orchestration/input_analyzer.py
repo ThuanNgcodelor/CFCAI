@@ -85,10 +85,14 @@ class VietnameseNormalizer:
             else None
         )
         units = [re.escape(unit) for unit in config.get("quantity_units", [])]
-        self.quantity_pattern = re.compile(
-            rf"(?P<quantity>\d+(?:[.,]\d+)?)\s*(?P<unit>{'|'.join(units)})\b",
-            re.IGNORECASE,
-        ) if units else None
+        self.quantity_pattern = (
+            re.compile(
+                rf"(?P<quantity>\d+(?:[.,]\d+)?)\s*(?P<unit>{'|'.join(units)})\b",
+                re.IGNORECASE,
+            )
+            if units
+            else None
+        )
 
     def normalize(self, text: str) -> str:
         # Separate dots/underscores between alphanumeric characters (e.g. gia.bao.nhieu1bao -> gia bao nhieu1bao)
@@ -121,7 +125,9 @@ class VietnameseNormalizer:
             for marker in self.safety.get(group, [])
         )
 
-    def filters_for_workflow(self, workflow: WorkflowType) -> dict[str, tuple[str, ...]]:
+    def filters_for_workflow(
+        self, workflow: WorkflowType
+    ) -> dict[str, tuple[str, ...]]:
         """Return source-configured retrieval filters, never business answers."""
         config = self.knowledge_filters.get(workflow.value, {})
         intents = tuple(config.get("intents", []))
@@ -144,9 +150,7 @@ class VietnameseNormalizer:
         """Resolve user or model location text through the configured gazetteer."""
         return self.area_resolver.resolve(value, parent_province=parent_province)
 
-    def without_location_alias(
-        self, text: str, area: AdministrativeArea | None
-    ) -> str:
+    def without_location_alias(self, text: str, area: AdministrativeArea | None) -> str:
         """Mask the resolved place name before checking lexical intent markers."""
         if area is None:
             return text
@@ -169,7 +173,9 @@ class VietnameseNormalizer:
     ) -> IntentType | None:
         """Return a configured workflow continuation, never a content answer."""
         current = str(
-            current_intent.value if isinstance(current_intent, IntentType) else current_intent or ""
+            current_intent.value
+            if isinstance(current_intent, IntentType)
+            else current_intent or ""
         )
         rule = self.contextual_continuation.get(current)
         if not isinstance(rule, dict):
@@ -255,7 +261,9 @@ class VietnameseNormalizer:
             if extracted != slots.get("phone"):
                 slots["order_code"] = extracted
         if not slots.get("order_code"):
-            standalone = re.search(r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text)
+            standalone = re.search(
+                r"\b(?:[A-Za-z]{2,6}[0-9\-_]{2,12}|00\d{4,8})\b", text
+            )
             if standalone and standalone.group(0) != slots.get("phone"):
                 slots["order_code"] = standalone.group(0)
 
@@ -263,7 +271,9 @@ class VietnameseNormalizer:
 
 
 class HybridInputAnalyzer:
-    def __init__(self, client: StructuredIntentClient, normalizer: VietnameseNormalizer) -> None:
+    def __init__(
+        self, client: StructuredIntentClient, normalizer: VietnameseNormalizer
+    ) -> None:
         self.client = client
         self.normalizer = normalizer
 
@@ -293,26 +303,40 @@ class HybridInputAnalyzer:
             "explicit_advice_markers", normalized
         ) or bool(
             re.search(
-                r"\b(?:bón|rải|phun|tưới)\b.{0,40}"
+                r"(?<!phân\s)\b(?:bón|rải|phun|tưới)\b.{0,40}"
                 r"\b(?:thế nào|ra sao|bao nhiêu|cách nào)\b",
                 normalized,
                 flags=re.IGNORECASE,
             )
         )
+        has_price_marker = self.normalizer.contains("price_markers", marker_text)
+        # A short token can also be part of a place name. While a dealer search
+        # is open, only treat such a token as price intent when the same message
+        # carries additional commercial context configured by the business.
+        ambiguous_dealer_price = (
+            is_open_dealer_context
+            and self.normalizer.contains("ambiguous_price_markers", marker_text)
+            and not self.normalizer.contains("price_context_markers", marker_text)
+        )
 
-        if self.normalizer.contains("price_markers", marker_text):
+        if has_price_marker and not ambiguous_dealer_price:
             forced_intent = IntentType.PRICE_INQUIRY
             transition = (
                 IntentTransition.CONTINUE
-                if current_intent in {
+                if current_intent
+                in {
                     IntentType.PRICE_INQUIRY.value,
                     IntentType.PRICE_INQUIRY_DETAIL.value,
                 }
-                else IntentTransition.SWITCH if current_intent else IntentTransition.START
+                else IntentTransition.SWITCH
+                if current_intent
+                else IntentTransition.START
             )
         elif self.normalizer.contains("human_markers", normalized):
             forced_intent = IntentType.HUMAN_REQUEST
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
         elif self.normalizer.contains("contact_markers", normalized):
             if current_intent in {
                 IntentType.PRICE_INQUIRY.value,
@@ -327,15 +351,34 @@ class HybridInputAnalyzer:
                     if current_intent
                     else IntentTransition.START
                 )
+        elif self.normalizer.contains("sales_lead_markers", normalized):
+            forced_intent = IntentType.SALES_LEAD
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
         elif self.normalizer.contains("dealer_markers", normalized):
             forced_intent = IntentType.DEALER_LOOKUP
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
         elif self.normalizer.contains("order_markers", normalized):
             forced_intent = IntentType.ORDER_TRACKING
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
-        elif self.normalizer.contains("product_markers", normalized) and not self.normalizer.contains("price_markers", normalized):
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
+        elif self.normalizer.contains("agri_question_markers", normalized):
+            forced_intent = IntentType.AGRI_ADVICE
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
+        elif (
+            self.normalizer.contains("product_markers", normalized)
+            or self.normalizer.contains("purchase_product_markers", normalized)
+        ) and not self.normalizer.contains("price_markers", normalized):
             forced_intent = IntentType.PRODUCT_INQUIRY
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
 
         # Advice markers are configuration-driven. They outrank a generic FAQ
         # result, but an open price workflow is retained unless the customer
@@ -349,22 +392,23 @@ class HybridInputAnalyzer:
             forced_intent = IntentType.PRICE_INQUIRY_DETAIL
             transition = IntentTransition.CONTINUE
 
-        if (
-            forced_intent is None
-            and (
-                explicit_advice_requested
-                or (
-                    not is_open_price_context
-                    and self.normalizer.contains("advice_action_markers", normalized)
-                )
+        if forced_intent is None and (
+            explicit_advice_requested
+            or (
+                not is_open_price_context
+                and self.normalizer.contains("advice_action_markers", normalized)
             )
         ):
             forced_intent = IntentType.AGRI_ADVICE
-            transition = IntentTransition.SWITCH if current_intent else IntentTransition.START
+            transition = (
+                IntentTransition.SWITCH if current_intent else IntentTransition.START
+            )
 
         if (
             forced_intent is None
-            and (deterministic_slots.get("location") or deterministic_slots.get("phone"))
+            and (
+                deterministic_slots.get("location") or deterministic_slots.get("phone")
+            )
             and is_open_dealer_context
         ):
             forced_intent = IntentType.DEALER_LOOKUP
@@ -375,7 +419,9 @@ class HybridInputAnalyzer:
             if forced_intent:
                 fallback_intent = forced_intent
                 fallback_trans = transition
-            elif continuation_intent := self.normalizer.continuation_intent(current_intent):
+            elif continuation_intent := self.normalizer.continuation_intent(
+                current_intent
+            ):
                 fallback_intent = continuation_intent
                 fallback_trans = IntentTransition.CONTINUE
             elif is_open_price_context and not explicit_advice_requested:
@@ -467,7 +513,9 @@ class HybridInputAnalyzer:
             merged_slots["unit"] = result.unit
         if not deterministic_slots.get("location"):
             model_location = result.location or merged_slots.get("location")
-            model_parent = result.extracted_slots.get("province") or merged_slots.get("province")
+            model_parent = result.extracted_slots.get("province") or merged_slots.get(
+                "province"
+            )
             resolved_model_location = self.normalizer.resolve_location(
                 str(model_location) if model_location else None,
                 parent_province=str(model_parent) if model_parent else None,

@@ -51,8 +51,12 @@ class OutputPolicyValidator:
     _INTERNAL_JARGON_PATTERNS = (
         re.compile(r"\b(?:snapshot\s*crm|crm\s*snapshot)\b", re.IGNORECASE),
         re.compile(r"\b(?:read\s*model|raw\s*record|internal\s*data)\b", re.IGNORECASE),
-        re.compile(r"\b(?:database|postgres(?:ql)?|redis|ollama|pgvector)\b", re.IGNORECASE),
-        re.compile(r"\b(?:outbox(?:_messages)?|inbox(?:_events)?|quarantined)\b", re.IGNORECASE),
+        re.compile(
+            r"\b(?:database|postgres(?:ql)?|redis|ollama|pgvector)\b", re.IGNORECASE
+        ),
+        re.compile(
+            r"\b(?:outbox(?:_messages)?|inbox(?:_events)?|quarantined)\b", re.IGNORECASE
+        ),
         re.compile(r"\b(?:sql|traceback|pydantic)\b", re.IGNORECASE),
         re.compile(r"\b(?:null|none|nan|undefined)\b", re.IGNORECASE),
     )
@@ -83,7 +87,10 @@ class OutputPolicyValidator:
 
     _FORBIDDEN_PERSONA_PATTERNS = (
         # Prohibit addressing customer as 'bạn' (khi bot giao tiếp với khách)
-        re.compile(r"\b(?:chao ban|ban oi|cua ban|ban cho em|ban nhan|ban vui long)\b", re.IGNORECASE),
+        re.compile(
+            r"\b(?:chao ban|ban oi|cua ban|ban cho em|ban nhan|ban vui long)\b",
+            re.IGNORECASE,
+        ),
         # Prohibit addressing customer as 'bà con'
         re.compile(r"\b(?:ba con|kinh chao ba con)\b", re.IGNORECASE),
         # Prohibit addressing customer as 'cô/bác', 'chị/em', 'chị/chú'
@@ -103,10 +110,14 @@ class OutputPolicyValidator:
     )
 
     _NEAREST_CLAIM_PATTERNS = (
-        re.compile(r"\b(?:day|do) la\b.{0,60}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
+        re.compile(
+            r"\b(?:day|do) la\b.{0,60}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"
+        ),
         re.compile(r"\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b\s+(?:la|o|tai)\b"),
         re.compile(r"\btim duoc\b.{0,60}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
-        re.compile(r"\b(?:bao|gioi thieu)\b.{0,30}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"),
+        re.compile(
+            r"\b(?:bao|gioi thieu)\b.{0,30}\b(?:dai ly|diem ban)\b.{0,30}\bgan nhat\b"
+        ),
     )
 
     _FORMULA_PATTERN = re.compile(
@@ -129,9 +140,7 @@ class OutputPolicyValidator:
     def _fold_text(cls, text: str) -> str:
         folded = unicodedata.normalize("NFD", text.casefold())
         folded = "".join(
-            character
-            for character in folded
-            if unicodedata.category(character) != "Mn"
+            character for character in folded if unicodedata.category(character) != "Mn"
         )
         return folded.replace("đ", "d")
 
@@ -148,9 +157,11 @@ class OutputPolicyValidator:
         """Return failure reason if unresolved placeholders exist."""
         normalized = text.replace("\\_", "_")
         for match in cls._PLACEHOLDER_PATTERN.finditer(normalized):
-            token = next(
-                value for value in match.groupdict().values() if value is not None
-            ).replace("\\_", "_").casefold()
+            token = (
+                next(value for value in match.groupdict().values() if value is not None)
+                .replace("\\_", "_")
+                .casefold()
+            )
             if token not in cls._DEADLINE_TOKENS:
                 return f"UNRESOLVED_PLACEHOLDER: [{token}]"
         return None
@@ -214,6 +225,7 @@ class OutputPolicyValidator:
         if handoff_created or workflow not in {
             WorkflowType.PRICE_HANDOFF,
             WorkflowType.HUMAN_REQUEST,
+            WorkflowType.SALES_LEAD,
         }:
             return None
         folded = cls._fold_text(text)
@@ -254,7 +266,9 @@ class OutputPolicyValidator:
             WorkflowType.AGRICULTURE_ADVICE,
         }:
             return None
-        evidence = " ".join([*grounding_texts, *(str(value) for value in slots.values())])
+        evidence = " ".join(
+            [*grounding_texts, *(str(value) for value in slots.values())]
+        )
         folded_evidence = cls._fold_text(evidence)
         generic_terms = {
             "dạ",
@@ -297,7 +311,9 @@ class OutputPolicyValidator:
         formulas = cls._FORMULA_PATTERN.findall(text)
         if not formulas:
             return None
-        evidence = " ".join([*grounding_texts, *(str(value) for value in slots.values())])
+        evidence = " ".join(
+            [*grounding_texts, *(str(value) for value in slots.values())]
+        )
         folded_evidence = re.sub(r"\s+", "", cls._fold_text(evidence))
         for formula in formulas:
             folded_formula = re.sub(r"\s+", "", cls._fold_text(formula))
@@ -329,6 +345,16 @@ class OutputPolicyValidator:
                 "Dạ hiện em chưa xác nhận được yêu cầu chuyển nhân viên. "
                 "Anh/chị vui lòng thử lại hoặc liên hệ hotline hỗ trợ ạ."
             )
+        if workflow == WorkflowType.SALES_LEAD:
+            if handoff_created:
+                return (
+                    "Dạ em đã tạo yêu cầu tư vấn chính sách đại lý. "
+                    "Anh/chị vui lòng chờ nhân viên phụ trách tiếp nhận ạ."
+                )
+            return (
+                "Dạ anh/chị cho em xin tỉnh/huyện muốn kinh doanh và số điện thoại "
+                "liên hệ để bên em chuyển đúng nhân viên phụ trách khu vực ạ."
+            )
         if workflow == WorkflowType.DEALER_LOOKUP:
             return (
                 "Dạ em chưa đủ căn cứ để xác nhận điểm bán phù hợp. "
@@ -355,9 +381,11 @@ class OutputPolicyValidator:
         normalized = text.replace("\\_", "_")
 
         def replace_marker(match: re.Match[str]) -> str:
-            token = next(
-                value for value in match.groupdict().values() if value is not None
-            ).replace("\\_", "_").casefold()
+            token = (
+                next(value for value in match.groupdict().values() if value is not None)
+                .replace("\\_", "_")
+                .casefold()
+            )
             return deadline_text if token in cls._DEADLINE_TOKENS else ""
 
         sanitized = cls._PLACEHOLDER_PATTERN.sub(replace_marker, normalized)
@@ -421,12 +449,8 @@ class OutputPolicyValidator:
                 cls.check_internal_jargon(sanitized_candidate),
                 cls.check_phone_groundedness(sanitized_candidate, slots, allowed),
                 cls.check_persona(sanitized_candidate),
-                cls.check_handoff_claim(
-                    sanitized_candidate, workflow, handoff_created
-                ),
-                cls.check_nearest_groundedness(
-                    sanitized_candidate, workflow, slots
-                ),
+                cls.check_handoff_claim(sanitized_candidate, workflow, handoff_created),
+                cls.check_nearest_groundedness(sanitized_candidate, workflow, slots),
                 cls.check_formula_groundedness(
                     sanitized_candidate, workflow, slots, evidence
                 ),

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "description": "Bốn đợt hội thoại Messenger đã ghi nhận; mỗi transcript chạy với state riêng.",
+  "transcripts": [
+    {
+      "id": "MESSENGER-01-AGRI-CONTEXT",
+      "turns": [
+        {"text": "Tôi muốn được tư vấn cách dùng", "model_intent": "AGRI_ADVICE", "expected_intent": "AGRI_ADVICE"},
+        {"text": "bón cho cây mít", "model_intent": "AGRI_ADVICE", "expected_intent": "AGRI_ADVICE"},
+        {"text": "Giai đoạn nuôi trái", "model_intent": "AGRI_ADVICE", "expected_intent": "AGRI_ADVICE"}
+      ]
+    },
+    {
+      "id": "MESSENGER-02-DEALER-OBJECTION",
+      "turns": [
+        {"text": "Tôi muốn tìm đại lý gần nhất", "model_intent": "DEALER_LOOKUP", "expected_intent": "DEALER_LOOKUP"},
+        {"text": "Rạch Giá Kiên Giang có không", "model_intent": "GENERAL_FAQ", "expected_intent": "DEALER_LOOKUP"},
+        {"text": "Tôi nhớ có mà sao lại cập nhật dữ liệu", "model_intent": "GENERAL_FAQ", "expected_intent": "DEALER_LOOKUP"}
+      ]
+    },
+    {
+      "id": "MESSENGER-03-PRICE-PHONE",
+      "turns": [
+        {"text": "Giá Hữu cơ Cobanic 21 bao nhiêu?", "model_intent": "PRODUCT_INQUIRY", "expected_intent": "PRICE_INQUIRY"},
+        {"text": "0981205448", "model_intent": "GENERAL_FAQ", "expected_intent": "PRICE_INQUIRY_DETAIL", "restart_before": true}
+      ]
+    },
+    {
+      "id": "MESSENGER-04-PRICE-TO-ADVICE",
+      "turns": [
+        {"text": "Mình chỉ hỏi giá Cobanic 30 giá 1 tấn bao nhiêu", "model_intent": "PRODUCT_INQUIRY", "expected_intent": "PRICE_INQUIRY"},
+        {"text": "Rải mít", "model_intent": "AGRI_ADVICE", "expected_intent": "PRICE_INQUIRY_DETAIL", "restart_before": true},
+        {"text": "Rải mít thế nào?", "model_intent": "AGRI_ADVICE", "expected_intent": "AGRI_ADVICE"}
+      ]
+    }
+  ]
+}

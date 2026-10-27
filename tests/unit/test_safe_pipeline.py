@@ -1,5 +1,6 @@
 import re
 from datetime import UTC, datetime
+from types import SimpleNamespace
 
 from src.chatbot.infrastructure.messaging.outbox import InMemoryOutboxStore
 from src.chatbot.modules.orchestration.pipeline import SafeMessagePipeline
@@ -47,7 +48,9 @@ def test_pipeline_handles_price_inquiry_without_hallucinating_price() -> None:
 
 def test_pipeline_handles_human_request() -> None:
     class FakeIntent:
-        def analyze(self, page_id: PageCode, text: str, context) -> IntentAnalysisResult:
+        def analyze(
+            self, page_id: PageCode, text: str, context
+        ) -> IntentAnalysisResult:
             assert page_id == PageCode.CFC
             return IntentAnalysisResult(
                 primary_intent=IntentType.HUMAN_REQUEST,
@@ -59,6 +62,83 @@ def test_pipeline_handles_human_request() -> None:
     pipeline = SafeMessagePipeline(outbox, intent_analyzer=FakeIntent())
     assert pipeline.process(_event("Tôi muốn gặp nhân viên")) == "outbox-1"
     assert "nhân viên" in outbox.messages["outbox-1"].text
+
+
+def test_sales_lead_collects_required_slots_before_confirming_handoff() -> None:
+    class SalesIntent:
+        def analyze(self, page_id, text, context):
+            return IntentAnalysisResult(
+                primary_intent=IntentType.SALES_LEAD,
+                confidence=1.0,
+                extracted_slots={},
+            )
+
+    class Repository:
+        def __init__(self):
+            self.tasks = []
+
+        def load_understanding_context(self, page_id, conversation_id):
+            return {}
+
+        def update_context(self, page_id, conversation_id, **kwargs):
+            return SimpleNamespace(version=1)
+
+        def create_handoff_task(self, page_id, conversation_id, **kwargs):
+            self.tasks.append(kwargs)
+            return "lead-1"
+
+    repository = Repository()
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=SalesIntent(),
+        conversation_repository=repository,
+    )
+    outbox_id = pipeline.process(_event("Tôi muốn làm đại lý"), batch_version=1)
+    assert outbox_id is not None
+    reply = outbox.messages[outbox_id].text
+    assert "tỉnh/huyện" in reply
+    assert "số điện thoại" in reply
+    assert "đã tạo yêu cầu" not in reply
+    assert repository.tasks == []
+
+
+def test_sales_lead_confirms_only_after_durable_handoff_exists() -> None:
+    class SalesIntent:
+        def analyze(self, page_id, text, context):
+            return IntentAnalysisResult(
+                primary_intent=IntentType.SALES_LEAD,
+                confidence=1.0,
+                extracted_slots={"phone": "0981205448", "location": "Cần Thơ"},
+            )
+
+    class Repository:
+        def __init__(self):
+            self.tasks = []
+
+        def load_understanding_context(self, page_id, conversation_id):
+            return {}
+
+        def update_context(self, page_id, conversation_id, **kwargs):
+            return SimpleNamespace(version=1)
+
+        def create_handoff_task(self, page_id, conversation_id, **kwargs):
+            self.tasks.append(kwargs)
+            return "lead-1"
+
+    repository = Repository()
+    outbox = InMemoryOutboxStore()
+    pipeline = SafeMessagePipeline(
+        outbox,
+        intent_analyzer=SalesIntent(),
+        conversation_repository=repository,
+    )
+    outbox_id = pipeline.process(
+        _event("Tôi ở Cần Thơ, số 0981205448"), batch_version=1
+    )
+    assert outbox_id is not None
+    assert repository.tasks[0]["reason"] == IntentType.SALES_LEAD.value
+    assert "đã tạo yêu cầu" in outbox.messages[outbox_id].text.casefold()
 
 
 def test_pipeline_suppresses_internal_jargon() -> None:

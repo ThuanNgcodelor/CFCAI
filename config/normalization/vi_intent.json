@@ -26,6 +26,22 @@
       "chi phí",
       "price"
     ],
+    "ambiguous_price_markers": [
+      "giá"
+    ],
+    "price_context_markers": [
+      "báo giá",
+      "xin giá",
+      "bao nhiêu",
+      "mấy tiền",
+      "chi phí",
+      "price",
+      "phân",
+      "sản phẩm",
+      "bao",
+      "kg",
+      "tấn"
+    ],
     "human_markers": [
       "gặp nhân viên",
       "gap nhan vien",
@@ -48,6 +64,20 @@
       "gọi số nào",
       "goi so nao"
     ],
+    "sales_lead_markers": [
+      "muốn làm đại lý",
+      "làm đại lý",
+      "chính sách đại lý",
+      "chính sách làm đại lý",
+      "muốn nhập hàng",
+      "nhập hàng",
+      "lấy sỉ",
+      "muốn phân phối",
+      "phân phối sản phẩm",
+      "kinh doanh phân bón",
+      "làm nhà phân phối",
+      "nhập số lượng lớn"
+    ],
     "explicit_advice_markers": [
       "cách dùng",
       "hướng dẫn",
@@ -61,6 +91,16 @@
       "rải",
       "phun cho",
       "tưới cho"
+    ],
+    "agri_question_markers": [
+      "pha phân",
+      "trộn phân",
+      "dùng phân gì",
+      "dùng phân nào",
+      "bón phân gì",
+      "bón phân nào",
+      "rải phân thế nào",
+      "phun phân thế nào"
     ],
     "dealer_markers": [
       "điểm bán",
@@ -101,6 +141,11 @@
       "san pham nao",
       "danh mục",
       "danh muc"
+    ],
+    "purchase_product_markers": [
+      "muốn mua",
+      "cần mua",
+      "đặt mua"
     ],
     "career_markers": [
       "tuyển dụng",
